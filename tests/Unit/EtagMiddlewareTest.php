@@ -93,6 +93,23 @@ final class EtagMiddlewareTest extends TestCase
         self::assertFalse($this->http->getLastRequest()->hasHeader('If-Match'));
     }
 
+    public function test_fresh_get_wins_over_etag_from_an_earlier_state_write(): void
+    {
+        // Seen live: GET -> PUT /state (response carries an ETag) -> GET (newer ETag) -> PUT /state
+        // must send the newer GET ETag, not the one remembered from the first write.
+        $this->http->addResponse(new Response(200, ['ETag' => '"v1"']));
+        $this->http->addResponse(new Response(200, ['ETag' => '"state-write"']));
+        $this->http->addResponse(new Response(200, ['ETag' => '"v2"']));
+        $this->http->addResponse(new Response(200));
+
+        $this->send('GET', '/agreements/agr-1');
+        $this->send('PUT', '/agreements/agr-1/state');
+        $this->send('GET', '/agreements/agr-1');
+        $this->send('PUT', '/agreements/agr-1/state');
+
+        self::assertSame('"v2"', $this->http->getLastRequest()->getHeaderLine('If-Match'));
+    }
+
     private function send(string $method, string $path): void
     {
         $this->pipeline->sendRequest(new Request($method, self::BASE . $path));

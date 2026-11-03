@@ -52,11 +52,18 @@ final class EtagMiddleware implements Middleware
         if ($status >= 200 && $status < 300) {
             $etag = $response->getHeaderLine('ETag');
             if ($method === 'GET' && $etag !== '') {
+                // A fresh read supersedes anything remembered for paths beneath it (e.g. an ETag a
+                // PUT .../state returned earlier), so lookups can't prefer a stale, more specific entry.
+                $this->forgetTree($path);
                 $this->remember($path, $etag);
             } elseif ($isWrite) {
                 // The write changed the resource; any ETag we held for it (or its children) is stale.
-                $this->forgetTree($this->resourceRoot($path));
-                if ($etag !== '') {
+                $root = $this->resourceRoot($path);
+                $this->forgetTree($root);
+                // Only trust a write's ETag for the resource it wrote. A sub-resource write such as
+                // PUT /agreements/{id}/state may return an ETag, but the next state change must use
+                // the agreement's current ETag from a GET; remembering it here caused 412s (seen live).
+                if ($etag !== '' && $path === $root) {
                     $this->remember($path, $etag);
                 }
             }

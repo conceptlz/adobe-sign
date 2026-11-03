@@ -51,7 +51,8 @@
         "analyse": [
             "phpstan analyse --no-progress --memory-limit=1G",
             "phpstan analyse --no-progress --memory-limit=1G -c phpstan-tests.neon.dist"
-        ]
+        ],
+        "test:live": "phpunit -c phpunit.live.xml.dist"
     },
     "config": {
         "sort-packages": true,
@@ -67,8 +68,8 @@
     },
     "authors": [
         {
-            "name": "Conceptlz",
-            "email": "moiz@conceptualize.ae"
+            "name": "Conceptualize",
+            "email": "info@conceptualize.ae"
         }
     ],
     "support": {

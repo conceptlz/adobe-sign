@@ -131,11 +131,39 @@ final class AgreementsTest extends TestCase
 
         $this->client()->agreements()->sendReminder('agr-1');
 
-        self::assertSame(self::API . '/agreements/agr-1/members', (string) $this->request(1)->getUri());
+        self::assertSame(self::API . '/agreements/agr-1/members?includeNextParticipantSet=true', (string) $this->request(1)->getUri());
         self::assertSame(
             ['recipientParticipantIds' => ['CBJCHBCAABAAmem1'], 'status' => 'ACTIVE'],
             self::jsonBody($this->request(2)),
         );
+    }
+
+    public function test_send_reminder_falls_back_to_participant_set_status(): void
+    {
+        // What the live API returned without includeNextParticipantSet: no nextParticipantSets (nor
+        // ccsInfo/sharesInfo), although the spec marks them required. So skip the spec check here.
+        $this->checkSpecContract = false;
+        $this->queueBaseUris();
+        $this->queue(200, 'members_real_shape');
+        $this->queue(201, 'reminder_created');
+
+        $this->client()->agreements()->sendReminder('agr-1');
+
+        self::assertSame(
+            ['recipientParticipantIds' => ['CBJCHBCAABAAmem1'], 'status' => 'ACTIVE'],
+            self::jsonBody($this->request(2)),
+            'only the set WAITING_FOR_MY_SIGNATURE, not the NOT_YET_VISIBLE one',
+        );
+    }
+
+    public function test_members_without_next_participant_set_by_default(): void
+    {
+        $this->queueBaseUris();
+        $this->queue(200, 'members');
+
+        $this->client()->agreements()->members('agr-1');
+
+        self::assertSame(self::API . '/agreements/agr-1/members', (string) $this->request(1)->getUri());
     }
 
     public function test_combined_document_returns_pdf_stream(): void

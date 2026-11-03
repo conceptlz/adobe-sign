@@ -1,0 +1,45 @@
+{
+    "participantSets": [
+        {
+            "id": "CBJCHBCAABAApset1",
+            "role": "SIGNER",
+            "order": 1,
+            "status": "WAITING_FOR_MY_SIGNATURE",
+            "memberInfos": [
+                {
+                    "id": "CBJCHBCAABAAmem1",
+                    "email": "jane@example.com",
+                    "self": false,
+                    "securityOption": {
+                        "authenticationMethod": "NONE"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "CBJCHBCAABAApset2",
+            "role": "SIGNER",
+            "order": 2,
+            "status": "NOT_YET_VISIBLE",
+            "memberInfos": [
+                {
+                    "id": "CBJCHBCAABAAmem2",
+                    "email": "john@example.com",
+                    "self": false,
+                    "securityOption": {
+                        "authenticationMethod": "NONE"
+                    }
+                }
+            ]
+        }
+    ],
+    "senderInfo": {
+        "email": "sender@example.com",
+        "participantId": "CBJCHBCAABAAsend",
+        "self": true,
+        "company": "",
+        "hidden": false,
+        "name": "",
+        "status": "CANCELLED"
+    }
+}

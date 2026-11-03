@@ -197,6 +197,11 @@ parallel.** Leave `order()` out and sets are numbered in the order you add them.
 Adobe requires the order numbers to run from 1 with no gaps (`1, 1, 2` is fine; `1, 3` is not). The
 builder checks this locally and throws `InvalidArgumentException`, so a bad order never reaches the API.
 
+**Account setting for mixed orders.** Purely sequential (`1, 2, 3`) and purely parallel (`1, 1, 1`)
+orders always work. Mixing them, e.g. `1` then `2 + 2` then `3`, is called **hybrid routing** and is
+an Acrobat Sign account setting. When it's off, Adobe answers `403 HYBRID_ROUTING_NOT_ALLOWED`
+(an `ApiException`); an account admin can enable it in the account's send settings.
+
 Available roles (`ParticipantRole`): `SIGNER`, `APPROVER`, `ACCEPTOR`, `CERTIFIED_RECIPIENT`, `FORM_FILLER`,
 `DELEGATE_TO_*`, `NOTARY_SIGNER`, `ELECTRONIC_SEALER`, `WITNESS`, `HOST`, `IN_PERSON_SIGNER`.
 
@@ -249,11 +254,21 @@ $sign->agreements()->update($agreementId, $details);   // If-Match is sent autom
 ```
 
 If someone else changed the agreement in between, the update throws `PreconditionFailedException`.
-Fetch it again and retry.
+Fetch it again and retry. This can also happen in the first few seconds after sending: Adobe keeps
+updating the agreement in the background while it delivers emails, so an ETag read in that window can
+already be stale.
+
+**Whose turn is it?** `members($id, includeNextParticipantSet: true)` adds `nextParticipantSets`.
+Adobe leaves that key out unless asked, even though the spec lists it. Every participant set also has a
+`status` such as `WAITING_FOR_MY_SIGNATURE` or `NOT_YET_VISIBLE`.
+
+**Developer accounts.** On a free developer account, Adobe prefixes every agreement name with
+`[DEMO USE ONLY]`.
 
 **Not signable yet.** Right after `create()`, Adobe processes the document asynchronously. Until it
 finishes, `status` is `DOCUMENTS_NOT_YET_PROCESSED` and `signingUrls()` throws `NotFoundException`
-(`AGREEMENT_NOT_SIGNABLE`). Retry after a few seconds.
+(`AGREEMENT_NOT_EXPOSED` or `AGREEMENT_NOT_SIGNABLE`). Even once the status reads `OUT_FOR_SIGNATURE`,
+the participant data can lag for a moment. Retry after a few seconds.
 
 All agreement methods: `create`, `get`, `status`, `all`, `update`, `updateState`, `cancel`, `copy`, `members`,
 `sendReminder`, `reminders`, `signingUrls`, `signingUrlFor`, `views`, `documents`, `document`, `combinedDocument`,

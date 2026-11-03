@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Live tests against a real Acrobat Sign account. Never part of `composer test` or CI.
+    Run with: composer test:live   (needs ADOBE_SIGN_INTEGRATION_KEY and ADOBE_SIGN_TEST_SIGNERS in .env)
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         testdox="true"
+         stderr="true"
+         executionOrder="default">
+    <testsuites>
+        <testsuite name="live">
+            <directory>tests/Live</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

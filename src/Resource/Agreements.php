@@ -96,13 +96,20 @@ final class Agreements extends AbstractResource
     }
 
     /**
-     * GET /agreements/{agreementId}/members
+     * GET /agreements/{agreementId}/members: every participant set with its status and order.
      *
+     * @param bool $includeNextParticipantSet also return nextParticipantSets (whose turn it is now).
+     *                                        Adobe omits that key unless asked, even though the spec
+     *                                        lists it, so pass true when you need it.
      * @return array<mixed> raw MembersInfo
      */
-    public function members(string $agreementId): array
+    public function members(string $agreementId, bool $includeNextParticipantSet = false): array
     {
-        return $this->transport->json('GET', 'agreements/' . self::segment($agreementId) . '/members');
+        return $this->transport->json(
+            'GET',
+            'agreements/' . self::segment($agreementId) . '/members',
+            $includeNextParticipantSet ? ['includeNextParticipantSet' => true] : [],
+        );
     }
 
     /**
@@ -364,8 +371,17 @@ final class Agreements extends AbstractResource
     /** @return list<string> */
     private function currentParticipantIds(string $agreementId): array
     {
+        $members = $this->members($agreementId, includeNextParticipantSet: true);
+
+        // Prefer nextParticipantSets; fall back to sets whose status says it is their turn
+        // (WAITING_FOR_MY_SIGNATURE, _APPROVAL, ...), in case Adobe leaves the key out.
+        $sets = $members['nextParticipantSets'] ?? array_filter(
+            $members['participantSets'] ?? [],
+            static fn (array $set) => str_starts_with((string) ($set['status'] ?? ''), 'WAITING_FOR_MY_'),
+        );
+
         $ids = [];
-        foreach ($this->members($agreementId)['nextParticipantSets'] ?? [] as $set) {
+        foreach ($sets as $set) {
             foreach ($set['memberInfos'] ?? [] as $member) {
                 if (isset($member['id'])) {
                     $ids[] = (string) $member['id'];
