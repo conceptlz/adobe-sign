@@ -75,32 +75,24 @@ try {
     }
 
     $step('4. Who signs now');
-    try {
-        foreach ($sign->agreements()->signingUrls($agreementId)->getSigningUrlSetInfos() ?? [] as $set) {
-            foreach ($set->getSigningUrls() ?? [] as $u) {
-                echo "  {$u->getEmail()}: {$u->getEsignUrl()}\n";
-            }
-        }
-    } catch (NotFoundException $e) {
-        echo "  (no signing link yet: {$e->errorCode})\n";
-    }
+    $lastTurn = showTurn($sign, $agreementId, null);
     echo "Signers also get an email from Adobe.\n";
 
     if ($waitMinutes === 0) {
         exit(0);
     }
 
-    $step("5. Waiting up to {$waitMinutes} min for everyone to sign (Ctrl+C to stop)");
+    $step("5. Waiting up to {$waitMinutes} min while people sign (Ctrl+C to stop)");
     $deadline = time() + $waitMinutes * 60;
     while (($status = $sign->agreements()->status($agreementId)) !== 'SIGNED') {
         if (in_array($status, ['CANCELLED', 'EXPIRED', 'ARCHIVED'], true) || time() > $deadline) {
             echo "Stopped waiting: status is $status.\n";
             exit(2);
         }
-        echo '  ' . date('H:i:s') . " $status\n";
-        sleep(20);
+        $lastTurn = showTurn($sign, $agreementId, $lastTurn); // prints only when the turn moves on
+        sleep(10);
     }
-    echo "status: SIGNED\n";
+    echo '  ' . date('H:i:s') . " everyone has signed: SIGNED\n";
 
     $step('6. Download the signed PDF (with audit report)');
     $target = "$outputDir/signed-$agreementId.pdf";
@@ -111,7 +103,45 @@ try {
     }
     fclose($out);
     printf("saved %s (%d bytes)\n", $target, filesize($target));
+
+    $step('7. What happened (agreement events)');
+    foreach ($sign->agreements()->events($agreementId)->getEvents() ?? [] as $event) {
+        printf("  %s  %-24s %s\n", $event->getDate(), $event->getType(), $event->getParticipantEmail());
+    }
 } catch (AdobeSignException $e) {
     fwrite(STDERR, get_class($e) . ': ' . $e->getMessage() . "\n");
     exit(1);
+}
+
+/**
+ * Print whose turn it is and their signing links, when it differs from $previous.
+ *
+ * @return string the current turn, to pass back in next time
+ */
+function showTurn(AdobeSign $sign, string $agreementId, ?string $previous): string
+{
+    $members = $sign->agreements()->members($agreementId, includeNextParticipantSet: true);
+    $emails = [];
+    foreach ($members['nextParticipantSets'] ?? [] as $set) {
+        foreach ($set['memberInfos'] ?? [] as $member) {
+            $emails[] = (string) ($member['email'] ?? '?');
+        }
+    }
+    $turn = $emails === [] ? '(Adobe is still processing)' : implode(' + ', $emails);
+    if ($turn === $previous) {
+        return $turn;
+    }
+
+    echo '  ' . date('H:i:s') . " now waiting for: $turn\n";
+    try {
+        foreach ($sign->agreements()->signingUrls($agreementId)->getSigningUrlSetInfos() ?? [] as $set) {
+            foreach ($set->getSigningUrls() ?? [] as $url) {
+                echo "    sign as {$url->getEmail()}: {$url->getEsignUrl()}\n";
+            }
+        }
+    } catch (NotFoundException) {
+        // not signable yet (AGREEMENT_NOT_EXPOSED while processing); the next poll shows the links
+    }
+
+    return $turn;
 }
