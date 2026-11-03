@@ -7,3 +7,4 @@
 /phpstan-tests.neon.dist export-ignore
 /.gitignore export-ignore
 /phpunit.live.xml.dist export-ignore
+/CLAUDE.md export-ignore
