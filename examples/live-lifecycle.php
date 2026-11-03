@@ -15,6 +15,7 @@
  *   OUTPUT_DIR=.                 where to save the signed PDF
  *   SIGNATURE_LEVEL=ses          ses (default), aes or qes: aes/qes make each signer use a digital ID
  *   QUALIFIED_ISSUERS=a,b        certificate issuers you accept as qualified, for the QES check
+ *   VERIFICATION=email_otp       identity check before signing: none (default), email_otp, kba or adobe_account
  */
 
 declare(strict_types=1);
@@ -24,7 +25,9 @@ require __DIR__ . '/../vendor/autoload.php';
 use Conceptlz\AdobeSign\AdobeSign;
 use Conceptlz\AdobeSign\Builder\AgreementInfo;
 use Conceptlz\AdobeSign\Builder\FileInfo;
+use Conceptlz\AdobeSign\Builder\ParticipantInfo;
 use Conceptlz\AdobeSign\Builder\ParticipantSetInfo;
+use Conceptlz\AdobeSign\Builder\Verification;
 use Conceptlz\AdobeSign\Builder\WebhookInfo;
 use Conceptlz\AdobeSign\Enum\SignatureLevel;
 use Conceptlz\AdobeSign\Exception\AdobeSignException;
@@ -42,6 +45,13 @@ $waitMinutes = (int) (getenv('WAIT_MINUTES') !== false ? getenv('WAIT_MINUTES') 
 $outputDir = rtrim(getenv('OUTPUT_DIR') ?: '.', '/');
 $level = SignatureLevel::tryFrom(strtoupper(getenv('SIGNATURE_LEVEL') ?: 'SES'))
     ?? exit("SIGNATURE_LEVEL must be ses, aes or qes.\n");
+$verification = match (strtolower(getenv('VERIFICATION') ?: 'none')) {
+    'none' => Verification::none(),
+    'email_otp' => Verification::emailOtp(),
+    'kba' => Verification::knowledgeBased(),
+    'adobe_account' => Verification::adobeAccount(),
+    default => exit("VERIFICATION must be none, email_otp, kba or adobe_account.\n"),
+};
 $qualifiedIssuers = array_values(array_filter(array_map('trim', explode(',', getenv('QUALIFIED_ISSUERS') ?: ''))));
 $step = static fn (string $text) => print("\n== $text\n");
 
@@ -58,9 +68,10 @@ try {
         ->message('Live end-to-end check of the conceptlz/adobe-sign SDK. Please sign.')
         ->signatureLevel($level);
     echo "  signature level: {$level->value}" . ($level->requiresDigitalSignature() ? ' (each signer signs with a digital ID)' : '') . "\n";
+    echo "  identity check: {$verification->method}\n";
     foreach (explode(',', $signerSpec) as $i => $group) {
         foreach (explode('+', $group) as $email) {
-            $agreement->participantSet(ParticipantSetInfo::signer(trim($email))->order($i + 1));
+            $agreement->participantSet(ParticipantSetInfo::signer(ParticipantInfo::email(trim($email))->verifyWith($verification))->order($i + 1));
             echo '  order ' . ($i + 1) . ': ' . trim($email) . "\n";
         }
     }
