@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- docs:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>
+(function () {
+  var theme = null;
+  try { theme = localStorage.getItem('docs-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap">
+<link rel="stylesheet" href="assets/css/docs.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<!-- /docs:head -->
+<title>Testing your integration · conceptlz/adobe-sign</title>
+<meta name="description" content="Unit-test code that uses the SDK with a fake PSR-18 client, queued JSON responses, no-wait retries and a frozen clock; test webhook handlers; check requests against Adobe's spec; and run the opt-in live tests.">
+</head>
+<body>
+<!-- docs:topbar -->
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="topbar">
+  <button class="icon-button menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+  </button>
+  <a class="brand" href="index.html">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="15.5" fill="none" stroke="currentColor" stroke-width="0.6" stroke-dasharray="1.5 2"/>
+      <path d="M9.5 24.5c3.2-1.2 5.4-7.6 7.1-11.3 1-2.1 2.4-1.4 1.6 1.2-1.2 3.9-2.8 8.4-1.4 9.3 1.5 1 3.4-4.4 4.6-4.1 1.1.3-.3 3.3.8 3.5 1.3.2 2.6-2.4 3.8-2.2 1 .2.6 1.8 1.6 1.9 1 .1 2.1-.8 3-1.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 28.5h20" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+    </svg>
+    <span class="brand-text"><span class="brand-name">Adobe Sign PHP SDK</span><span class="brand-package">conceptlz/adobe-sign</span></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <div class="search" role="search">
+    <label class="visually-hidden" for="docs-search">Search the documentation</label>
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+    <input class="search-input" id="docs-search" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-search-results" aria-autocomplete="list">
+    <kbd class="search-key">/</kbd>
+    <ul class="search-results" id="docs-search-results" role="listbox" aria-label="Search results" hidden></ul>
+  </div>
+  <a class="topbar-link" href="https://github.com/conceptlz/adobe-sign">GitHub</a>
+  <button class="icon-button theme-toggle" type="button" aria-label="Switch theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+  </button>
+</header>
+<!-- /docs:topbar -->
+<div class="layout">
+<!-- docs:sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Documentation">
+  <div class="nav-group">
+    <p class="nav-group-title">Start here</p>
+    <ul class="nav-list">
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="getting-started.html">Getting started</a></li>
+      <li><a href="concepts.html">How Acrobat Sign works</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Guides</p>
+    <ul class="nav-list">
+      <li><a href="authentication.html">Authentication</a></li>
+      <li><a href="documents.html">Uploading documents</a></li>
+      <li><a href="agreements.html">Creating agreements</a></li>
+      <li><a href="signing-order.html">Signing order</a></li>
+      <li><a href="managing-agreements.html">Managing agreements</a></li>
+      <li><a href="downloads.html">Downloading signed files</a></li>
+      <li><a href="signature-levels.html">Signature levels: SES, AES, QES</a></li>
+      <li><a href="identity-verification.html">Identity verification</a></li>
+      <li><a href="webhooks.html">Webhooks</a></li>
+      <li><a href="other-resources.html">Library, web forms, users, bulk</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Reference</p>
+    <ul class="nav-list">
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="http-layer.html">Data centres, retries &amp; ETags</a></li>
+      <li><a href="errors.html">Errors &amp; exceptions</a></li>
+      <li><a href="models.html">Models &amp; raw data</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Help</p>
+    <ul class="nav-list">
+      <li><a href="testing.html" aria-current="page">Testing your integration</a></li>
+      <li><a href="examples.html">Example scripts</a></li>
+      <li><a href="troubleshooting.html">Troubleshooting</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+    </ul>
+  </div>
+  <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+</nav>
+<div class="nav-backdrop" hidden></div>
+<!-- /docs:sidebar -->
+<main id="content" class="content">
+<article class="doc">
+  <header class="doc-header">
+    <p class="eyebrow">Help</p>
+    <h1>Testing your integration</h1>
+    <p class="lede">
+      Your tests should never email a real person or depend on Adobe being up. Because the SDK talks to the
+      network only through a PSR-18 client you can replace, testing code that uses it is a matter of queueing
+      the responses Adobe would send and checking the requests your code made. This page shows how, plus how to
+      test webhook handlers, check requests against Adobe's spec, and run real end-to-end tests when you want them.
+    </p>
+  </header>
+
+  <h2 id="testing-layers">What to test, and how</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Layer</th><th>Tool</th><th>Network</th><th>Runs in CI</th></tr></thead>
+      <tbody>
+        <tr><td>Your business logic around the SDK</td><td>A fake PSR-18 client with queued responses</td><td>none</td><td>yes</td></tr>
+        <tr><td>Retry and token-refresh paths</td><td>The same, plus a recording <code>Sleeper</code> and a frozen clock</td><td>none</td><td>yes</td></tr>
+        <tr><td>Your webhook endpoint</td><td><code>WebhookHandler</code> with a hand-built PSR-7 request</td><td>none</td><td>yes</td></tr>
+        <tr><td>Payload correctness</td><td>Validate requests against Adobe's OpenAPI spec</td><td>none</td><td>yes</td></tr>
+        <tr><td>The real thing</td><td>Live tests against a developer account</td><td>Adobe</td><td>no: run by hand</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="mock-client">A fake HTTP client</h2>
+  <p>
+    Any PSR-18 implementation that returns responses you choose will do. <code>php-http/mock-client</code> is
+    the simplest, and is what the SDK's own suite uses:
+  </p>
+  <pre><code class="language-bash">composer require --dev php-http/mock-client nyholm/psr7</code></pre>
+  <p>Build the client with the fake injected, and a sleeper that doesn't sleep (explained <a href="#no-wait-retries">below</a>):</p>
+  <figure class="code">
+    <figcaption>tests/AdobeSignTestCase.php</figcaption>
+    <pre><code class="language-php">use Conceptlz\AdobeSign\AdobeSign;
+use Http\Mock\Client as MockClient;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7\Response;
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+
+abstract class AdobeSignTestCase extends TestCase
+{
+    protected MockClient $http;
+    protected Psr17Factory $psr17;
+    protected RecordingSleeper $sleeper;
+
+    protected function setUp(): void
+    {
+        $this-&gt;psr17 = new Psr17Factory();
+        $this-&gt;http = new MockClient($this-&gt;psr17);
+        $this-&gt;http-&gt;setDefaultException(new \LogicException('Unexpected request: no queued response left.'));
+        $this-&gt;sleeper = new RecordingSleeper();
+    }
+
+    protected function sign(): AdobeSign
+    {
+        return AdobeSign::withIntegrationKey(
+            'test-integration-key',
+            httpClient: $this-&gt;http,
+            requestFactory: $this-&gt;psr17,
+            streamFactory: $this-&gt;psr17,
+            sleeper: $this-&gt;sleeper,
+        );
+    }
+
+    /** @param array&lt;string, string&gt; $headers */
+    protected function json(int $status, array $body, array $headers = []): ResponseInterface
+    {
+        return new Response($status, ['Content-Type' =&gt; 'application/json'] + $headers, json_encode($body));
+    }
+
+    protected function queueBaseUris(): void
+    {
+        $this-&gt;http-&gt;addResponse($this-&gt;json(200, [
+            'apiAccessPoint' =&gt; 'https://api.na1.adobesign.com/',
+            'webAccessPoint' =&gt; 'https://secure.na1.adobesign.com/',
+        ]));
+    }
+}</code></pre>
+  </figure>
+  <p>
+    The default exception makes a test fail loudly when your code sends more requests than you queued,
+    instead of receiving an empty 200.
+  </p>
+
+  <h3 id="first-request-base-uris">The first request is always GET /baseUris</h3>
+  <p>
+    A fresh client with an Integration Key discovers its data centre before its first real call, so queue that
+    answer first. If one test builds several clients, give them the same PSR-16 cache (pass
+    <code>cache:</code>) and only the first one asks. OAuth clients whose token carries an
+    <code>api_access_point</code> skip discovery entirely.
+  </p>
+
+  <h3 id="queueing-responses">Queueing responses and asserting on requests</h3>
+  <p>Say your application has a small service that uploads a contract and sends it:</p>
+  <figure class="code">
+    <figcaption>src/ContractSender.php</figcaption>
+    <pre><code class="language-php">final class ContractSender
+{
+    public function __construct(private readonly AdobeSign $sign) {}
+
+    public function send(string $pdfPath, string $clientEmail): string
+    {
+        $documentId = $this-&gt;sign-&gt;transientDocuments()-&gt;upload($pdfPath);
+
+        return $this-&gt;sign-&gt;agreements()-&gt;create(
+            AgreementInfo::create('Services agreement')
+                -&gt;file($documentId)
+                -&gt;signers($clientEmail)
+                -&gt;externalId('contract-' . basename($pdfPath, '.pdf')),
+        );
+    }
+}</code></pre>
+  </figure>
+  <p>Queue one response per request, in order, then inspect what was sent:</p>
+  <figure class="code">
+    <figcaption>tests/ContractSenderTest.php</figcaption>
+    <pre><code class="language-php">final class ContractSenderTest extends AdobeSignTestCase
+{
+    public function test_uploads_then_sends_to_the_client(): void
+    {
+        $pdf = tempnam(sys_get_temp_dir(), 'contract') . '.pdf';
+        file_put_contents($pdf, "%PDF-1.4\n%%EOF\n");
+
+        $this-&gt;queueBaseUris();
+        $this-&gt;http-&gt;addResponse($this-&gt;json(201, ['transientDocumentId' =&gt; 'doc-1']));
+        $this-&gt;http-&gt;addResponse($this-&gt;json(201, ['id' =&gt; 'agr-1']));
+
+        $id = (new ContractSender($this-&gt;sign()))-&gt;send($pdf, 'client@example.com');
+
+        self::assertSame('agr-1', $id);
+
+        [, $upload, $create] = $this-&gt;http-&gt;getRequests();
+        self::assertSame('https://api.na1.adobesign.com/api/rest/v6/transientDocuments', (string) $upload-&gt;getUri());
+        self::assertSame('POST', $create-&gt;getMethod());
+        self::assertSame('/api/rest/v6/agreements', $create-&gt;getUri()-&gt;getPath());
+
+        $create-&gt;getBody()-&gt;rewind();
+        $payload = json_decode((string) $create-&gt;getBody(), true);
+        self::assertSame('doc-1', $payload['fileInfos'][0]['transientDocumentId']);
+        self::assertSame('client@example.com', $payload['participantSetsInfo'][0]['memberInfos'][0]['email']);
+        self::assertSame('IN_PROCESS', $payload['state']);
+    }
+}</code></pre>
+  </figure>
+  <p>Useful things to assert on a request:</p>
+  <ul>
+    <li><code>$request-&gt;getHeaderLine('If-Match')</code>: that an update was guarded with the ETag from a preceding GET (queue the GET response with an <code>ETag</code> header).</li>
+    <li><code>$request-&gt;getHeaderLine('x-api-user')</code>: that <code>asUser()</code> targeted the right person, e.g. <code>email:jane@example.com</code>.</li>
+    <li><code>$request-&gt;getUri()-&gt;getQuery()</code>: list parameters such as <code>pageSize</code> or <code>includeNextParticipantSet=true</code>.</li>
+    <li>The JSON body, after <code>rewind()</code>: the payload your builder calls produced.</li>
+  </ul>
+  <div class="callout callout-tip">
+    <p class="callout-title">Test the payload, not the builder</p>
+    <p>
+      Assert on the JSON your code produced rather than on <code>AgreementInfo</code> calls. The JSON is the
+      contract with Adobe; the builder is just one way to produce it.
+    </p>
+  </div>
+
+  <h3 id="simulating-errors">Simulating errors</h3>
+  <p>Queue an error body exactly as Adobe sends it, and assert on the exception your code ends up with:</p>
+  <pre><code class="language-php">use Conceptlz\AdobeSign\Exception\{NotFoundException, TransportException};
+use Psr\Http\Client\ClientExceptionInterface;
+
+public function test_unknown_agreement(): void
+{
+    $this-&gt;queueBaseUris();
+    $this-&gt;http-&gt;addResponse($this-&gt;json(404, [
+        'code' =&gt; 'INVALID_AGREEMENT_ID',
+        'message' =&gt; 'The Agreement ID specified is invalid.',
+    ]));
+
+    try {
+        $this-&gt;sign()-&gt;agreements()-&gt;get('nope');
+        self::fail('Expected NotFoundException');
+    } catch (NotFoundException $e) {
+        self::assertSame('INVALID_AGREEMENT_ID', $e-&gt;errorCode);
+        self::assertSame('Bearer ***', $e-&gt;request?-&gt;getHeaderLine('Authorization'));
+    }
+}
+
+public function test_network_failure(): void
+{
+    $this-&gt;queueBaseUris();
+    $this-&gt;http-&gt;addException(new class ('Connection refused') extends \RuntimeException implements ClientExceptionInterface {});
+
+    $this-&gt;expectException(TransportException::class);
+    $this-&gt;sign()-&gt;agreements()-&gt;get('agr-1');
+}</code></pre>
+  <p>
+    Codes worth covering: <code>RESOURCE_MODIFIED</code> (412) for your retry-on-stale-ETag path,
+    <code>AGREEMENT_NOT_EXPOSED</code> (404) for "still processing", <code>HYBRID_ROUTING_NOT_ALLOWED</code>
+    (403) if you offer mixed signing orders, and <code>INVALID_ACCESS_TOKEN</code> (401) for a revoked key.
+    The full list is on <a href="errors.html#error-codes">Errors &amp; exceptions</a>.
+  </p>
+
+  <h2 id="no-wait-retries">Retries without waiting</h2>
+  <p>
+    The retry middleware sleeps through the public <code>Conceptlz\AdobeSign\Http\Sleeper</code> interface.
+    Pass an implementation that records the requested delays instead of sleeping, and a test of the 429 path
+    takes milliseconds:
+  </p>
+  <figure class="code">
+    <figcaption>tests/RecordingSleeper.php</figcaption>
+    <pre><code class="language-php">use Conceptlz\AdobeSign\Http\Sleeper;
+
+final class RecordingSleeper implements Sleeper
+{
+    /** @var list&lt;float&gt; */
+    public array $sleeps = [];
+
+    public function sleep(float $seconds): void
+    {
+        $this-&gt;sleeps[] = $seconds;
+    }
+}</code></pre>
+  </figure>
+  <pre><code class="language-php">public function test_waits_as_long_as_adobe_asks(): void
+{
+    $this-&gt;queueBaseUris();
+    $this-&gt;http-&gt;addResponse($this-&gt;json(429, ['code' =&gt; 'THROTTLING_TOO_MANY_REQUESTS', 'message' =&gt; 'Too many requests.'], ['Retry-After' =&gt; '3']));
+    $this-&gt;http-&gt;addResponse($this-&gt;json(200, ['id' =&gt; 'agr-1', 'name' =&gt; 'NDA', 'status' =&gt; 'OUT_FOR_SIGNATURE']));
+
+    $agreement = $this-&gt;sign()-&gt;agreements()-&gt;get('agr-1');
+
+    self::assertSame('OUT_FOR_SIGNATURE', $agreement-&gt;status);
+    self::assertSame([3.0], $this-&gt;sleeper-&gt;sleeps);
+}</code></pre>
+  <p>
+    The SDK's own suite has the same class under the name <code>FakeSleeper</code>. It lives in the
+    package's <code>tests/</code> directory, which isn't installed with the package, so copy the dozen lines
+    above rather than referencing it. If your code shouldn't retry at all in a test, pass
+    <code>options: new ClientOptions(maxRetries: 0)</code> instead.
+  </p>
+
+  <h2 id="frozen-clock">Controlling time for OAuth</h2>
+  <p>
+    Token expiry is decided by a PSR-20 clock. A frozen clock lets you test refresh behaviour without waiting
+    an hour:
+  </p>
+  <figure class="code">
+    <figcaption>tests/FrozenClock.php</figcaption>
+    <pre><code class="language-php">use Psr\Clock\ClockInterface;
+
+final class FrozenClock implements ClockInterface
+{
+    public function __construct(private \DateTimeImmutable $now = new \DateTimeImmutable('2026-11-03T12:00:00Z')) {}
+
+    public function now(): \DateTimeImmutable
+    {
+        return $this-&gt;now;
+    }
+
+    public function advance(int $seconds): void
+    {
+        $this-&gt;now = $this-&gt;now-&gt;modify("+{$seconds} seconds");
+    }
+}</code></pre>
+  </figure>
+  <pre><code class="language-php">use Conceptlz\AdobeSign\AdobeSign;
+use Conceptlz\AdobeSign\Auth\{AccessToken, InMemoryTokenStore, OAuthClient, OAuthConfig, OAuthTokenProvider};
+
+public function test_refreshes_a_token_that_is_about_to_expire(): void
+{
+    $clock = new FrozenClock();
+    $store = new InMemoryTokenStore();
+    $store-&gt;put('user-1', new AccessToken(
+        accessToken: 'old-access-token',
+        refreshToken: 'test-refresh-token',
+        expiresAt: $clock-&gt;now()-&gt;modify('+30 seconds'),      // inside the 60-second margin
+        apiAccessPoint: 'https://api.na1.adobesign.com/',      // so there is no GET /baseUris
+    ));
+
+    $oauth = new OAuthClient(
+        new OAuthConfig('test-client-id', 'test-client-secret', 'https://app.example.com/adobe/callback'),
+        $this-&gt;http, $this-&gt;psr17, $this-&gt;psr17, $clock,
+    );
+    $sign = new AdobeSign(
+        new OAuthTokenProvider($oauth, $store, 'user-1', $clock),
+        httpClient: $this-&gt;http, requestFactory: $this-&gt;psr17, streamFactory: $this-&gt;psr17,
+    );
+
+    $this-&gt;http-&gt;addResponse($this-&gt;json(200, ['access_token' =&gt; 'new-access-token', 'expires_in' =&gt; 3600, 'token_type' =&gt; 'Bearer']));
+    $this-&gt;http-&gt;addResponse($this-&gt;json(200, ['email' =&gt; 'jane@example.com']));
+
+    $sign-&gt;users()-&gt;me();
+
+    [$refresh, $me] = $this-&gt;http-&gt;getRequests();
+    self::assertSame('https://api.na1.adobesign.com/oauth/v2/refresh', (string) $refresh-&gt;getUri());
+    self::assertSame('Bearer new-access-token', $me-&gt;getHeaderLine('Authorization'));
+    self::assertSame('new-access-token', $store-&gt;get('user-1')?-&gt;accessToken);
+}</code></pre>
+  <p>
+    Call <code>$clock-&gt;advance(3600)</code> between two calls to test a token that expires during a
+    long-running job. The values here are test values; never put a real client secret in a test.
+  </p>
+
+  <h2 id="webhook-tests">Testing your webhook handler</h2>
+  <p>
+    <code>WebhookHandler::handle()</code> takes a PSR-7 server request and returns the response plus the parsed
+    event, so you can test your endpoint without Adobe or a tunnel. Build the request by hand, with a body
+    shaped like Adobe's notifications:
+  </p>
+  <pre><code class="language-php">use Conceptlz\AdobeSign\Webhook\{AgreementEvent, WebhookHandler};
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7\ServerRequest;
+
+public function test_completed_agreement_is_acknowledged_and_parsed(): void
+{
+    $psr17 = new Psr17Factory();
+    $handler = new WebhookHandler(['test-client-id']);
+
+    $request = new ServerRequest('POST', 'https://app.example.com/adobe-sign/webhook', [
+        'X-AdobeSign-ClientId' =&gt; 'test-client-id',
+        'Content-Type' =&gt; 'application/json',
+    ], json_encode([
+        'event' =&gt; 'AGREEMENT_WORKFLOW_COMPLETED',
+        'webhookNotificationId' =&gt; 'notif-1',
+        'eventDate' =&gt; '2026-11-03T14:22:10Z',
+        'participantUserEmail' =&gt; 'jane@example.com',
+        'agreement' =&gt; ['id' =&gt; 'agr-1', 'name' =&gt; 'Mutual NDA', 'status' =&gt; 'SIGNED'],
+    ]));
+
+    $result = $handler-&gt;handle($request, $psr17, $psr17);
+
+    self::assertTrue($result-&gt;isAccepted());
+    self::assertSame(200, $result-&gt;response-&gt;getStatusCode());
+    self::assertSame('test-client-id', $result-&gt;response-&gt;getHeaderLine('X-AdobeSign-ClientId'));
+    self::assertInstanceOf(AgreementEvent::class, $result-&gt;event);
+    self::assertTrue($result-&gt;event-&gt;isWorkflowCompleted());
+    self::assertSame('agr-1', $result-&gt;event-&gt;agreementId());
+    self::assertSame('notif-1', $result-&gt;event-&gt;notificationId);
+}
+
+public function test_unknown_client_is_rejected_without_echo(): void
+{
+    $psr17 = new Psr17Factory();
+    $request = new ServerRequest('POST', '/adobe-sign/webhook', ['X-AdobeSign-ClientId' =&gt; 'someone-else'], '{}');
+
+    $result = (new WebhookHandler(['test-client-id']))-&gt;handle($request, $psr17, $psr17);
+
+    self::assertFalse($result-&gt;isAccepted());
+    self::assertSame(403, $result-&gt;response-&gt;getStatusCode());
+    self::assertFalse($result-&gt;response-&gt;hasHeader('X-AdobeSign-ClientId'));
+}</code></pre>
+  <p>Cases worth a test each:</p>
+  <ul>
+    <li>The <strong>verification GET</strong> (no body): <code>$result-&gt;isVerification</code> is true and the echo is present.</li>
+    <li>A <strong>duplicate delivery</strong> with the same <code>webhookNotificationId</code>: your code should ignore the second one.</li>
+    <li>An <strong>unknown event type</strong>: it arrives as <code>UnknownEvent</code>, and your code should acknowledge it rather than fail.</li>
+    <li>An <strong>unreadable body</strong>: the handler answers 400, so Adobe retries.</li>
+  </ul>
+  <p>
+    If your handler acts on events by calling the API (it should re-fetch the agreement rather than trust the
+    payload), combine this with the fake HTTP client above.
+  </p>
+
+  <h2 id="spec-contract">Checking requests against Adobe's spec</h2>
+  <p>
+    A fake client tests your logic, but it can't tell you whether the JSON you send is something Adobe would
+    accept. The SDK's own suite answers that by validating <strong>every request it sends and every canned
+    response it is fed</strong> against Adobe's published OpenAPI document:
+  </p>
+  <ul>
+    <li><code>tests/Support/ContractCheckingClient</code> wraps the mock client and passes each request and
+      response to <code>tests/Support/SpecContract</code>.</li>
+    <li><code>SpecContract</code> finds the matching operation in <code>spec/adobe-sign-v6.json</code> and
+      checks that it exists, that every query parameter is declared, that JSON bodies match the request schema,
+      that multipart parts are known, and that 2xx JSON responses match the declared response schema. It uses
+      <code>justinrainbow/json-schema</code>.</li>
+    <li>The spec is first cleaned up by <code>spec/normalize.php</code>, the same normaliser the model
+      generator uses, so the tests and the models read the spec the same way.</li>
+    <li>After each test, any violation fails it. A test opts out with <code>$checkSpecContract = false</code>
+      only when it deliberately sends something the spec forbids.</li>
+  </ul>
+  <p>
+    This is why the fixtures in the SDK's test suite are realistic: a fixture that drifts from the spec fails
+    the build. Where the live API differs from the spec, the fixture uses the real shape and the difference is
+    documented.
+  </p>
+
+  <h3 id="spec-contract-your-own">Doing the same in your project</h3>
+  <p>
+    <code>tests/</code> and <code>spec/</code> are left out of the installed package to keep
+    <code>vendor/</code> small, so you can't reference these classes from your project. The approach is easy to
+    copy, though: a decorator around your fake client that validates traffic before passing it on.
+  </p>
+  <ol class="steps">
+    <li><span class="step-title">Get the spec</span><p>Download <code>spec/adobe-sign-v6.json</code> (and <code>spec/normalize.php</code>) from the SDK's GitHub repository into your test fixtures, or use Adobe's own copy.</p></li>
+    <li><span class="step-title">Add a validator</span><p><code>composer require --dev justinrainbow/json-schema</code>, then validate each request body against the schema its operation declares.</p></li>
+    <li><span class="step-title">Wrap the client</span><p>Implement <code>Psr\Http\Client\ClientInterface</code>, record violations in <code>sendRequest()</code>, and delegate to the mock client.</p></li>
+    <li><span class="step-title">Fail on violations</span><p>Assert the list is empty in <code>assertPostConditions()</code>, as the SDK's <code>TestCase</code> does.</p></li>
+  </ol>
+  <pre><code class="language-php">final class SpecCheckingClient implements ClientInterface
+{
+    /** @var list&lt;string&gt; */
+    public array $violations = [];
+
+    public function __construct(private readonly ClientInterface $inner, private readonly MySpecValidator $spec) {}
+
+    public function sendRequest(RequestInterface $request): ResponseInterface
+    {
+        $request-&gt;getBody()-&gt;rewind();
+        array_push($this-&gt;violations, ...$this-&gt;spec-&gt;checkRequest($request));
+        $request-&gt;getBody()-&gt;rewind();
+
+        return $this-&gt;inner-&gt;sendRequest($request);
+    }
+}</code></pre>
+  <p>
+    The SDK already guarantees that its own builders produce spec-valid payloads. This is most useful when your
+    code sends raw arrays or uses <code>with()</code> to add fields.
+  </p>
+
+  <h2 id="live-tests">Live tests against a real account</h2>
+  <p>
+    Mocked tests can't catch everything: some behaviour only shows against the real API. The SDK has an opt-in
+    suite in <code>tests/Live</code> that runs against a real Acrobat Sign account. It is never part of
+    <code>composer test</code> or CI.
+  </p>
+  <div class="callout callout-danger">
+    <p class="callout-title">Live tests send real emails</p>
+    <p>
+      Every agreement they create is sent to the addresses in <code>ADOBE_SIGN_TEST_SIGNERS</code>, and Adobe
+      emails those people. Use only addresses you control, ideally on a free developer account. Every agreement
+      a test creates is cancelled afterwards, even when the test fails, but the emails have already gone.
+    </p>
+  </div>
+  <ol class="steps">
+    <li><span class="step-title">Clone and install</span><p>Live tests run from a checkout of the SDK, not from <code>vendor/</code>.</p>
+      <pre><code class="language-bash">git clone https://github.com/conceptlz/adobe-sign.git
+cd adobe-sign
+composer install</code></pre></li>
+    <li><span class="step-title">Create a .env</span><p>The suite reads <code>.env</code> from the package directory (or, in the development monorepo, from its root). Keep the file out of version control and readable only by you.</p>
+      <pre><code class="language-dotenv">ADOBE_SIGN_INTEGRATION_KEY=your-integration-key
+ADOBE_SIGN_TEST_SIGNERS=signer-one@example.com,signer-two@example.com,signer-three@example.com
+
+# Optional
+ADOBE_SIGN_LIVE_DEBUG=1                         # log method, path and status to stderr
+ADOBE_SIGN_SIGNED_AGREEMENT_ID=CBJCHBCAABAA...  # an agreement your test signers completed</code></pre></li>
+    <li><span class="step-title">Run</span>
+      <pre><code class="language-bash">composer test:live</code></pre>
+      <p>From the monorepo root: <code>composer --working-dir=packages/adobe-sign test:live</code>. Without a key the whole suite is skipped; tests that need more signers than you listed are skipped individually.</p></li>
+  </ol>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Test class</th><th>What it checks against the real API</th></tr></thead>
+      <tbody>
+        <tr><td><code>ConnectionTest</code></td><td>The key is valid, the data centre is discovered and then used; agreement lists page lazily</td></tr>
+        <tr><td><code>SigningOrderTest</code></td><td>Sequential, parallel and mixed orders, checked server-side by who can sign at each step</td></tr>
+        <tr><td><code>AgreementOperationsTest</code></td><td>Send, download and save, remind, inspect, cancel with <code>If-Match</code>; draft then send</td></tr>
+        <tr><td><code>SignatureLevelTest</code></td><td>AES request stored and reported by evidence; email OTP stored; a refused identity method becomes <code>AccountCapabilityException</code>; evidence on a completed agreement</td></tr>
+        <tr><td><code>ErrorsTest</code></td><td>Real error codes map to the right exceptions, and the key is redacted from them</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The live suite is where the SDK's knowledge of the API's quirks comes from: <code>nextParticipantSets</code>
+    missing unless asked for, ETags going stale after a state change, <code>providerName</code> instead of
+    <code>cloudProviderName</code>. Each one found this way also has a mocked regression test, so CI keeps it
+    fixed.
+  </p>
+
+  <h3 id="live-tests-your-own">Live tests for your own application</h3>
+  <p>The same pattern works for your integration:</p>
+  <ul>
+    <li>Skip unless a key is configured, so CI and other developers aren't affected.</li>
+    <li>Keep a list of every agreement a test creates and cancel them in a teardown that runs even on failure;
+      the SDK's <code>tests/Live/LiveTestCase.php</code> is a compact example to copy.</li>
+    <li>Poll for status after creating, because Adobe processes documents asynchronously.</li>
+    <li>Retry a cancel once on <code>PreconditionFailedException</code> after a fresh <code>get()</code>.</li>
+    <li>Never sign on anyone's behalf from a test; signing is for the people who receive the emails.</li>
+  </ul>
+  <p>
+    For a hands-on run where a person actually signs, use <code>examples/live-lifecycle.php</code>
+    (<a href="examples.html#live-lifecycle">Example scripts</a>).
+  </p>
+
+  <h2 id="testing-laravel">Testing in Laravel</h2>
+  <p>
+    The Laravel bridge binds the client in the container, so you can swap in a client built as above. Its own
+    testing guide covers facades, fake webhooks and queued listeners:
+    <a href="https://conceptlz.github.io/adobe-sign-laravel/testing.html">Testing your application</a>.
+  </p>
+
+  <h2 id="testing-questions">Common questions</h2>
+  <div class="faq">
+    <details id="testing-faq-mock-adobe">
+      <summary>Do I need a mock server, like WireMock?</summary>
+      <div class="faq-answer">
+        <p>
+          No. Because the SDK takes any PSR-18 client, a fake client in the same process does the job with no
+          ports, no containers and no flakiness. A mock server only makes sense if you want to test across
+          processes.
+        </p>
+      </div>
+    </details>
+    <details id="testing-faq-fixtures">
+      <summary>Where can I get realistic response bodies?</summary>
+      <div class="faq-answer">
+        <p>
+          The SDK's repository has spec-validated fixtures in <code>tests/Fixtures</code> (agreements, members,
+          events, webhooks, errors). Or record your own: run a live call with a middleware that dumps the
+          response body, then strip any personal data before committing it.
+        </p>
+      </div>
+    </details>
+    <details id="testing-faq-count-requests">
+      <summary>How do I assert that my code didn't make extra requests?</summary>
+      <div class="faq-answer">
+        <p>
+          <code>self::assertCount(3, $this-&gt;http-&gt;getRequests())</code>. Set a default exception on the mock
+          client (as in <a href="#mock-client">the base test case</a>) so an unexpected extra request fails the
+          test immediately.
+        </p>
+      </div>
+    </details>
+    <details id="testing-faq-live-in-ci">
+      <summary>Should I run live tests in CI?</summary>
+      <div class="faq-answer">
+        <p>
+          Generally not. They send real emails, depend on Adobe's availability and use your rate limit. Run them
+          by hand before a release or after changing how you call the API, against a developer account.
+        </p>
+      </div>
+    </details>
+    <details id="testing-faq-developer-account">
+      <summary>Is a free developer account enough for testing?</summary>
+      <div class="faq-answer">
+        <p>
+          For most things, yes. Agreement names get a <code>[DEMO USE ONLY]</code> prefix, and features that
+          depend on plan or settings (hybrid routing, government ID, digital-signature providers) may be off, in
+          which case you get <code>AccountCapabilityException</code>.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <ul class="next-links">
+    <li><a href="examples.html"><strong>Example scripts</strong><span>Runnable scripts, including an offline dry run.</span></a></li>
+    <li><a href="errors.html"><strong>Errors &amp; exceptions</strong><span>Every exception your tests might expect.</span></a></li>
+    <li><a href="troubleshooting.html"><strong>Troubleshooting</strong><span>When a test passes and production doesn't.</span></a></li>
+  </ul>
+</article>
+<!-- docs:pager -->
+<nav class="pager" aria-label="Previous and next pages">
+  <a class="pager-prev" href="models.html" rel="prev"><span class="pager-label">Previous</span><span class="pager-title">Models &amp; raw data</span></a>
+  <a class="pager-next" href="examples.html" rel="next"><span class="pager-label">Next</span><span class="pager-title">Example scripts</span></a>
+</nav>
+<!-- /docs:pager -->
+</main>
+<aside class="toc" aria-label="On this page"></aside>
+</div>
+<!-- docs:footer -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>conceptlz/adobe-sign · MIT licensed · <a href="https://github.com/conceptlz/adobe-sign">Source on GitHub</a></p>
+    <p>An independent SDK, not affiliated with or endorsed by Adobe. Adobe and Acrobat Sign are trademarks of Adobe Inc.</p>
+  </div>
+</footer>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/docs.js"></script>
+<!-- /docs:footer -->
+</body>
+</html>

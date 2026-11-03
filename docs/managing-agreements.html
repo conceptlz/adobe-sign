@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- docs:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>
+(function () {
+  var theme = null;
+  try { theme = localStorage.getItem('docs-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap">
+<link rel="stylesheet" href="assets/css/docs.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<!-- /docs:head -->
+<title>Managing agreements · conceptlz/adobe-sign</title>
+<meta name="description" content="Read, list, track, remind, update, cancel and copy Acrobat Sign agreements with the PHP SDK, including how ETags and If-Match protect updates in practice.">
+</head>
+<body>
+<!-- docs:topbar -->
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="topbar">
+  <button class="icon-button menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+  </button>
+  <a class="brand" href="index.html">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="15.5" fill="none" stroke="currentColor" stroke-width="0.6" stroke-dasharray="1.5 2"/>
+      <path d="M9.5 24.5c3.2-1.2 5.4-7.6 7.1-11.3 1-2.1 2.4-1.4 1.6 1.2-1.2 3.9-2.8 8.4-1.4 9.3 1.5 1 3.4-4.4 4.6-4.1 1.1.3-.3 3.3.8 3.5 1.3.2 2.6-2.4 3.8-2.2 1 .2.6 1.8 1.6 1.9 1 .1 2.1-.8 3-1.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 28.5h20" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+    </svg>
+    <span class="brand-text"><span class="brand-name">Adobe Sign PHP SDK</span><span class="brand-package">conceptlz/adobe-sign</span></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <div class="search" role="search">
+    <label class="visually-hidden" for="docs-search">Search the documentation</label>
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+    <input class="search-input" id="docs-search" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-search-results" aria-autocomplete="list">
+    <kbd class="search-key">/</kbd>
+    <ul class="search-results" id="docs-search-results" role="listbox" aria-label="Search results" hidden></ul>
+  </div>
+  <a class="topbar-link" href="https://github.com/conceptlz/adobe-sign">GitHub</a>
+  <button class="icon-button theme-toggle" type="button" aria-label="Switch theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+  </button>
+</header>
+<!-- /docs:topbar -->
+<div class="layout">
+<!-- docs:sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Documentation">
+  <div class="nav-group">
+    <p class="nav-group-title">Start here</p>
+    <ul class="nav-list">
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="getting-started.html">Getting started</a></li>
+      <li><a href="concepts.html">How Acrobat Sign works</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Guides</p>
+    <ul class="nav-list">
+      <li><a href="authentication.html">Authentication</a></li>
+      <li><a href="documents.html">Uploading documents</a></li>
+      <li><a href="agreements.html">Creating agreements</a></li>
+      <li><a href="signing-order.html">Signing order</a></li>
+      <li><a href="managing-agreements.html" aria-current="page">Managing agreements</a></li>
+      <li><a href="downloads.html">Downloading signed files</a></li>
+      <li><a href="signature-levels.html">Signature levels: SES, AES, QES</a></li>
+      <li><a href="identity-verification.html">Identity verification</a></li>
+      <li><a href="webhooks.html">Webhooks</a></li>
+      <li><a href="other-resources.html">Library, web forms, users, bulk</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Reference</p>
+    <ul class="nav-list">
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="http-layer.html">Data centres, retries &amp; ETags</a></li>
+      <li><a href="errors.html">Errors &amp; exceptions</a></li>
+      <li><a href="models.html">Models &amp; raw data</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Help</p>
+    <ul class="nav-list">
+      <li><a href="testing.html">Testing your integration</a></li>
+      <li><a href="examples.html">Example scripts</a></li>
+      <li><a href="troubleshooting.html">Troubleshooting</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+    </ul>
+  </div>
+  <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+</nav>
+<div class="nav-backdrop" hidden></div>
+<!-- /docs:sidebar -->
+<main id="content" class="content">
+<article class="doc">
+  <header class="doc-header">
+    <p class="eyebrow">Guides</p>
+    <h1>Managing agreements</h1>
+    <p class="lede">
+      Once an agreement is out for signature, your application needs to follow it: whose turn it is,
+      what happened, a nudge for someone who hasn't signed, a corrected message, a cancellation. This
+      page covers every <code>agreements()</code> method apart from creating
+      (<a href="agreements.html">Creating agreements</a>) and downloading
+      (<a href="downloads.html">Downloading signed files</a>).
+    </p>
+  </header>
+
+  <h2 id="at-a-glance">At a glance</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Task</th><th>Method</th><th>Endpoint</th></tr></thead>
+      <tbody>
+        <tr><td>Read one agreement</td><td><code>get($id)</code>, <code>status($id)</code></td><td><span class="endpoint"><b>GET</b> /agreements/{id}</span></td></tr>
+        <tr><td>List agreements</td><td><code>all()</code></td><td><span class="endpoint"><b>GET</b> /agreements</span></td></tr>
+        <tr><td>Who is involved, whose turn</td><td><code>members($id)</code></td><td><span class="endpoint"><b>GET</b> /agreements/{id}/members</span></td></tr>
+        <tr><td>Audit history</td><td><code>events($id)</code></td><td><span class="endpoint"><b>GET</b> /agreements/{id}/events</span></td></tr>
+        <tr><td>Remind now / list reminders</td><td><code>sendReminder($id)</code>, <code>reminders($id)</code></td><td><span class="endpoint"><b>POST</b> / <b>GET</b> /agreements/{id}/reminders</span></td></tr>
+        <tr><td>Change details</td><td><code>update($id, $info)</code></td><td><span class="endpoint"><b>PUT</b> /agreements/{id}</span></td></tr>
+        <tr><td>Send a draft, cancel, restart</td><td><code>updateState()</code>, <code>cancel()</code></td><td><span class="endpoint"><b>PUT</b> /agreements/{id}/state</span></td></tr>
+        <tr><td>Embedded signing links</td><td><code>signingUrls()</code>, <code>signingUrlFor()</code></td><td><span class="endpoint"><b>GET</b> /agreements/{id}/signingUrls</span></td></tr>
+        <tr><td>Adobe's own pages</td><td><code>views($id)</code></td><td><span class="endpoint"><b>POST</b> /agreements/{id}/views</span></td></tr>
+        <tr><td>Duplicate as a draft</td><td><code>copy($id)</code></td><td><span class="endpoint"><b>POST</b> /agreements/{id}/copy</span></td></tr>
+        <tr><td>Form fields and entered data</td><td><code>formFields($id)</code>, <code>formData($id)</code></td><td><span class="endpoint"><b>GET</b> /agreements/{id}/formFields</span></td></tr>
+        <tr><td>Signature level actually reached</td><td><code>signatureEvidence($id)</code></td><td>see <a href="signature-levels.html">Signature levels</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Every method that calls the API throws an <code>ApiException</code> subclass on an error response
+    and <code>TransportException</code> when no response arrives; the exceptions specific to a method
+    are listed with it below. The full list is on <a href="errors.html">Errors &amp; exceptions</a>.
+  </p>
+
+  <h2 id="reading-an-agreement">Reading an agreement</h2>
+  <div class="api" id="api-agreements-get">
+    <pre class="api-signature">agreements()-&gt;get(string $agreementId): Agreement<span class="endpoint"><b>GET</b> /agreements/{agreementId}</span></pre>
+    <div class="api-body">
+      <p>
+        Returns <code>Conceptlz\AdobeSign\Model\Agreement</code>, a small hand-written model with the
+        fields most callers need, plus the full response. The response's ETag is kept on the model and
+        remembered by the client, so a later <code>update()</code> or <code>updateState()</code> sends it
+        as <code>If-Match</code> (see <a href="#etags-in-practice">ETags in practice</a>).
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">$agreement = $sign-&gt;agreements()-&gt;get($agreementId);
+
+$agreement-&gt;name;            // "Master Services Agreement"
+$agreement-&gt;status;          // "OUT_FOR_SIGNATURE"
+$agreement-&gt;isSigned();      // status === 'SIGNED'
+$agreement-&gt;isOutForSignature();
+
+$details = $agreement-&gt;details();   // Generated\Model\FetchedAgreementInfo, every field in the spec
+$details-&gt;getParticipantSetsInfo();
+$agreement-&gt;raw['locale'];          // or the decoded JSON, untouched</code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Property</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>$id</code>, <code>$name</code></td><td><code>string</code></td><td>Missing strings become <code>""</code>.</td></tr>
+        <tr><td><code>$status</code></td><td><code>string</code></td><td><code>OUT_FOR_SIGNATURE</code>, <code>SIGNED</code>, <code>CANCELLED</code>, <code>EXPIRED</code>, <code>DOCUMENTS_NOT_YET_PROCESSED</code>, … Kept as a string because Adobe adds values without a version bump.</td></tr>
+        <tr><td><code>$signatureType</code></td><td><code>?string</code></td><td><code>ESIGN</code> or <code>WRITTEN</code>.</td></tr>
+        <tr><td><code>$senderEmail</code></td><td><code>?string</code></td><td></td></tr>
+        <tr><td><code>$createdDate</code>, <code>$expirationTime</code></td><td><code>?string</code></td><td>ISO 8601, as Adobe sent them.</td></tr>
+        <tr><td><code>$etag</code></td><td><code>?string</code></td><td>The response's <code>ETag</code> header.</td></tr>
+        <tr><td><code>$raw</code></td><td><code>array</code></td><td>The decoded response body.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <code>status($agreementId)</code> is a shortcut for <code>get($agreementId)-&gt;status</code>. It makes
+    the same request, so it also refreshes the remembered ETag.
+  </p>
+  <div class="callout callout-warning">
+    <p class="callout-title">The first seconds after sending</p>
+    <p>
+      Adobe processes documents asynchronously. Straight after <code>create()</code> the status is usually
+      <code>DOCUMENTS_NOT_YET_PROCESSED</code>, some calls answer <code>AGREEMENT_NOT_EXPOSED</code> or
+      <code>AGREEMENT_NOT_SIGNABLE</code>, and even once the status reads <code>OUT_FOR_SIGNATURE</code>
+      the participant data can lag for a few seconds. If you need to act immediately, poll with a short
+      back-off or, better, wait for a <a href="webhooks.html">webhook</a>.
+    </p>
+  </div>
+
+  <h2 id="listing-agreements">Listing agreements</h2>
+  <div class="api" id="api-agreements-all">
+    <pre class="api-signature">agreements()-&gt;all(int $pageSize = 100, ?string $externalId = null, ?string $groupId = null, ?bool $showHiddenAgreements = null): \Generator<span class="endpoint"><b>GET</b> /agreements</span></pre>
+    <div class="api-body">
+      <p>
+        Yields <code>Conceptlz\AdobeSign\Model\AgreementSummary</code> objects. Pages are fetched lazily:
+        nothing is requested until you start iterating, and the next page only when you reach the end of
+        the current one. <code>$pageSize</code> is the number of rows per request, not a limit on the total.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">// Every agreement visible to the caller, page by page
+foreach ($sign-&gt;agreements()-&gt;all() as $summary) {
+    printf("%s  %-28s %s\n", $summary-&gt;displayDate, $summary-&gt;status, $summary-&gt;name);
+}
+
+// Find the agreement(s) you created with -&gt;externalId('crm-deal-42')
+foreach ($sign-&gt;agreements()-&gt;all(externalId: 'crm-deal-42') as $summary) {
+    $agreementId = $summary-&gt;id;
+}
+
+// Only the first 20, without fetching more pages than needed
+foreach (new LimitIterator($sign-&gt;agreements()-&gt;all(pageSize: 20), 0, 20) as $summary) {
+    // ...
+}</code></pre>
+  <p>
+    <code>AgreementSummary</code> has <code>$id</code>, <code>$name</code>, <code>$status</code>,
+    <code>$type</code> (<code>AGREEMENT</code>, <code>MEGASIGN_CHILD</code>,
+    <code>WIDGET_INSTANCE</code>), <code>$groupId</code>, <code>$displayDate</code>, <code>$hidden</code>
+    and <code>$raw</code>, plus <code>details()</code> for the generated <code>AgreementAgreement</code>
+    model.
+  </p>
+  <p>
+    The <code>status</code> in a list row is <em>relative to the caller</em>: the same agreement can be
+    <code>WAITING_FOR_MY_SIGNATURE</code> for one user and <code>OUT_FOR_SIGNATURE</code> for the sender.
+    Use <code>get()</code> for the agreement's own status.
+  </p>
+  <p>
+    Breaking out of a <code>foreach</code> stops the paging, so searching a large account is cheap when
+    the match is near the top. Avoid <code>iterator_to_array()</code> on a big account: it downloads every
+    page. All
+    list methods in the SDK work the same way (see <a href="other-resources.html#paging">the paging
+    pattern</a>).
+  </p>
+
+  <h2 id="members">Participants and whose turn it is</h2>
+  <div class="api" id="api-agreements-members">
+    <pre class="api-signature">agreements()-&gt;members(string $agreementId, bool $includeNextParticipantSet = false): array<span class="endpoint"><b>GET</b> /agreements/{agreementId}/members</span></pre>
+    <div class="api-body">
+      <p>
+        Returns the decoded <code>MembersInfo</code> as an array: every participant set with its role,
+        order, status and members. Pass <code>includeNextParticipantSet: true</code> to also get
+        <code>nextParticipantSets</code>, the sets whose turn it is now. Adobe leaves that key out unless
+        asked, even though the spec lists it.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">$members = $sign-&gt;agreements()-&gt;members($agreementId, includeNextParticipantSet: true);
+
+foreach ($members['participantSets'] as $set) {
+    // $set['role'] SIGNER, $set['order'] 1, $set['status'] WAITING_FOR_MY_SIGNATURE / NOT_YET_VISIBLE / COMPLETED
+    foreach ($set['memberInfos'] as $member) {
+        echo "{$set['order']}. {$member['email']} ({$set['status']})\n";
+    }
+}
+
+$waitingOn = array_merge(...array_map(
+    fn (array $set) =&gt; array_column($set['memberInfos'], 'email'),
+    $members['nextParticipantSets'] ?? [],
+));</code></pre>
+  <p>
+    Each member has an <code>id</code> (the participant id used by <code>sendReminder()</code> and the
+    <code>participantId</code> download options), an <code>email</code> and a
+    <code>securityOption.authenticationMethod</code> showing the identity check that applies. The
+    sender is under <code>senderInfo</code>.
+  </p>
+
+  <h2 id="events">The event history</h2>
+  <div class="api" id="api-agreements-events">
+    <pre class="api-signature">agreements()-&gt;events(string $agreementId): AgreementEventList<span class="endpoint"><b>GET</b> /agreements/{agreementId}/events</span></pre>
+    <div class="api-body">
+      <p>
+        The agreement's audit history as generated models: created, emailed, viewed, identity checked,
+        signed, completed, and so on. It is the same information as the audit report, in structured form.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">foreach ($sign-&gt;agreements()-&gt;events($agreementId)-&gt;getEvents() ?? [] as $event) {
+    printf(
+        "%s  %-24s %s\n",
+        $event-&gt;getDate(),
+        $event-&gt;getType(),            // CREATED, EMAIL_OTP_AUTHENTICATED, DOCUMENTS_VIEWED, ACTION_COMPLETED, DIGSIGNED, ...
+        $event-&gt;getParticipantEmail(),
+    );
+}</code></pre>
+  <p>
+    Event types are strings, not an enum. Useful ones include <code>ACTION_COMPLETED</code> (someone
+    signed or approved), <code>DIGSIGNED</code> (a certificate-based signature, see
+    <a href="signature-levels.html#live-example">a real AES</a>), <code>EMAIL_OTP_AUTHENTICATED</code>
+    (see <a href="identity-verification.html">Identity verification</a>) and
+    <code>DOCUMENTS_VIEWED</code>. The live API sends some fields the generated model doesn't know
+    (<code>digitalSignatureInfo.providerName</code>, for example); if you need those, decode the raw
+    response yourself or use <code>signatureEvidence()</code>, which reads both spellings.
+  </p>
+
+  <h2 id="reminders">Reminders</h2>
+  <div class="api" id="api-agreements-send-reminder">
+    <pre class="api-signature">agreements()-&gt;sendReminder(string $agreementId, ?array $participantIds = null, ?string $note = null): ReminderCreationResult<span class="endpoint"><b>POST</b> /agreements/{agreementId}/reminders</span></pre>
+    <div class="api-body">
+      <p>
+        Sends a one-off reminder now. With <code>$participantIds</code> left as <code>null</code>, the SDK
+        works out who to remind: it calls <code>members()</code> with
+        <code>includeNextParticipantSet: true</code> and takes the member ids of
+        <code>nextParticipantSets</code>. If Adobe leaves that key out, it falls back to every participant
+        set whose status starts with <code>WAITING_FOR_MY_</code> (<code>WAITING_FOR_MY_SIGNATURE</code>,
+        <code>WAITING_FOR_MY_APPROVAL</code>, …). That costs one extra request.
+      </p>
+      <p>
+        Throws <code>InvalidArgumentException</code> when nobody is left to remind (for example, the
+        agreement is already signed), instead of sending an empty request.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">// Whoever's turn it is, with a personal note
+$result = $sign-&gt;agreements()-&gt;sendReminder($agreementId, note: 'Friendly nudge: we need this by Friday.');
+
+$result-&gt;id;                   // the reminder's id
+$result-&gt;disabledRecipients;   // participants who won't get it (e.g. they turned reminder emails off)
+
+// Specific people: participant ids from members()
+$sign-&gt;agreements()-&gt;sendReminder($agreementId, ['CBJCHBCAABAAmem2']);
+
+// Reminders on record, optionally by status: ACTIVE, CANCELED or COMPLETE
+foreach ($sign-&gt;agreements()-&gt;reminders($agreementId, 'ACTIVE')-&gt;getReminderInfoList() ?? [] as $reminder) {
+    echo $reminder-&gt;getReminderId(), ' next: ', $reminder-&gt;getNextSentDate(), "\n";
+}</code></pre>
+  <p>
+    For automatic reminders, set them when you create the agreement:
+    <code>-&gt;reminderFrequency(ReminderFrequency::DAILY_UNTIL_SIGNED)</code> (also
+    <code>WEEKDAILY_UNTIL_SIGNED</code>, <code>EVERY_OTHER_DAY_UNTIL_SIGNED</code>,
+    <code>EVERY_THIRD_DAY_UNTIL_SIGNED</code>, <code>EVERY_FIFTH_DAY_UNTIL_SIGNED</code>,
+    <code>WEEKLY_UNTIL_SIGNED</code> and <code>ONCE</code>). When it isn't set, the account's default
+    applies.
+  </p>
+
+  <h2 id="updating">Updating an agreement</h2>
+  <div class="api" id="api-agreements-update">
+    <pre class="api-signature">agreements()-&gt;update(string $agreementId, AgreementInfo|FetchedAgreementInfo|array $info, ?bool $documentUpdateOnly = null): void<span class="endpoint"><b>PUT</b> /agreements/{agreementId}</span></pre>
+    <div class="api-body">
+      <p>
+        Adobe's <code>PUT</code> replaces the agreement's details with what you send, so it expects the
+        <em>whole</em> object, not a patch. The reliable pattern is fetch, modify, put. (The first
+        <code>AgreementInfo</code> in the signature is the generated model of that name, not the
+        builder.) Throws <code>PreconditionFailedException</code> when the agreement changed since you
+        fetched it.
+      </p>
+    </div>
+  </div>
+  <ol class="steps">
+    <li><span class="step-title">Fetch</span><p><code>get()</code> returns the current details and remembers the ETag.</p></li>
+    <li><span class="step-title">Modify</span><p>Change only what you need on the generated <code>FetchedAgreementInfo</code>.</p></li>
+    <li><span class="step-title">Put</span><p><code>update()</code> sends it back with <code>If-Match</code>, so it only succeeds if nobody changed the agreement in between.</p></li>
+  </ol>
+  <pre><code class="language-php">$details = $sign-&gt;agreements()-&gt;get($agreementId)-&gt;details();
+
+$details-&gt;setMessage('Updated: the price in clause 4 now includes VAT.');
+$details-&gt;setExpirationTime('2026-12-31T23:59:59Z');
+
+$sign-&gt;agreements()-&gt;update($agreementId, $details);</code></pre>
+  <p>
+    What Adobe lets you change depends on the agreement's state and on who has already acted; it answers
+    with codes such as <code>MODIFYING_IMMUTABLE_FIELDS</code> (a <code>ValidationException</code>) or
+    <code>AGREEMENT_ALREADY_SIGNED</code> when you try something it doesn't allow. Pass
+    <code>documentUpdateOnly: true</code> when you only replace documents.
+  </p>
+
+  <h2 id="etags-in-practice">ETags in practice</h2>
+  <p>
+    Two people (or a person and a background job) can change the same agreement at nearly the same time.
+    Without protection, the second write silently overwrites the first. Acrobat Sign prevents this with
+    <strong>optimistic concurrency</strong>: every read returns an <code>ETag</code>, a version stamp,
+    and a write that carries <code>If-Match: &lt;etag&gt;</code> is rejected with
+    <code>412 Precondition Failed</code> if the agreement has changed since. The SDK does the bookkeeping
+    for you.
+  </p>
+
+  <h3 id="etag-what-the-sdk-does">What the SDK does</h3>
+  <ul>
+    <li>
+      <strong>Every successful <code>GET</code></strong> that returns an ETag is remembered for its path,
+      and any ETag remembered for paths underneath it is forgotten, because the fresh read supersedes them.
+    </li>
+    <li>
+      <strong>Every <code>PUT</code> or <code>DELETE</code></strong> without an <code>If-Match</code> header
+      gets the ETag remembered for the same path or, failing that, for the nearest parent.
+      <code>PUT /agreements/{id}/state</code> therefore uses the ETag from
+      <code>GET /agreements/{id}</code>, which is what Adobe expects.
+    </li>
+    <li>
+      <strong>After a successful write</strong>, everything remembered for that resource is forgotten.
+      Only a write to the resource itself (<code>PUT /agreements/{id}</code>) stores the new ETag from
+      its response. A write to a sub-resource such as <code>/state</code> stores nothing, because Adobe
+      changes the parent's ETag too. Reusing it caused 412s in live testing.
+    </li>
+    <li>
+      <strong>A 412</strong> becomes <code>PreconditionFailedException</code> (Adobe's code is usually
+      <code>RESOURCE_MODIFIED</code>).
+    </li>
+  </ul>
+
+  <h3 id="etag-scenarios">What that means for your code</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>You call</th><th>Header sent</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><code>get()</code> then <code>update()</code></td><td><code>If-Match</code> with the fetched ETag</td><td>Succeeds, or 412 if someone else changed it in between.</td></tr>
+        <tr><td><code>get()</code> then <code>cancel()</code></td><td><code>If-Match</code> with the agreement's ETag</td><td>Same protection for state changes.</td></tr>
+        <tr><td><code>update()</code> without a <code>get()</code> first</td><td>no <code>If-Match</code></td><td>An unconditional write: no conflict check.</td></tr>
+        <tr><td><code>updateState()</code> twice in a row</td><td>first with <code>If-Match</code>, second without</td><td>The first write made the ETag stale, so the SDK drops it rather than send it and fail.</td></tr>
+        <tr><td><code>get()</code> right after sending, then <code>update()</code></td><td><code>If-Match</code></td><td>Can get a 412: Adobe is still updating the agreement in the background while it delivers emails.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The ETag memory belongs to the <code>AdobeSign</code> instance (and the copies made with
+    <code>asUser()</code>, which share it) and keeps the most recent 500 paths. In a PHP-FPM request that
+    means "this request"; in a long-running queue worker it lasts longer, which is harmless because an
+    outdated ETag only leads to a 412 and a re-fetch. The ETag of the last read is also on
+    <code>Agreement::$etag</code> if you want to log it. To turn the behaviour off, use
+    <code>new ClientOptions(autoEtag: false)</code>; writes are then always unconditional. See
+    <a href="http-layer.html">Data centres, retries &amp; ETags</a> for the rest of the HTTP pipeline.
+  </p>
+
+  <h3 id="handling-412">Handling a 412</h3>
+  <p>A conflict is not an error in your data; it means "look again". Re-fetch, re-apply your change and retry a couple of times:</p>
+  <figure class="code">
+    <figcaption>Retry on a stale ETag</figcaption>
+    <pre><code class="language-php">use Conceptlz\AdobeSign\AdobeSign;
+use Conceptlz\AdobeSign\Exception\PreconditionFailedException;
+use Conceptlz\AdobeSign\Generated\Model\FetchedAgreementInfo;
+
+/** @param callable(FetchedAgreementInfo): void $change */
+function updateAgreement(AdobeSign $sign, string $agreementId, callable $change, int $attempts = 3): void
+{
+    for ($attempt = 1; ; $attempt++) {
+        $details = $sign-&gt;agreements()-&gt;get($agreementId)-&gt;details();   // fresh data and ETag
+        $change($details);
+
+        try {
+            $sign-&gt;agreements()-&gt;update($agreementId, $details);
+            return;
+        } catch (PreconditionFailedException $e) {
+            if ($attempt &gt;= $attempts) {
+                throw $e;
+            }
+            usleep(500_000 * $attempt);   // Adobe may still be busy with the agreement
+        }
+    }
+}
+
+updateAgreement($sign, $agreementId, fn (FetchedAgreementInfo $d) =&gt; $d-&gt;setMessage('Please sign by Friday.'));</code></pre>
+  </figure>
+
+  <h2 id="changing-state">Changing state</h2>
+  <div class="api" id="api-agreements-update-state">
+    <pre class="api-signature">agreements()-&gt;updateState(string $agreementId, string $state, array $extra = []): void<span class="endpoint"><b>PUT</b> /agreements/{agreementId}/state</span></pre>
+    <div class="api-body">
+      <p>
+        <code>$state</code> is one of <code>AUTHORING</code>, <code>CANCELLED</code>,
+        <code>IN_PROCESS</code>, <code>RESTART</code>, <code>IN_REVISION</code> or <code>PAUSED</code>.
+        <code>$extra</code> is merged into the body for states that need more information. Throws
+        <code>PreconditionFailedException</code> when the agreement changed since it was fetched.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">// Send an agreement created as a draft or in AUTHORING
+$sign-&gt;agreements()-&gt;updateState($agreementId, 'IN_PROCESS');
+
+// Restart with a message to the participants
+$sign-&gt;agreements()-&gt;updateState($agreementId, 'RESTART', [
+    'agreementRestartInfo' =&gt; ['message' =&gt; 'We corrected the delivery address. Please sign again.'],
+]);</code></pre>
+  <p>
+    Which transitions are allowed depends on the current state and the account; Adobe refuses the others
+    with an <code>ApiException</code> whose <code>$errorCode</code> says why (for example
+    <code>OPERATION_NOT_ALLOWED</code> or <code>UNABLE_TO_RESTART_AGREEMENT</code>). Call
+    <code>get()</code> first if you want the write guarded by <code>If-Match</code>.
+  </p>
+
+  <h3 id="cancelling">Cancelling an agreement</h3>
+  <div class="api" id="api-agreements-cancel">
+    <pre class="api-signature">agreements()-&gt;cancel(string $agreementId, ?string $comment = null, bool $notifyOthers = true): void<span class="endpoint"><b>PUT</b> /agreements/{agreementId}/state</span></pre>
+    <div class="api-body">
+      <p>
+        Recalls an agreement that is out for signature: a <code>CANCELLED</code> state change with an
+        <code>agreementCancellationInfo</code>. <code>$comment</code> is shown to participants.
+        <code>$notifyOthers</code> (required by the spec, so the SDK always sends it) controls whether
+        participants are emailed about the cancellation.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">$sign-&gt;agreements()-&gt;get($agreementId);   // optional: guard the cancel with If-Match
+$sign-&gt;agreements()-&gt;cancel($agreementId, 'Sent to the wrong address, a corrected version follows.');
+
+// Quietly, e.g. cleaning up test agreements
+$sign-&gt;agreements()-&gt;cancel($agreementId, notifyOthers: false);</code></pre>
+  <p>
+    A cancelled agreement stays in the account with status <code>CANCELLED</code> and its history. You
+    cannot cancel an agreement that is already signed; Adobe answers with an error.
+  </p>
+
+  <h2 id="signing-urls">Embedded signing links</h2>
+  <div class="api" id="api-agreements-signing-urls">
+    <pre class="api-signature">agreements()-&gt;signingUrls(string $agreementId, ?int $expiry = null, ?string $frameParent = null): SigningUrlResponse<span class="endpoint"><b>GET</b> /agreements/{agreementId}/signingUrls</span></pre>
+    <div class="api-body">
+      <p>
+        E-sign links for whoever's turn it is, so you can send people to the signing page from your own
+        application or embed it. <code>$expiry</code> is the link lifetime in seconds, from 30 to
+        315,360,000 (the account setting applies when <code>null</code>); a value outside that range throws
+        <code>InvalidArgumentException</code> before any request. <code>$frameParent</code> is the domain
+        that will host the page in an iframe.
+      </p>
+      <p>
+        Throws <code>NotFoundException</code> when nobody can sign yet: Adobe answers
+        <code>AGREEMENT_NOT_SIGNABLE</code> while it is still processing documents straight after
+        <code>create()</code>. Retry after a few seconds.
+      </p>
+    </div>
+  </div>
+  <div class="api" id="api-agreements-signing-url-for">
+    <pre class="api-signature">agreements()-&gt;signingUrlFor(string $agreementId, string $email, ?int $expiry = null): ?string<span class="endpoint"><b>GET</b> /agreements/{agreementId}/signingUrls</span></pre>
+    <div class="api-body">
+      <p>The link for one signer (email compared case-insensitively), or <code>null</code> if it isn't their turn.</p>
+    </div>
+  </div>
+  <pre><code class="language-php">use Conceptlz\AdobeSign\Exception\NotFoundException;
+
+try {
+    $url = $sign-&gt;agreements()-&gt;signingUrlFor($agreementId, $user-&gt;email, expiry: 900);
+} catch (NotFoundException $e) {
+    // $e-&gt;errorCode === 'AGREEMENT_NOT_SIGNABLE': still processing; try again shortly
+    $url = null;
+}
+
+if ($url === null) {
+    return view('contract.waiting');      // not their turn (yet)
+}
+return redirect($url);
+
+// All current links, grouped by participant set
+foreach ($sign-&gt;agreements()-&gt;signingUrls($agreementId)-&gt;getSigningUrlSetInfos() ?? [] as $set) {
+    foreach ($set-&gt;getSigningUrls() ?? [] as $link) {
+        echo $link-&gt;getEmail(), ': ', $link-&gt;getEsignUrl(), "\n";
+    }
+}</code></pre>
+  <p>
+    Treat signing links like passwords: anyone holding one can open the signing page (identity checks
+    still apply). Generate them on demand for the logged-in user and keep the expiry short.
+  </p>
+
+  <h2 id="views">Adobe's pages: views</h2>
+  <div class="api" id="api-agreements-views">
+    <pre class="api-signature">agreements()-&gt;views(string $agreementId, string $name = 'ALL', array $configuration = []): AgreementViews<span class="endpoint"><b>POST</b> /agreements/{agreementId}/views</span></pre>
+    <div class="api-body">
+      <p>
+        URLs for Acrobat Sign's own pages about this agreement, to redirect to or embed.
+        <code>$name</code> is one of <code>COMPOSE</code>, <code>MODIFY</code>, <code>PREFILL</code>,
+        <code>AUTHORING</code>, <code>SEND_PROGRESS</code>, <code>POST_CREATE</code>,
+        <code>DOCUMENT</code>, <code>MANAGE</code>, <code>SIGNING</code> or <code>ALL</code>.
+        <code>$configuration</code> adds other <code>AgreementViewInfo</code> fields.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">// Let a sender place fields on an agreement created with -&gt;state(AgreementState::AUTHORING)
+$views = $sign-&gt;agreements()-&gt;views($agreementId, 'AUTHORING', [
+    'commonViewConfiguration' =&gt; ['noChrome' =&gt; true, 'autoLoginUser' =&gt; false, 'locale' =&gt; 'en_GB'],
+]);
+
+foreach ($views-&gt;getAgreementViewList() ?? [] as $view) {
+    echo $view-&gt;getName(), ' ', $view-&gt;getUrl(), ' (expires ', $view-&gt;getExpiration(), ")\n";
+}</code></pre>
+
+  <h2 id="copying">Copying an agreement</h2>
+  <div class="api" id="api-agreements-copy">
+    <pre class="api-signature">agreements()-&gt;copy(string $agreementId): string<span class="endpoint"><b>POST</b> /agreements/{agreementId}/copy</span></pre>
+    <div class="api-body">
+      <p>
+        Creates a new <code>DRAFT</code> with the same documents and participants and returns its id. The
+        original is untouched. Useful for "send again" and for recurring agreements: copy, adjust with
+        <code>update()</code>, then send with <code>updateState($newId, 'IN_PROCESS')</code>.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">$newId = $sign-&gt;agreements()-&gt;copy($agreementId);
+$sign-&gt;agreements()-&gt;updateState($newId, 'IN_PROCESS');</code></pre>
+
+  <h2 id="form-fields-and-data">Form fields and entered data</h2>
+  <div class="api" id="api-agreements-form-fields">
+    <pre class="api-signature">agreements()-&gt;formFields(string $agreementId): AgreementFormFieldsResponse<span class="endpoint"><b>GET</b> /agreements/{agreementId}/formFields</span></pre>
+    <div class="api-body">
+      <p>The fields placed on the agreement (signature boxes, text fields, checkboxes) and their groups.</p>
+    </div>
+  </div>
+  <pre><code class="language-php">foreach ($sign-&gt;agreements()-&gt;formFields($agreementId)-&gt;getFields() ?? [] as $field) {
+    echo $field-&gt;getName(), ' (', $field-&gt;getInputType(), ')', $field-&gt;getRequired() ? ' required' : '', "\n";
+}</code></pre>
+  <p>
+    The <em>values</em> signers typed come from <code>formData($agreementId)</code>, a CSV stream that only
+    the agreement's creator can read. It is covered with the other downloads in
+    <a href="downloads.html#form-data">Downloading signed files</a>.
+  </p>
+
+  <h2 id="acting-as-another-user">Acting for another user</h2>
+  <p>
+    Agreements belong to the user who sent them. With an admin-level token, <code>asUser()</code> gives
+    you a client that acts as someone else in the account, which you need to manage agreements your
+    integration didn't send itself:
+  </p>
+  <pre><code class="language-php">$asSales = $sign-&gt;asUser('email:sales-lead@example.com');
+$asSales-&gt;agreements()-&gt;cancel($agreementId, 'Superseded by the renewal.');</code></pre>
+  <p>See <a href="authentication.html">Authentication</a> for the details.</p>
+
+  <h2 id="managing-agreements-questions">Common questions</h2>
+  <div class="faq">
+    <details id="managing-agreements-faq-412-after-send">
+      <summary>Why did my update fail with PreconditionFailedException right after sending?</summary>
+      <div class="faq-answer">
+        <p>
+          In the first seconds after <code>create()</code>, Adobe keeps changing the agreement while it
+          processes documents and sends emails, so the ETag you just read can already be stale. Wait a
+          moment, fetch again and retry, as in <a href="#handling-412">Handling a 412</a>.
+        </p>
+      </div>
+    </details>
+    <details id="managing-agreements-faq-whose-turn">
+      <summary>How do I find out who still has to sign?</summary>
+      <div class="faq-answer">
+        <p>
+          Call <code>members($id, includeNextParticipantSet: true)</code> and read
+          <code>nextParticipantSets</code>, or look for participant sets whose <code>status</code> starts with
+          <code>WAITING_FOR_MY_</code>. Without the flag Adobe omits <code>nextParticipantSets</code>.
+        </p>
+      </div>
+    </details>
+    <details id="managing-agreements-faq-reminder-nobody">
+      <summary>sendReminder() threw "has no participants awaiting action". Why?</summary>
+      <div class="faq-answer">
+        <p>
+          Nobody's turn is open: the agreement is signed, cancelled or expired, or still being processed.
+          The SDK checks before sending so you don't fire an empty reminder. Check <code>status()</code> first,
+          or pass explicit participant ids.
+        </p>
+      </div>
+    </details>
+    <details id="managing-agreements-faq-change-signer">
+      <summary>Can I change a signer's email after sending?</summary>
+      <div class="faq-answer">
+        <p>
+          Adobe models that as modifying participants, which it allows only in some states and only for
+          people who haven't acted. If <code>update()</code> is refused, the dependable route is to
+          <code>cancel()</code> the agreement and send a corrected one (or <code>copy()</code> it, fix the copy,
+          and send that).
+        </p>
+      </div>
+    </details>
+    <details id="managing-agreements-faq-delete">
+      <summary>Can I delete an agreement?</summary>
+      <div class="faq-answer">
+        <p>
+          The SDK doesn't wrap deletion. Cancel the agreement instead; it stays in the account, marked
+          <code>CANCELLED</code>, with its audit history. Retention and deletion policies are account
+          settings in Acrobat Sign admin.
+        </p>
+      </div>
+    </details>
+    <details id="managing-agreements-faq-poll">
+      <summary>Should I poll status() to find out when an agreement is signed?</summary>
+      <div class="faq-answer">
+        <p>
+          Polling works for scripts and small volumes, but it costs API calls and adds delay. Subscribe to a
+          <a href="webhooks.html">webhook</a> and confirm the status with <code>get()</code> when a
+          notification arrives. Keep a slow poll (say, nightly) as a safety net for missed notifications.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 id="managing-agreements-next">Where next</h2>
+  <ul class="next-links">
+    <li><a href="downloads.html"><strong>Downloading signed files</strong><span>The signed PDF, the audit report and the form data.</span></a></li>
+    <li><a href="webhooks.html"><strong>Webhooks</strong><span>Stop polling: get told when something happens.</span></a></li>
+    <li><a href="signature-levels.html"><strong>Signature levels</strong><span>Check which level each signer reached.</span></a></li>
+    <li><a href="http-layer.html"><strong>Data centres, retries &amp; ETags</strong><span>The HTTP pipeline underneath every call.</span></a></li>
+  </ul>
+</article>
+<!-- docs:pager -->
+<nav class="pager" aria-label="Previous and next pages">
+  <a class="pager-prev" href="signing-order.html" rel="prev"><span class="pager-label">Previous</span><span class="pager-title">Signing order</span></a>
+  <a class="pager-next" href="downloads.html" rel="next"><span class="pager-label">Next</span><span class="pager-title">Downloading signed files</span></a>
+</nav>
+<!-- /docs:pager -->
+</main>
+<aside class="toc" aria-label="On this page"></aside>
+</div>
+<!-- docs:footer -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>conceptlz/adobe-sign · MIT licensed · <a href="https://github.com/conceptlz/adobe-sign">Source on GitHub</a></p>
+    <p>An independent SDK, not affiliated with or endorsed by Adobe. Adobe and Acrobat Sign are trademarks of Adobe Inc.</p>
+  </div>
+</footer>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/docs.js"></script>
+<!-- /docs:footer -->
+</body>
+</html>

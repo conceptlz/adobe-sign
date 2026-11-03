@@ -1,5 +1,7 @@
 # conceptlz/adobe-sign
 
+**Full documentation: [conceptlz.github.io/adobe-sign](https://conceptlz.github.io/adobe-sign/)** (guides, reference, FAQ; also in [`docs/`](docs/index.html)).
+
 A PHP SDK for the [Adobe Acrobat Sign REST API v6](https://secure.na1.adobesign.com/public/docs/restapi/v6).
 Upload documents, send them for e-signature in any signing order, follow progress through webhooks,
 and download the signed PDF. It works in any PHP 8.2+ project.
@@ -201,7 +203,7 @@ builder checks this locally and throws `InvalidArgumentException`, so a bad orde
 **Account setting for mixed orders.** Purely sequential (`1, 2, 3`) and purely parallel (`1, 1, 1`)
 orders always work. Mixing them, e.g. `1` then `2 + 2` then `3`, is called **hybrid routing** and is
 an Acrobat Sign account setting. When it's off, Adobe answers `403 HYBRID_ROUTING_NOT_ALLOWED`
-(an `ApiException`); an account admin can enable it in the account's send settings.
+(an `AccountCapabilityException`); an account admin can enable it in the account's send settings.
 
 Available roles (`ParticipantRole`): `SIGNER`, `APPROVER`, `ACCEPTOR`, `CERTIFIED_RECIPIENT`, `FORM_FILLER`,
 `DELEGATE_TO_*`, `NOTARY_SIGNER`, `ELECTRONIC_SEALER`, `WITNESS`, `HOST`, `IN_PERSON_SIGNER`.

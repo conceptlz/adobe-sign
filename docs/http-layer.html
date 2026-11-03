@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- docs:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>
+(function () {
+  var theme = null;
+  try { theme = localStorage.getItem('docs-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap">
+<link rel="stylesheet" href="assets/css/docs.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<!-- /docs:head -->
+<title>Data centres, retries &amp; ETags · conceptlz/adobe-sign</title>
+<meta name="description" content="How the SDK finds your account's data centre, retries rate-limited requests, sends If-Match from remembered ETags, pages through lists and streams uploads and downloads.">
+</head>
+<body>
+<!-- docs:topbar -->
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="topbar">
+  <button class="icon-button menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+  </button>
+  <a class="brand" href="index.html">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="15.5" fill="none" stroke="currentColor" stroke-width="0.6" stroke-dasharray="1.5 2"/>
+      <path d="M9.5 24.5c3.2-1.2 5.4-7.6 7.1-11.3 1-2.1 2.4-1.4 1.6 1.2-1.2 3.9-2.8 8.4-1.4 9.3 1.5 1 3.4-4.4 4.6-4.1 1.1.3-.3 3.3.8 3.5 1.3.2 2.6-2.4 3.8-2.2 1 .2.6 1.8 1.6 1.9 1 .1 2.1-.8 3-1.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 28.5h20" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+    </svg>
+    <span class="brand-text"><span class="brand-name">Adobe Sign PHP SDK</span><span class="brand-package">conceptlz/adobe-sign</span></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <div class="search" role="search">
+    <label class="visually-hidden" for="docs-search">Search the documentation</label>
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+    <input class="search-input" id="docs-search" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-search-results" aria-autocomplete="list">
+    <kbd class="search-key">/</kbd>
+    <ul class="search-results" id="docs-search-results" role="listbox" aria-label="Search results" hidden></ul>
+  </div>
+  <a class="topbar-link" href="https://github.com/conceptlz/adobe-sign">GitHub</a>
+  <button class="icon-button theme-toggle" type="button" aria-label="Switch theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+  </button>
+</header>
+<!-- /docs:topbar -->
+<div class="layout">
+<!-- docs:sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Documentation">
+  <div class="nav-group">
+    <p class="nav-group-title">Start here</p>
+    <ul class="nav-list">
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="getting-started.html">Getting started</a></li>
+      <li><a href="concepts.html">How Acrobat Sign works</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Guides</p>
+    <ul class="nav-list">
+      <li><a href="authentication.html">Authentication</a></li>
+      <li><a href="documents.html">Uploading documents</a></li>
+      <li><a href="agreements.html">Creating agreements</a></li>
+      <li><a href="signing-order.html">Signing order</a></li>
+      <li><a href="managing-agreements.html">Managing agreements</a></li>
+      <li><a href="downloads.html">Downloading signed files</a></li>
+      <li><a href="signature-levels.html">Signature levels: SES, AES, QES</a></li>
+      <li><a href="identity-verification.html">Identity verification</a></li>
+      <li><a href="webhooks.html">Webhooks</a></li>
+      <li><a href="other-resources.html">Library, web forms, users, bulk</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Reference</p>
+    <ul class="nav-list">
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="http-layer.html" aria-current="page">Data centres, retries &amp; ETags</a></li>
+      <li><a href="errors.html">Errors &amp; exceptions</a></li>
+      <li><a href="models.html">Models &amp; raw data</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Help</p>
+    <ul class="nav-list">
+      <li><a href="testing.html">Testing your integration</a></li>
+      <li><a href="examples.html">Example scripts</a></li>
+      <li><a href="troubleshooting.html">Troubleshooting</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+    </ul>
+  </div>
+  <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+</nav>
+<div class="nav-backdrop" hidden></div>
+<!-- /docs:sidebar -->
+<main id="content" class="content">
+<article class="doc">
+  <header class="doc-header">
+    <p class="eyebrow">Reference</p>
+    <h1>Data centres, retries &amp; ETags</h1>
+    <p class="lede">
+      Every call you make goes through the same small HTTP pipeline. It finds the data centre your account
+      lives in, waits and retries when Adobe throttles you, guards updates with ETags, and keeps large files
+      out of memory. This page explains each step, so you know what the SDK does for you and where its
+      limits are.
+    </p>
+  </header>
+
+  <h2 id="pipeline">The request pipeline</h2>
+  <p>
+    A resource method such as <code>agreements()-&gt;get($id)</code> hands the request to an internal
+    <code>Transport</code>. It adds the bearer token and any <code>x-api-user</code> header, points the
+    URL at your data centre, and sends it through the middleware stack to your PSR-18 client:
+  </p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 330" role="img" aria-label="Your code calls the Transport, which adds the token, resolves the data centre and maps errors. The request then passes through optional custom middleware, the user agent middleware, the retry middleware and the ETag middleware before the PSR-18 client sends it to Acrobat Sign.">
+      <defs>
+        <marker id="arrow-pipeline" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="d-arrowhead" d="M0 0 10 5 0 10z"/></marker>
+        <marker id="arrow-pipeline-brand" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="d-arrowhead-brand" d="M0 0 10 5 0 10z"/></marker>
+      </defs>
+
+      <rect class="d-box" x="10" y="20" width="180" height="56" rx="8"/>
+      <text class="d-text-strong" x="100" y="43" text-anchor="middle">Your code</text>
+      <text class="d-text-mono" x="100" y="63" text-anchor="middle">agreements()-&gt;get()</text>
+
+      <rect class="d-box-brand" x="10" y="110" width="180" height="170" rx="8"/>
+      <text class="d-text-strong" x="100" y="136" text-anchor="middle">Transport</text>
+      <text class="d-text-soft" x="100" y="162" text-anchor="middle">adds the bearer token</text>
+      <text class="d-text-soft" x="100" y="184" text-anchor="middle">resolves the data centre</text>
+      <text class="d-text-soft" x="100" y="206" text-anchor="middle">adds x-api-user</text>
+      <text class="d-text-soft" x="100" y="228" text-anchor="middle">401 / 403: retries once</text>
+      <text class="d-text-soft" x="100" y="250" text-anchor="middle">maps errors to exceptions</text>
+
+      <rect class="d-box-muted" x="235" y="20" width="220" height="40" rx="8"/>
+      <text class="d-text-mono" x="345" y="45" text-anchor="middle">your middleware (optional)</text>
+      <rect class="d-box" x="235" y="75" width="220" height="40" rx="8"/>
+      <text class="d-text-mono" x="345" y="100" text-anchor="middle">UserAgentMiddleware</text>
+      <rect class="d-box" x="235" y="130" width="220" height="40" rx="8"/>
+      <text class="d-text-mono" x="345" y="155" text-anchor="middle">RetryMiddleware</text>
+      <rect class="d-box" x="235" y="185" width="220" height="40" rx="8"/>
+      <text class="d-text-mono" x="345" y="210" text-anchor="middle">EtagMiddleware</text>
+      <rect class="d-box-muted" x="235" y="240" width="220" height="40" rx="8"/>
+      <text class="d-text-mono" x="345" y="265" text-anchor="middle">PSR-18 client</text>
+
+      <text class="d-text-soft" x="475" y="45">metrics, tracing, logging</text>
+      <text class="d-text-soft" x="475" y="100">sets User-Agent if missing</text>
+      <text class="d-text-soft" x="475" y="155">429 / 503: wait, then resend</text>
+      <text class="d-text-soft" x="475" y="210">If-Match on PUT and DELETE</text>
+
+      <rect class="d-box-stamp" x="505" y="240" width="205" height="62" rx="8"/>
+      <text class="d-text-strong" x="607" y="265" text-anchor="middle">Acrobat Sign</text>
+      <text class="d-text-mono" x="607" y="285" text-anchor="middle">api.na4.adobesign.com</text>
+
+      <path class="d-line" d="M100 76V108" marker-end="url(#arrow-pipeline)"/>
+      <path class="d-line-brand" d="M190 140H212V40H233" marker-end="url(#arrow-pipeline-brand)"/>
+      <path class="d-line-brand" d="M345 60V73" marker-end="url(#arrow-pipeline-brand)"/>
+      <path class="d-line-brand" d="M345 115V128" marker-end="url(#arrow-pipeline-brand)"/>
+      <path class="d-line-brand" d="M345 170V183" marker-end="url(#arrow-pipeline-brand)"/>
+      <path class="d-line-brand" d="M345 225V238" marker-end="url(#arrow-pipeline-brand)"/>
+      <path class="d-line-brand" d="M455 271H503" marker-end="url(#arrow-pipeline-brand)"/>
+      <path class="d-line-dashed" d="M235 300H120V282"/>
+      <text class="d-text-soft" x="245" y="320">the response travels back up the same stack</text>
+    </svg>
+    <figcaption>The first middleware in the list is the outermost. Your own middleware, passed through the constructor's <code>middleware</code> argument, sees one call per request, after all retries.</figcaption>
+  </figure>
+  <p>When the response comes back, <code>Transport</code> decides what happens next:</p>
+  <ul>
+    <li><strong>2xx or 304</strong>: the response is returned to the resource method, which decodes it.</li>
+    <li><strong>401</strong>: the token provider is told to <code>invalidate()</code>. If it then hands out a
+      different token (an OAuth provider refreshes), the request is sent once more. An Integration Key can't
+      be refreshed, so it fails straight away.</li>
+    <li><strong>403 with <code>INVALID_API_ACCESS_POINT</code></strong>: the cached data centre is dropped,
+      rediscovered, and the request is sent once more.</li>
+    <li><strong>Anything else</strong>: the error mapper turns it into a typed exception. See
+      <a href="errors.html">Errors &amp; exceptions</a>.</li>
+  </ul>
+  <p>
+    <code>Transport</code>, <code>Pipeline</code> and the three built-in middleware classes are marked
+    <code>@internal</code>: you configure them through <code>ClientOptions</code> and the constructor
+    rather than building them yourself. The <code>Middleware</code> interface and the
+    <code>Sleeper</code> interface are public.
+  </p>
+
+  <h2 id="data-centres">Data-centre discovery</h2>
+  <p>
+    Acrobat Sign stores each account on one data centre, or shard: <code>na1</code>, <code>na4</code>,
+    <code>eu1</code>, <code>jp1</code> and others. API calls must go to that shard's host;
+    a request sent elsewhere is refused with <code>403 INVALID_API_ACCESS_POINT</code>. The SDK finds the
+    right host for you, once, and remembers it.
+  </p>
+
+  <h3 id="how-discovery-works">How the host is found</h3>
+  <ol class="steps">
+    <li><span class="step-title">Ask the token</span><p>An OAuth token carries the account's <code>api_access_point</code> from the OAuth redirect. If there is one, it is used and nothing else happens.</p></li>
+    <li><span class="step-title">Ask the cache</span><p>Otherwise the PSR-16 cache is checked for a root discovered earlier for this account.</p></li>
+    <li><span class="step-title">Ask Adobe</span><p>Otherwise the SDK calls <code>GET /baseUris</code> on the bootstrap host, takes <code>apiAccessPoint</code> from the answer, appends <code>api/rest/v6</code> and stores the result for <code>baseUriTtl</code> seconds.</p></li>
+  </ol>
+  <div class="api" id="api-base-uris">
+    <pre class="api-signature">(automatic, before the first call)<span class="endpoint"><b>GET</b> https://api.adobesign.com/api/rest/v6/baseUris</span></pre>
+    <div class="api-body">
+      <p>Authenticated with the same token as every other call. A typical answer:</p>
+      <pre><code class="language-json">{
+  "apiAccessPoint": "https://api.na4.adobesign.com/",
+  "webAccessPoint": "https://secure.na4.adobesign.com/"
+}</code></pre>
+      <p>
+        Every later request then goes to <code>https://api.na4.adobesign.com/api/rest/v6/…</code>. The
+        access point must be HTTPS; anything else is refused with an <code>ApiException</code>, so a
+        tampered or misconfigured response can never send your token over plain HTTP. A reply without
+        <code>apiAccessPoint</code> is an <code>ApiException</code> too.
+      </p>
+    </div>
+  </div>
+  <p>
+    Because discovery is authenticated, it is also the first place a bad Integration Key shows up: a fresh
+    client with a wrong key fails on <code>GET /baseUris</code> with an <code>AuthenticationException</code>.
+  </p>
+
+  <h3 id="discovery-cache">Cache key and lifetime</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Key</td><td><code>adobe_sign.base_uri.</code> followed by the token provider's <code>cacheKey()</code> (<code>ik_</code> or <code>oauth_</code> plus a 32-character hash prefix)</td></tr>
+        <tr><td>Value</td><td>the API root, e.g. <code>https://api.na4.adobesign.com/api/rest/v6</code></td></tr>
+        <tr><td>Lifetime</td><td><code>ClientOptions::$baseUriTtl</code>, default 86400 seconds</td></tr>
+        <tr><td>Default store</td><td><code>Cache\InMemoryCache</code>, one per client (shared with its <code>asUser()</code> copies)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    With the default store, every new client object discovers again. In a web application that means one
+    extra request per page view, which is why <a href="configuration.html">Configuration</a> recommends a
+    shared cache.
+  </p>
+
+  <h3 id="rediscovery">Rediscovery after INVALID_API_ACCESS_POINT</h3>
+  <p>
+    If an account is moved to another shard, or a cached entry is wrong for any reason, Adobe answers
+    <code>403 INVALID_API_ACCESS_POINT</code>. The SDK then deletes the cache entry, stops trusting the
+    token's own access point for that account, calls <code>GET /baseUris</code> again and resends the
+    request, once. If the retried request fails the same way, the error is thrown as an
+    <code>ApiException</code> with <code>errorCode</code> <code>INVALID_API_ACCESS_POINT</code>.
+  </p>
+
+  <h3 id="oauth-access-point">OAuth tokens and api_access_point</h3>
+  <p>
+    During the OAuth redirect Adobe adds <code>api_access_point</code> to your callback URL, and the SDK
+    stores it on the <code>AccessToken</code>. Because it arrives in a query string anyone could forge,
+    <code>OAuthConfig</code> checks it before use: it must be HTTPS on one of the
+    <code>allowedDomains</code> (by default <code>adobesign.com</code>, <code>echosign.com</code> and
+    <code>adobesigngov.us</code>). Otherwise the SDK throws <code>InvalidArgumentException</code> rather
+    than send your client secret to an unknown host. Tokens refresh and revoke against the same host.
+  </p>
+
+  <h2 id="retries">Retries and rate limits</h2>
+  <p>
+    Acrobat Sign limits how many calls an account can make in a period, and answers
+    <code>429 Too Many Requests</code> (error code <code>THROTTLING_TOO_MANY_REQUESTS</code>) when you go
+    over. It also answers <code>503</code> during short outages. <code>RetryMiddleware</code> waits and
+    resends both, so a short burst doesn't break your code.
+  </p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 230" role="img" aria-label="Timeline of one request. Try 1 gets a 429 with Retry-After 3, so the SDK sleeps 3 seconds. Try 2 gets a 429 with no hint, so it sleeps a random time up to 2 seconds. Try 3 gets 200 OK and the response is returned. A fourth 429 would have been thrown as RateLimitException.">
+      <defs>
+        <marker id="arrow-retry" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="d-arrowhead" d="M0 0 10 5 0 10z"/></marker>
+      </defs>
+      <rect class="d-box" x="20" y="40" width="110" height="44" rx="8"/>
+      <text class="d-text-strong" x="75" y="67" text-anchor="middle">Try 1</text>
+      <text class="d-text-stamp" x="75" y="106" text-anchor="middle">429</text>
+      <text class="d-text-mono" x="75" y="124" text-anchor="middle">Retry-After: 3</text>
+
+      <path class="d-line-dashed" d="M136 62H272" marker-end="url(#arrow-retry)"/>
+      <text class="d-text-soft" x="204" y="52" text-anchor="middle">sleep 3 s</text>
+      <text class="d-text-soft" x="204" y="80" text-anchor="middle">(from the header)</text>
+
+      <rect class="d-box" x="278" y="40" width="110" height="44" rx="8"/>
+      <text class="d-text-strong" x="333" y="67" text-anchor="middle">Try 2</text>
+      <text class="d-text-stamp" x="333" y="106" text-anchor="middle">429</text>
+      <text class="d-text-mono" x="333" y="124" text-anchor="middle">no hint</text>
+
+      <path class="d-line-dashed" d="M394 62H516" marker-end="url(#arrow-retry)"/>
+      <text class="d-text-soft" x="455" y="52" text-anchor="middle">sleep 0–2 s</text>
+      <text class="d-text-soft" x="455" y="80" text-anchor="middle">(backoff, jitter)</text>
+
+      <rect class="d-box-ok" x="522" y="40" width="110" height="44" rx="8"/>
+      <text class="d-text-strong" x="577" y="67" text-anchor="middle">Try 3</text>
+      <text class="d-text-stamp" x="577" y="106" text-anchor="middle">200</text>
+      <text class="d-text-mono" x="577" y="124" text-anchor="middle">returned</text>
+
+      <path class="d-line" d="M20 160H700" marker-end="url(#arrow-retry)"/>
+      <text class="d-text-soft" x="20" y="180">0 s</text>
+      <text class="d-text-soft" x="278" y="180">≈ 3 s</text>
+      <text class="d-text-soft" x="522" y="180">≈ 3–5 s</text>
+      <text class="d-text-soft" x="660" y="180">time</text>
+      <text class="d-text-soft" x="20" y="214">With maxRetries = 3, a fourth 429 in a row would be thrown as RateLimitException.</text>
+    </svg>
+    <figcaption>One logical request, three HTTP attempts. Your code sees only the final 200; the logger sees a warning before each retry.</figcaption>
+  </figure>
+
+  <h3 id="what-is-retried">What is retried</h3>
+  <ul>
+    <li><strong>Statuses 429 and 503</strong>, on any method. Other errors are never retried by the
+      middleware, because repeating a 400 or 404 can't succeed.</li>
+    <li><strong>Only requests whose body can be replayed.</strong> JSON bodies and the multipart upload body
+      are rewindable streams, so they qualify. A one-shot body that can't be rewound is not retried.</li>
+    <li><strong>Network failures are not retried.</strong> A timeout or connection error never produced a
+      response, so it goes straight to you as <code>TransportException</code>. Retry at the job level if you
+      need to; a POST that timed out may still have been processed by Adobe.</li>
+  </ul>
+
+  <h3 id="how-long-it-waits">How long it waits</h3>
+  <p>The delay before each retry comes from the first of these that gives an answer:</p>
+  <ol>
+    <li>The <code>Retry-After</code> header, in seconds (<code>Retry-After: 3</code>) or as an HTTP date.</li>
+    <li>The text "try again in N seconds" in Adobe's error message, which Adobe often sends instead of the header.</li>
+    <li>Exponential backoff with full jitter: a random delay between 0 and
+      <code>min(maxRetryDelay, retryBaseDelay × 2<sup>attempt</sup>)</code>, where <code>attempt</code> counts from 0.</li>
+  </ol>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Retry</th><th>Backoff ceiling with defaults</th><th>With <code>retryBaseDelay: 2.0</code></th></tr></thead>
+      <tbody>
+        <tr><td>1st</td><td>up to 1 s</td><td>up to 2 s</td></tr>
+        <tr><td>2nd</td><td>up to 2 s</td><td>up to 4 s</td></tr>
+        <tr><td>3rd</td><td>up to 4 s</td><td>up to 8 s</td></tr>
+        <tr><td>6th</td><td>up to 32 s</td><td>up to 60 s (capped by <code>maxRetryDelay</code>)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The jitter spreads retries from many workers over time, so they don't all hit Adobe again in the same
+    second. The same rules give <code>RateLimitException::$retryAfter</code> its value.
+  </p>
+
+  <h3 id="when-retries-stop">When retrying stops</h3>
+  <ul>
+    <li><strong>Retries used up.</strong> After <code>maxRetries</code> retries (default 3, so four attempts in
+      all) the last response is returned to <code>Transport</code> and becomes an exception: a
+      <code>RateLimitException</code> for a 429, an <code>ApiException</code> with status 503 for a 503.</li>
+    <li><strong>Adobe asks for too long.</strong> If <code>Retry-After</code> (or the message) asks for more
+      than <code>maxRetryDelay</code> seconds, the middleware doesn't wait at all. You get a
+      <code>RateLimitException</code> at once, with the requested delay in <code>$retryAfter</code>, instead
+      of a web request that blocks for minutes.</li>
+    <li><strong><code>maxRetries: 0</code></strong> turns the middleware into a pass-through.</li>
+  </ul>
+  <pre><code class="language-php">use Conceptlz\AdobeSign\Exception\RateLimitException;
+
+try {
+    $sign-&gt;agreements()-&gt;sendReminder($agreementId);
+} catch (RateLimitException $e) {
+    // Retries are exhausted, or Adobe asked for a long pause. Try again later, not now.
+    $queue-&gt;later($e-&gt;retryAfter ?? 60, new SendReminder($agreementId));
+}</code></pre>
+
+  <h2 id="etags">ETags and If-Match</h2>
+  <p>
+    Adobe gives each version of an agreement, webhook or other resource an ETag. If you send that ETag back
+    in <code>If-Match</code> when you change the resource, Adobe applies the change only if nobody changed
+    it in between, and answers <code>412 Precondition Failed</code> otherwise. That is optimistic
+    concurrency: two workers can't silently overwrite each other. <code>EtagMiddleware</code> does the
+    bookkeeping so your code doesn't have to.
+  </p>
+
+  <h3 id="what-etag-remembers">What it remembers</h3>
+  <ul>
+    <li>After each <strong>successful GET</strong> that returns an <code>ETag</code> header, it stores that
+      ETag under the request path, for example <code>/api/rest/v6/agreements/CBJ…</code>.</li>
+    <li>Before storing, it <strong>forgets everything remembered below that path</strong>. A fresh read of an
+      agreement supersedes an older ETag kept for, say, its <code>/state</code> sub-path.</li>
+    <li>It keeps the <strong>500 most recently stored paths</strong> and drops the oldest beyond that.</li>
+    <li>The memory lives as long as the client and is <strong>shared with its <code>asUser()</code>
+      copies</strong>, which use the same pipeline.</li>
+  </ul>
+
+  <h3 id="if-match-on-writes">If-Match on writes</h3>
+  <p>
+    A <strong>PUT or DELETE</strong> that doesn't already carry <code>If-Match</code> gets the ETag of the
+    same path or, failing that, of its nearest parent down to the item level. So
+    <code>PUT /agreements/{id}/state</code> uses the ETag from <code>GET /agreements/{id}</code>, which is
+    what Adobe expects. A collection's ETag (<code>GET /agreements</code>) is never lent to an item.
+    POST requests never get <code>If-Match</code>. An <code>If-Match</code> you set yourself, in a
+    middleware for example, always wins.
+  </p>
+
+  <h3 id="after-a-write">After a successful write</h3>
+  <p>
+    A write changes the resource, so the ETags held for it are stale. The middleware forgets the resource
+    whose ETag it used and everything below it. It then stores the ETag the write returned
+    <strong>only if the write was to that resource itself</strong> (a root write such as
+    <code>PUT /agreements/{id}</code>). A sub-resource write such as <code>PUT /agreements/{id}/state</code>
+    may return an ETag too, but live testing showed that the next state change must use the agreement's
+    current ETag, so that one is not kept.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Call</th><th>Request</th><th>Remembered afterwards</th></tr></thead>
+      <tbody>
+        <tr><td><code>get($id)</code></td><td><code>GET /agreements/{id}</code></td><td><code>/agreements/{id}</code> → <code>"e1"</code></td></tr>
+        <tr><td><code>update($id, $info)</code></td><td><code>PUT /agreements/{id}</code>, <code>If-Match: "e1"</code></td><td><code>/agreements/{id}</code> → <code>"e2"</code>, if the PUT returned an ETag (a root write keeps it)</td></tr>
+        <tr><td><code>updateState($id, 'IN_PROCESS')</code></td><td><code>PUT /agreements/{id}/state</code>, <code>If-Match: "e2"</code></td><td>nothing for this agreement</td></tr>
+        <tr><td><code>cancel($id)</code></td><td><code>PUT /agreements/{id}/state</code>, no <code>If-Match</code></td><td>sent unguarded, because nothing is remembered</td></tr>
+        <tr><td><code>get($id)</code> then <code>cancel($id)</code></td><td>fresh ETag <code>"e4"</code>, then <code>If-Match: "e4"</code></td><td>the safe pattern</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The habit to build: <strong>read, then write</strong>. Call <code>get()</code> just before an update or
+    state change and the write is guarded with the newest ETag.
+  </p>
+
+  <h3 id="precondition-failed">When the ETag is stale: 412</h3>
+  <p>
+    If someone else changed the resource since your <code>get()</code>, Adobe answers
+    <code>412 RESOURCE_MODIFIED</code> and you get a <code>PreconditionFailedException</code>. Fetch again,
+    reapply your change, and send it once more:
+  </p>
+  <pre><code class="language-php">use Conceptlz\AdobeSign\Exception\PreconditionFailedException;
+
+for ($attempt = 1; ; $attempt++) {
+    $details = $sign-&gt;agreements()-&gt;get($agreementId)-&gt;details();   // fresh ETag
+    $details-&gt;setMessage('Updated instructions');
+    try {
+        $sign-&gt;agreements()-&gt;update($agreementId, $details);       // If-Match sent automatically
+        break;
+    } catch (PreconditionFailedException $e) {
+        if ($attempt === 3) {
+            throw $e;
+        }
+        sleep(2);
+    }
+}</code></pre>
+  <div class="callout callout-warning">
+    <p class="callout-title">412 right after sending is normal</p>
+    <p>
+      For a few seconds after an agreement is sent, Adobe keeps updating it in the background while it
+      delivers emails. An ETag read in that window can already be stale. A short pause and a fresh
+      <code>get()</code> fixes it; the SDK's own live tests cancel this way.
+    </p>
+  </div>
+
+  <h3 id="auto-etag-off">Turning it off</h3>
+  <p>
+    <code>new ClientOptions(autoEtag: false)</code> leaves the middleware out of the pipeline. Writes then go
+    without <code>If-Match</code>, which Adobe accepts, and the last write wins. <code>Agreement::$etag</code>
+    still holds the ETag from <code>get()</code> if you want to send it yourself through a middleware.
+  </p>
+
+  <h2 id="user-agent-header">The User-Agent header</h2>
+  <p>
+    <code>UserAgentMiddleware</code> adds <code>ClientOptions::$userAgent</code>, by default
+    <code>conceptlz-adobe-sign-php/0.3.1</code>, to every request that doesn't already have a
+    <code>User-Agent</code>. It identifies the SDK and its version in Adobe's logs, which helps support find
+    your requests. Prefix your own application name if you like; see
+    <a href="configuration.html">Configuration</a>.
+  </p>
+
+  <h2 id="pagination">Cursor pagination</h2>
+  <p>
+    List endpoints return a page of results and a <code>nextCursor</code>. Every list method in the SDK
+    returns a PHP <code>\Generator</code> that walks those pages lazily:
+  </p>
+  <pre><code class="language-php">foreach ($sign-&gt;agreements()-&gt;all(pageSize: 50) as $summary) {
+    if ($summary-&gt;status === 'WAITING_FOR_MY_SIGNATURE') {
+        echo "{$summary-&gt;name}\n";
+    }
+}</code></pre>
+  <ul>
+    <li><strong>Nothing is fetched until you iterate.</strong> Calling <code>all()</code> sends no request;
+      the first <code>foreach</code> step does. Errors therefore appear inside the loop, not on the line
+      that called <code>all()</code>. Put the <code>try</code> around the loop.</li>
+    <li><strong>The next page is fetched only when you reach it.</strong> <code>break</code> early and the
+      remaining pages are never requested.</li>
+    <li><strong>It stops</strong> when a page has no <code>nextCursor</code>, an empty one, or one it has
+      already seen, so a misbehaving response can't loop forever.</li>
+    <li><strong><code>pageSize</code></strong> sets the items per request (default 100). Larger pages mean
+      fewer calls against your rate limit.</li>
+    <li><strong>A generator runs once.</strong> Call the method again to start over, or use
+      <code>iterator_to_array()</code> if you really need everything in memory.</li>
+  </ul>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Yields</th></tr></thead>
+      <tbody>
+        <tr><td><code>agreements()-&gt;all()</code></td><td><span class="endpoint"><b>GET</b> /agreements</span></td><td><code>Model\AgreementSummary</code></td></tr>
+        <tr><td><code>libraryDocuments()-&gt;all()</code></td><td><span class="endpoint"><b>GET</b> /libraryDocuments</span></td><td>generated model</td></tr>
+        <tr><td><code>widgets()-&gt;all()</code></td><td><span class="endpoint"><b>GET</b> /widgets</span></td><td>generated model</td></tr>
+        <tr><td><code>widgets()-&gt;agreements($widgetId)</code></td><td><span class="endpoint"><b>GET</b> /widgets/{widgetId}/agreements</span></td><td>generated model</td></tr>
+        <tr><td><code>megaSigns()-&gt;all()</code></td><td><span class="endpoint"><b>GET</b> /megaSigns</span></td><td>generated model</td></tr>
+        <tr><td><code>megaSigns()-&gt;agreements($megaSignId)</code></td><td><span class="endpoint"><b>GET</b> /megaSigns/{megaSignId}/agreements</span></td><td>generated model</td></tr>
+        <tr><td><code>users()-&gt;all()</code></td><td><span class="endpoint"><b>GET</b> /users</span></td><td>generated model</td></tr>
+        <tr><td><code>users()-&gt;events($userId)</code></td><td><span class="endpoint"><b>GET</b> /users/{userId}/events</span></td><td>generated model</td></tr>
+        <tr><td><code>webhooks()-&gt;all()</code></td><td><span class="endpoint"><b>GET</b> /webhooks</span></td><td>generated model</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="streaming">Streaming uploads and downloads</h2>
+
+  <h3 id="streaming-uploads">Uploads</h3>
+  <p>
+    <code>transientDocuments()-&gt;upload()</code> accepts a path, an <code>SplFileInfo</code>, an open
+    stream resource or a PSR-7 stream. It builds the multipart body by copying the file in 64 KB chunks
+    into <code>php://temp</code>, which PHP keeps in memory up to 2 MB and moves to a temporary file beyond
+    that. A large PDF therefore never sits in memory as one string. Because that body is rewindable, an
+    upload that hits a 429 is retried with the complete file.
+  </p>
+
+  <h3 id="streaming-downloads">Downloads</h3>
+  <p>
+    Binary endpoints (<code>combinedDocument()</code>, <code>document()</code>, <code>auditTrail()</code>,
+    <code>formData()</code> and their equivalents on other resources) return the response body as a PSR-7
+    <code>StreamInterface</code>. The SDK never converts it to a string. Copy it in chunks, or hand the
+    underlying resource to whatever stores it:
+  </p>
+  <pre><code class="language-php">$pdf = $sign-&gt;agreements()-&gt;combinedDocument($agreementId, attachAuditReport: true);
+
+$out = fopen("/var/app/agreements/$agreementId.pdf", 'wb');
+while (!$pdf-&gt;eof()) {
+    fwrite($out, $pdf-&gt;read(65536));
+}
+fclose($out);
+
+// or: $filesystem-&gt;writeStream("agreements/$agreementId.pdf", $pdf-&gt;detach());</code></pre>
+  <p>
+    Whether the bytes arrive from the network as you read, or are buffered by the HTTP client first, depends
+    on the PSR-18 client you use. A stream can be read once; to read it again, call
+    <code>rewind()</code> if <code>isSeekable()</code> is true, or download again.
+  </p>
+
+  <h2 id="http-layer-questions">Common questions</h2>
+  <div class="faq">
+    <details id="http-layer-faq-which-data-centre">
+      <summary>How do I find out which data centre my account is on?</summary>
+      <div class="faq-answer">
+        <p>
+          Look at the address bar when you sign in to Acrobat Sign: <code>secure.na4.adobesign.com</code>
+          means <code>na4</code>. In code, a small middleware can read <code>$request-&gt;getUri()-&gt;getHost()</code>
+          (the log entries carry only the path). You never need to configure it; the SDK discovers it
+          (<a href="#how-discovery-works">How the host is found</a>).
+        </p>
+      </div>
+    </details>
+    <details id="http-layer-faq-retry-post">
+      <summary>Is it safe that the SDK retries POST requests?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes, for the statuses it retries. A 429 or 503 means Adobe didn't process the request, so sending
+          it again can't create a duplicate. Network errors, where that is less certain, are never retried
+          automatically.
+        </p>
+      </div>
+    </details>
+    <details id="http-layer-faq-etag-missing">
+      <summary>Why did an update go out without If-Match?</summary>
+      <div class="faq-answer">
+        <p>
+          Because the client hadn't read that resource since its last write, or this is a new client object.
+          The memory is per client and is cleared by every successful write. Call <code>get()</code> right
+          before the write (<a href="#after-a-write">After a successful write</a>).
+        </p>
+      </div>
+    </details>
+    <details id="http-layer-faq-count-pages">
+      <summary>How do I count agreements without loading them all?</summary>
+      <div class="faq-answer">
+        <p>
+          The list endpoints don't return a total, so counting means walking every page. Use the largest
+          sensible <code>pageSize</code> and <code>iterator_count()</code>, and cache the result. For a
+          specific agreement, store its id or an <code>externalId</code> and filter with
+          <code>all(externalId: …)</code>.
+        </p>
+      </div>
+    </details>
+    <details id="http-layer-faq-rate-limit-numbers">
+      <summary>What are Adobe's rate limits?</summary>
+      <div class="faq-answer">
+        <p>
+          Adobe sets them per account and plan and doesn't publish one fixed number, so the SDK doesn't assume
+          any. It reacts to what Adobe says: the <code>Retry-After</code> header or the wait time in the
+          error message. If you hit 429s often, batch work into background jobs and use webhooks instead of
+          polling.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <ul class="next-links">
+    <li><a href="errors.html"><strong>Errors &amp; exceptions</strong><span>What each failure turns into, and how to catch it.</span></a></li>
+    <li><a href="configuration.html"><strong>Configuration</strong><span>Tune retries, the cache, ETags and the user agent.</span></a></li>
+    <li><a href="downloads.html"><strong>Downloading signed files</strong><span>Combined PDFs, audit reports and form data.</span></a></li>
+  </ul>
+</article>
+<!-- docs:pager -->
+<nav class="pager" aria-label="Previous and next pages">
+  <a class="pager-prev" href="configuration.html" rel="prev"><span class="pager-label">Previous</span><span class="pager-title">Configuration</span></a>
+  <a class="pager-next" href="errors.html" rel="next"><span class="pager-label">Next</span><span class="pager-title">Errors &amp; exceptions</span></a>
+</nav>
+<!-- /docs:pager -->
+</main>
+<aside class="toc" aria-label="On this page"></aside>
+</div>
+<!-- docs:footer -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>conceptlz/adobe-sign · MIT licensed · <a href="https://github.com/conceptlz/adobe-sign">Source on GitHub</a></p>
+    <p>An independent SDK, not affiliated with or endorsed by Adobe. Adobe and Acrobat Sign are trademarks of Adobe Inc.</p>
+  </div>
+</footer>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/docs.js"></script>
+<!-- /docs:footer -->
+</body>
+</html>

@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- docs:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>
+(function () {
+  var theme = null;
+  try { theme = localStorage.getItem('docs-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap">
+<link rel="stylesheet" href="assets/css/docs.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<!-- /docs:head -->
+<title>FAQ · conceptlz/adobe-sign</title>
+<meta name="description" content="Answers to common questions about the Adobe Sign PHP SDK: licensing, accounts and authentication, signing order, SES, AES and QES, documents, webhooks, errors, Laravel and versioning.">
+</head>
+<body>
+<!-- docs:topbar -->
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="topbar">
+  <button class="icon-button menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+  </button>
+  <a class="brand" href="index.html">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="15.5" fill="none" stroke="currentColor" stroke-width="0.6" stroke-dasharray="1.5 2"/>
+      <path d="M9.5 24.5c3.2-1.2 5.4-7.6 7.1-11.3 1-2.1 2.4-1.4 1.6 1.2-1.2 3.9-2.8 8.4-1.4 9.3 1.5 1 3.4-4.4 4.6-4.1 1.1.3-.3 3.3.8 3.5 1.3.2 2.6-2.4 3.8-2.2 1 .2.6 1.8 1.6 1.9 1 .1 2.1-.8 3-1.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 28.5h20" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+    </svg>
+    <span class="brand-text"><span class="brand-name">Adobe Sign PHP SDK</span><span class="brand-package">conceptlz/adobe-sign</span></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <div class="search" role="search">
+    <label class="visually-hidden" for="docs-search">Search the documentation</label>
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+    <input class="search-input" id="docs-search" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-search-results" aria-autocomplete="list">
+    <kbd class="search-key">/</kbd>
+    <ul class="search-results" id="docs-search-results" role="listbox" aria-label="Search results" hidden></ul>
+  </div>
+  <a class="topbar-link" href="https://github.com/conceptlz/adobe-sign">GitHub</a>
+  <button class="icon-button theme-toggle" type="button" aria-label="Switch theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+  </button>
+</header>
+<!-- /docs:topbar -->
+<div class="layout">
+<!-- docs:sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Documentation">
+  <div class="nav-group">
+    <p class="nav-group-title">Start here</p>
+    <ul class="nav-list">
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="getting-started.html">Getting started</a></li>
+      <li><a href="concepts.html">How Acrobat Sign works</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Guides</p>
+    <ul class="nav-list">
+      <li><a href="authentication.html">Authentication</a></li>
+      <li><a href="documents.html">Uploading documents</a></li>
+      <li><a href="agreements.html">Creating agreements</a></li>
+      <li><a href="signing-order.html">Signing order</a></li>
+      <li><a href="managing-agreements.html">Managing agreements</a></li>
+      <li><a href="downloads.html">Downloading signed files</a></li>
+      <li><a href="signature-levels.html">Signature levels: SES, AES, QES</a></li>
+      <li><a href="identity-verification.html">Identity verification</a></li>
+      <li><a href="webhooks.html">Webhooks</a></li>
+      <li><a href="other-resources.html">Library, web forms, users, bulk</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Reference</p>
+    <ul class="nav-list">
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="http-layer.html">Data centres, retries &amp; ETags</a></li>
+      <li><a href="errors.html">Errors &amp; exceptions</a></li>
+      <li><a href="models.html">Models &amp; raw data</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Help</p>
+    <ul class="nav-list">
+      <li><a href="testing.html">Testing your integration</a></li>
+      <li><a href="examples.html">Example scripts</a></li>
+      <li><a href="troubleshooting.html">Troubleshooting</a></li>
+      <li><a href="faq.html" aria-current="page">FAQ</a></li>
+    </ul>
+  </div>
+  <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+</nav>
+<div class="nav-backdrop" hidden></div>
+<!-- /docs:sidebar -->
+<main id="content" class="content">
+<article class="doc">
+  <header class="doc-header">
+    <p class="eyebrow">Help</p>
+    <h1>Frequently asked questions</h1>
+    <p class="lede">
+      Short answers first, detail after, and a link to the page that covers each topic in depth. The questions
+      are grouped by theme; every one has its own link, so you can send a colleague straight to the answer.
+    </p>
+  </header>
+
+  <h2 class="faq-group-title" id="general">General &amp; licensing</h2>
+  <div class="faq">
+    <details id="faq-what-is-it">
+      <summary>What is conceptlz/adobe-sign?</summary>
+      <div class="faq-answer">
+        <p>
+          A PHP SDK for the Adobe Acrobat Sign REST API v6. It uploads documents, sends them for signature in any
+          signing order, lets you require SES, AES or QES, receives webhooks and downloads the signed PDF.
+        </p>
+        <p>
+          It also takes care of the parts that are easy to get wrong in production: finding the account's data
+          centre, retrying rate-limited calls, sending ETags on updates, streaming large files and mapping errors to
+          typed exceptions. Start with <a href="getting-started.html">Getting started</a>.
+        </p>
+      </div>
+    </details>
+    <details id="faq-official">
+      <summary>Is this an official Adobe SDK?</summary>
+      <div class="faq-answer">
+        <p>
+          No. It is developed independently and is not affiliated with or endorsed by Adobe. It uses Adobe's public
+          REST API and Adobe's published OpenAPI specification. Questions about your Acrobat Sign account, plan or
+          contract go to Adobe; questions about this SDK go to its
+          <a href="https://github.com/conceptlz/adobe-sign/issues">issue tracker</a>.
+        </p>
+      </div>
+    </details>
+    <details id="faq-license">
+      <summary>What licence is it under?</summary>
+      <div class="faq-answer">
+        <p>
+          MIT. You can use it in commercial and closed-source applications; keep the copyright notice. The licence
+          covers the SDK only: using Acrobat Sign itself is governed by your agreement with Adobe.
+        </p>
+      </div>
+    </details>
+    <details id="faq-php-versions">
+      <summary>Which PHP versions are supported?</summary>
+      <div class="faq-answer">
+        <p>
+          PHP 8.2 and later. CI runs the test suite on PHP 8.2, 8.3, 8.4 and 8.5, plus a run with the lowest
+          allowed dependency versions.
+        </p>
+      </div>
+    </details>
+    <details id="faq-framework">
+      <summary>Do I need a framework?</summary>
+      <div class="faq-answer">
+        <p>
+          No. The core package depends only on PSR interfaces (HTTP client and factories, cache, logger, clock) and
+          <code>php-http/discovery</code>, and a test fails the build if a framework import ever creeps in. It
+          works in Symfony, Slim, WordPress plugins, CLI tools or plain PHP. Laravel users can add the bridge
+          package (<a href="#laravel">Laravel &amp; frameworks</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-cost">
+      <summary>Do I need a paid Acrobat Sign plan?</summary>
+      <div class="faq-answer">
+        <p>
+          Not to build and test: a free Acrobat Sign developer account is enough. For production you need an
+          Acrobat Sign plan with API access. Some features depend on the plan or on account settings, including
+          digital signatures, government-ID checks (a paid quota) and mixed signing orders. When a feature is
+          missing, the SDK throws <code>AccountCapabilityException</code> rather than a vague error
+          (<a href="errors.html">Errors &amp; exceptions</a>).
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="faq-group-title" id="accounts">Accounts &amp; authentication</h2>
+  <div class="faq">
+    <details id="faq-key-or-oauth">
+      <summary>Should I use an Integration Key or OAuth?</summary>
+      <div class="faq-answer">
+        <p>
+          An Integration Key when your application sends from <strong>your own</strong> Acrobat Sign account;
+          OAuth when <strong>your users</strong> connect <strong>their own</strong> accounts.
+        </p>
+        <p>
+          An Integration Key is one long-lived credential for one account: simple, but treat it like a password.
+          OAuth gives each user a token pair that the SDK refreshes automatically. Both are covered in
+          <a href="authentication.html">Authentication</a>.
+        </p>
+      </div>
+    </details>
+    <details id="faq-where-key">
+      <summary>Where do I find the Integration Key?</summary>
+      <div class="faq-answer">
+        <p>
+          In Acrobat Sign, under <em>Account → Acrobat Sign API → API Information → Integration Key</em>. Create one
+          with the scopes your application needs, and store it in your secrets manager or environment, never in
+          code. See <a href="authentication.html">Authentication</a>.
+        </p>
+      </div>
+    </details>
+    <details id="faq-token-storage">
+      <summary>Where are OAuth tokens stored?</summary>
+      <div class="faq-answer">
+        <p>
+          Wherever you decide. The SDK defines a two-method <code>TokenStore</code> interface (<code>get()</code> and
+          <code>put()</code>) and ships <code>InMemoryTokenStore</code> for scripts and tests.
+        </p>
+        <p>
+          In a real application, implement it on your database and encrypt the tokens: a refresh token is a
+          long-lived credential. <code>AccessToken::toArray()</code> and <code>fromArray()</code> make storage
+          simple. The Laravel bridge provides an encrypted table for you.
+        </p>
+      </div>
+    </details>
+    <details id="faq-refresh-expiry">
+      <summary>How long do OAuth connections last?</summary>
+      <div class="faq-answer">
+        <p>
+          As long as they're used. Access tokens are short-lived and refreshed automatically, 60 seconds before
+          expiry or after a 401. Adobe expires a refresh token after 60 days without use, and the user can revoke
+          access at any time; either way you get an <code>OAuthException</code> and the user must reconnect
+          (<a href="troubleshooting.html#oauth-disconnected">Troubleshooting</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-act-as-user">
+      <summary>Can I send on behalf of another user in my account?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes, with an account administrator's credentials: <code>$sign-&gt;asUser('jane@example.com')</code> returns
+          a client that sends the <code>x-api-user</code> header on every request. The original client is
+          unchanged, and copies are cheap. See <a href="authentication.html">Authentication</a>.
+        </p>
+      </div>
+    </details>
+    <details id="faq-data-centre">
+      <summary>Do I need to know which data centre my account is on?</summary>
+      <div class="faq-answer">
+        <p>
+          No. The SDK asks Adobe once (<code>GET /baseUris</code>) and caches the answer; OAuth tokens already carry
+          it. If the account moves, the SDK notices the <code>INVALID_API_ACCESS_POINT</code> error and looks again.
+          Pass a shared PSR-16 cache so the lookup isn't repeated on every request
+          (<a href="http-layer.html#data-centres">Data-centre discovery</a>).
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="faq-group-title" id="sending">Sending &amp; signing order</h2>
+  <div class="faq">
+    <details id="faq-signing-order">
+      <summary>How do I make people sign one after another?</summary>
+      <div class="faq-answer">
+        <p>
+          Give each participant set an order number: 1, then 2, then 3. The shortcut
+          <code>-&gt;signers('a@example.com', 'b@example.com', 'c@example.com')</code> does exactly that.
+        </p>
+        <p>
+          Adobe requires orders to start at 1 with no gaps; the builder checks this before sending. See
+          <a href="signing-order.html">Signing order</a>.
+        </p>
+      </div>
+    </details>
+    <details id="faq-parallel">
+      <summary>How do several people sign at the same time?</summary>
+      <div class="faq-answer">
+        <p>
+          Give their sets the same order number. Sets sharing a number sign in parallel, in any order. If instead
+          any one person from a group may sign for all of them, put them in one set:
+          <code>ParticipantSetInfo::signer('a@example.com', 'b@example.com')</code>
+          (<a href="signing-order.html">Signing order</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-hybrid">
+      <summary>Why does "client first, then CFO and legal together" fail with HYBRID_ROUTING_NOT_ALLOWED?</summary>
+      <div class="faq-answer">
+        <p>
+          Because mixing sequential and parallel steps, which Adobe calls hybrid routing, is an account setting
+          and it is off on your account. An Acrobat Sign admin can enable it; until then use a purely sequential or
+          purely parallel order. The SDK reports it as <code>AccountCapabilityException</code>
+          (<a href="troubleshooting.html#hybrid-routing">Troubleshooting</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-draft">
+      <summary>Can I create an agreement without sending it yet?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes: <code>-&gt;state(AgreementState::AUTHORING)</code> creates it without sending, for example so someone
+          can place fields in Adobe's editor. Send it later with
+          <code>agreements()-&gt;updateState($id, 'IN_PROCESS')</code>. The default is to send immediately
+          (<a href="agreements.html">Creating agreements</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-embedded">
+      <summary>Can people sign inside my application instead of from the email?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes. <code>agreements()-&gt;signingUrlFor($id, $email)</code> returns that signer's link when it's their
+          turn (or <code>null</code> if it isn't), which you can redirect to or embed. Right after creation Adobe may
+          still be processing, so be ready to retry (<a href="managing-agreements.html">Managing agreements</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-reminders">
+      <summary>How do I remind people to sign?</summary>
+      <div class="faq-answer">
+        <p>
+          Automatically, with <code>-&gt;reminderFrequency(ReminderFrequency::DAILY_UNTIL_SIGNED)</code> when you
+          create the agreement, or on demand with <code>agreements()-&gt;sendReminder($id)</code>, which reminds
+          whoever's turn it currently is (<a href="managing-agreements.html">Managing agreements</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-cancel">
+      <summary>How do I cancel an agreement that was sent by mistake?</summary>
+      <div class="faq-answer">
+        <p>
+          <code>$sign-&gt;agreements()-&gt;cancel($id, 'Sent to the wrong person')</code>. The comment is shown to
+          participants; pass <code>notifyOthers: false</code> to skip the emails. Within a few seconds of sending you
+          may get a <code>PreconditionFailedException</code>; fetch the agreement and cancel again
+          (<a href="troubleshooting.html#precondition-failed-412">Troubleshooting</a>).
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="faq-group-title" id="signature-levels">Signature levels &amp; legal</h2>
+  <div class="faq">
+    <details id="faq-ses-aes-qes">
+      <summary>What are SES, AES and QES?</summary>
+      <div class="faq-answer">
+        <p>
+          The three levels of electronic signature defined by the EU's eIDAS regulation and laws modelled on it.
+        </p>
+        <ul>
+          <li><strong>SES</strong> (simple): any electronic signature, such as a typed name, a drawn signature or a click. Acrobat Sign's normal e-signature.</li>
+          <li><strong>AES</strong> (advanced): uniquely linked to the signer, able to identify them, and detects later changes. In this SDK, AES means a certificate-based digital signature from a cloud signature provider.</li>
+          <li><strong>QES</strong> (qualified): an AES made with a qualified certificate from a qualified trust service provider. In the EU it has the same legal effect as a handwritten signature.</li>
+        </ul>
+        <p>See <a href="signature-levels.html">Signature levels</a> for the full explanation.</p>
+      </div>
+    </details>
+    <details id="faq-default-level">
+      <summary>Which level does the SDK use by default?</summary>
+      <div class="faq-answer">
+        <p>
+          SES. Raise it for the whole project with
+          <code>new ClientOptions(defaultSignatureLevel: SignatureLevel::AES)</code>, for one agreement with
+          <code>AgreementInfo::signatureLevel()</code>, or for one signer with
+          <code>ParticipantSetInfo::signatureLevel()</code> (<a href="configuration.html#option-default-signature-level">Configuration</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-email-otp-aes">
+      <summary>Does an email code (OTP) make a signature AES?</summary>
+      <div class="faq-answer">
+        <p>
+          No. An email code, SMS, knowledge questions or a government-ID scan check <strong>who opens the
+          document</strong>; they don't change <strong>how it is signed</strong>. Identity checks and signature
+          levels are separate settings, and you can combine them, for example AES plus an email code.
+        </p>
+        <p>
+          A strongly verified SES may still satisfy a particular legal requirement; that is a question for your legal
+          team. What the SDK reports as AES is a certificate-based digital signature
+          (<a href="identity-verification.html">Identity verification</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-eu-valid">
+      <summary>Is a simple e-signature valid in the EU?</summary>
+      <div class="faq-answer">
+        <p>
+          Generally yes. Under eIDAS, an electronic signature can't be refused legal effect or as evidence just
+          because it is electronic. What the levels change is the burden of proof: with SES, the party relying on the
+          signature may have to prove who signed; a QES is treated like a handwritten signature in every member
+          state.
+        </p>
+        <p>
+          Some documents, and some national rules, require a specific level or exclude e-signatures altogether.
+          Check with your legal team for each document type (<a href="signature-levels.html">Signature levels</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-uae">
+      <summary>What about the UAE?</summary>
+      <div class="faq-answer">
+        <p>
+          The UAE's Federal Decree-Law No. 46 of 2021 on electronic transactions and trust services follows the same
+          model of simple, advanced and qualified signatures, with trust services supervised by the TDRA. UAE PASS is
+          the national digital identity and signature. Use AES or QES where your documents need them, and confirm
+          the provider and the requirement with Adobe, the provider and your legal team
+          (<a href="signature-levels.html">Signature levels</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-per-signer">
+      <summary>Can different signers on one agreement sign at different levels?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes. Set a level on the agreement and override it per signer in either direction: a QES borrower and an SES
+          witness on the same loan agreement, for example. Levels apply to signers only; approvers and other
+          non-signing roles can't be given one (<a href="signature-levels.html">Signature levels</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-provider-dropdown">
+      <summary>Why does the signer see a list of signature providers?</summary>
+      <div class="faq-answer">
+        <p>
+          Because the agreement requires a digital signature (AES or QES). The signer chooses a cloud signature
+          provider, proves their identity to it, and signs with a certificate it issues to them; that certificate is
+          embedded in the PDF. Which providers appear is configured by your Acrobat Sign administrator in the
+          account's digital signature settings, not by the API.
+        </p>
+      </div>
+    </details>
+    <details id="faq-qes-provider">
+      <summary>Why isn't my "QES" agreement qualified?</summary>
+      <div class="faq-answer">
+        <p>
+          The API request for QES is the same as for AES. What makes a signature qualified is the provider: a
+          qualified trust service provider on the EU Trusted List, issuing a qualified certificate on a qualified
+          device. If the account's configured provider isn't qualified, the result is AES.
+        </p>
+        <p>
+          Configure a QTSP in Acrobat Sign admin, then check each signature with
+          <code>signatureEvidence()</code> and your list of qualified issuers (<a href="signature-levels.html">Signature levels</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-prove-level">
+      <summary>How do I prove which level each person actually signed at?</summary>
+      <div class="faq-answer">
+        <p>
+          <code>$sign-&gt;agreements()-&gt;signatureEvidence($id)</code> reports, per signer, the signing time, input
+          type, whether a digital signature was applied, the certificate issuer, the provider and the identity check.
+          <code>meets()</code> and <code>shortfalls()</code> compare every signer against a required level. For a
+          formal check, validate the signed PDF against the relevant trusted list
+          (<a href="signature-levels.html">Signature levels</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-legal-advice">
+      <summary>Can the SDK tell me which level my documents legally need?</summary>
+      <div class="faq-answer">
+        <p>
+          No. It can request a level and report what was achieved, but whether that meets a legal requirement in a
+          given country, for a given document, is a decision for your legal or compliance team. The
+          <a href="signature-levels.html">Signature levels</a> page gives background to start that conversation.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="faq-group-title" id="documents">Documents &amp; downloads</h2>
+  <div class="faq">
+    <details id="faq-large-files">
+      <summary>Can I upload large PDFs?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes, within the limits Adobe sets for your account. The SDK streams uploads through a temporary file rather
+          than loading the document into memory, and a rate-limited upload is retried with the complete file
+          (<a href="http-layer.html#streaming">Streaming uploads and downloads</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-transient-expiry">
+      <summary>How long can I wait between uploading and sending?</summary>
+      <div class="faq-answer">
+        <p>
+          Seven days. A transient document expires a week after upload. For a document you send again and again, use a
+          library document (<code>libraryDocuments()-&gt;create()</code>, then <code>FileInfo::libraryDocument($id)</code>)
+          (<a href="documents.html">Uploading documents</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-signed-pdf">
+      <summary>How do I get the signed PDF?</summary>
+      <div class="faq-answer">
+        <p>
+          <code>agreements()-&gt;combinedDocument($id, attachAuditReport: true)</code> once the status is
+          <code>SIGNED</code>. It returns a PSR-7 stream: copy it to disk in chunks or pass <code>detach()</code> to
+          your storage layer. <code>auditTrail($id)</code> gives the audit report on its own
+          (<a href="downloads.html">Downloading signed files</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-certificate-in-pdf">
+      <summary>Where is the signer's certificate for an AES signature?</summary>
+      <div class="faq-answer">
+        <p>
+          In the signed document itself, from <code>combinedDocument()</code> or <code>document()</code>. The
+          separate audit report carries only Adobe's own seal. Open the PDF's signature panel to see the signer's
+          certificate chain (<a href="downloads.html">Downloading signed files</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-store-cloud">
+      <summary>Can I stream the signed PDF straight to S3 or another store?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes. <code>$stream-&gt;detach()</code> gives you a PHP stream resource that Flysystem, Laravel Storage or the
+          AWS SDK accept directly, so the file never needs to sit in memory
+          (<a href="downloads.html">Downloading signed files</a>).
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="faq-group-title" id="webhooks">Webhooks</h2>
+  <div class="faq">
+    <details id="faq-webhook-security">
+      <summary>Are Adobe's webhooks signed?</summary>
+      <div class="faq-answer">
+        <p>
+          No. Adobe doesn't sign payloads, so <code>WebhookHandler</code> accepts only requests whose
+          <code>X-AdobeSign-ClientId</code> is on your allowlist. Treat the payload as a hint: re-fetch the agreement
+          through the API before acting on it (<a href="webhooks.html">Webhooks</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-webhook-local">
+      <summary>How do I receive webhooks on my laptop?</summary>
+      <div class="faq-answer">
+        <p>
+          Adobe only calls public HTTPS URLs, so put a tunnel such as ngrok or cloudflared in front of your local
+          server. <code>examples/webhook-receiver.php</code> is a ready-made endpoint, and you can post a sample
+          notification to it with <code>curl</code> (<a href="examples.html#webhook-receiver">Example scripts</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-webhook-per-agreement">
+      <summary>One webhook per agreement, or one for the whole account?</summary>
+      <div class="faq-answer">
+        <p>
+          Adobe recommends one per agreement. If deliveries keep failing, Adobe disables the webhook, and with one per
+          agreement that only affects one agreement. <code>WebhookInfo::forAgreement()</code> builds it; there are
+          also account, group, user and resource variants (<a href="webhooks.html">Webhooks</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-webhook-disabled">
+      <summary>Why did my webhook stop?</summary>
+      <div class="faq-answer">
+        <p>
+          Adobe retries failed deliveries for 72 hours, then disables the webhook. A delivery fails if your endpoint
+          doesn't answer 2xx with the client id echo within 5 seconds. Acknowledge first, queue the work, and
+          reactivate with <code>webhooks()-&gt;updateState($id, 'ACTIVE')</code>
+          (<a href="troubleshooting.html#webhook-disabled">Troubleshooting</a>).
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="faq-group-title" id="errors-reliability">Errors &amp; reliability</h2>
+  <div class="faq">
+    <details id="faq-catch-all">
+      <summary>How do I catch every error from the SDK?</summary>
+      <div class="faq-answer">
+        <p>
+          <code>catch (\Conceptlz\AdobeSign\Exception\AdobeSignException $e)</code>. Every exception the SDK throws
+          implements it. Catch narrower types first when you want to treat them differently
+          (<a href="errors.html#catch-patterns">Recommended catch patterns</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-412">
+      <summary>What does PreconditionFailedException mean?</summary>
+      <div class="faq-answer">
+        <p>
+          The agreement changed after you read it, so Adobe refused your write rather than overwrite someone else's
+          change. Call <code>get()</code> again and repeat the update. It is common for a few seconds right after
+          sending (<a href="http-layer.html#etags">ETags and If-Match</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-rate-limits">
+      <summary>What happens when I hit Adobe's rate limit?</summary>
+      <div class="faq-answer">
+        <p>
+          The SDK waits as long as Adobe asks and retries, three times by default. If that isn't enough, or Adobe asks
+          for a wait longer than <code>maxRetryDelay</code>, you get a <code>RateLimitException</code> with
+          <code>$retryAfter</code> in seconds (<a href="http-layer.html#retries">Retries and rate limits</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-secrets-in-logs">
+      <summary>Can my Integration Key end up in logs or error trackers?</summary>
+      <div class="faq-answer">
+        <p>
+          Not through the SDK. Exceptions replace the <code>Authorization</code> header with <code>Bearer ***</code>,
+          OAuth exceptions drop request bodies, credential objects mask themselves in dumps, and the logger never
+          receives headers or bodies. A test enforces all of this
+          (<a href="errors.html#credential-redaction">Credential redaction</a>).
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="faq-group-title" id="laravel">Laravel &amp; frameworks</h2>
+  <div class="faq">
+    <details id="faq-laravel-bridge">
+      <summary>Is there a Laravel package?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes: <code>conceptlz/adobe-sign-laravel</code>, for Laravel 12 and 13. It adds configuration through
+          <code>ADOBE_SIGN_*</code> environment variables, a facade, OAuth routes with an encrypted token table, a
+          webhook route with duplicate suppression, and events. It has its own
+          <a href="https://conceptlz.github.io/adobe-sign-laravel/">documentation</a>.
+        </p>
+      </div>
+    </details>
+    <details id="faq-symfony">
+      <summary>How do I use it with Symfony?</summary>
+      <div class="faq-answer">
+        <p>
+          Register <code>AdobeSign</code> as a service built with a factory such as
+          <code>AdobeSign::withIntegrationKey()</code>, and inject Symfony's <code>Psr18Client</code>, a
+          <code>Psr16Cache</code> and the logger. There is no bundle; the PSR interfaces make one unnecessary
+          (<a href="configuration.html">Configuration</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-queues">
+      <summary>Can I use one client in a long-running worker?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes. The client keeps little state: the data-centre lookup (in your cache) and up to 500 remembered ETags.
+          OAuth tokens refresh themselves. For a worker serving many OAuth users, build one client per user per job
+          rather than keeping them all forever (<a href="configuration.html#recipes">Configuration recipes</a>).
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 class="faq-group-title" id="contributing">Contributing &amp; versioning</h2>
+  <div class="faq">
+    <details id="faq-versioning">
+      <summary>How is the SDK versioned?</summary>
+      <div class="faq-answer">
+        <p>
+          With semantic versioning, currently in the 0.x series, where a minor version (0.3 to 0.4) may contain
+          breaking changes. Require <code>^0.3</code> to get fixes without surprises. The core and Laravel packages
+          always share one version number and are released together; the changes are listed in the changelog on
+          GitHub.
+        </p>
+      </div>
+    </details>
+    <details id="faq-missing-endpoint">
+      <summary>What if the SDK doesn't cover a field or endpoint I need?</summary>
+      <div class="faq-answer">
+        <p>
+          For a missing field, use the builder's <code>with()</code> to add raw spec fields, or start from a generated
+          model, which covers the whole spec. For a missing endpoint, open an issue; adding one follows a short, well
+          defined recipe (<a href="models.html#passing-data-in">Models &amp; raw data</a>).
+        </p>
+      </div>
+    </details>
+    <details id="faq-report-bug">
+      <summary>Where do I report a bug or ask for a feature?</summary>
+      <div class="faq-answer">
+        <p>
+          On the <a href="https://github.com/conceptlz/adobe-sign/issues">GitHub issue tracker</a>. Include the SDK and
+          PHP versions, the exception class, <code>errorCode</code> and Adobe's response body, never credentials
+          (<a href="troubleshooting.html#troubleshooting-faq-report-bug">what to include</a>). The package
+          repositories are mirrors of a development monorepo, so discuss larger changes in an issue before writing code.
+        </p>
+      </div>
+    </details>
+    <details id="faq-generated-code">
+      <summary>Can I fix a bug in a generated model?</summary>
+      <div class="faq-answer">
+        <p>
+          Not by editing it. The 313 models are regenerated from Adobe's spec with <code>composer generate</code>;
+          fixes go into the spec normaliser, and CI fails if the generated code drifts
+          (<a href="models.html#regenerating">Regenerating the models</a>).
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <ul class="next-links">
+    <li><a href="getting-started.html"><strong>Getting started</strong><span>Install, connect and send your first agreement.</span></a></li>
+    <li><a href="troubleshooting.html"><strong>Troubleshooting</strong><span>Symptom, cause and fix.</span></a></li>
+    <li><a href="signature-levels.html"><strong>Signature levels</strong><span>SES, AES and QES in depth.</span></a></li>
+  </ul>
+</article>
+<!-- docs:pager -->
+<nav class="pager" aria-label="Previous and next pages">
+  <a class="pager-prev" href="troubleshooting.html" rel="prev"><span class="pager-label">Previous</span><span class="pager-title">Troubleshooting</span></a>
+</nav>
+<!-- /docs:pager -->
+</main>
+<aside class="toc" aria-label="On this page"></aside>
+</div>
+<!-- docs:footer -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>conceptlz/adobe-sign · MIT licensed · <a href="https://github.com/conceptlz/adobe-sign">Source on GitHub</a></p>
+    <p>An independent SDK, not affiliated with or endorsed by Adobe. Adobe and Acrobat Sign are trademarks of Adobe Inc.</p>
+  </div>
+</footer>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/docs.js"></script>
+<!-- /docs:footer -->
+</body>
+</html>

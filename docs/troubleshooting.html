@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- docs:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>
+(function () {
+  var theme = null;
+  try { theme = localStorage.getItem('docs-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap">
+<link rel="stylesheet" href="assets/css/docs.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<!-- /docs:head -->
+<title>Troubleshooting · conceptlz/adobe-sign</title>
+<meta name="description" content="Symptom, cause and fix for the problems people hit with the Adobe Sign PHP SDK: authentication errors, data centres, stale ETags, rate limits, timing right after create, account restrictions, signature evidence and webhooks.">
+</head>
+<body>
+<!-- docs:topbar -->
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="topbar">
+  <button class="icon-button menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+  </button>
+  <a class="brand" href="index.html">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="15.5" fill="none" stroke="currentColor" stroke-width="0.6" stroke-dasharray="1.5 2"/>
+      <path d="M9.5 24.5c3.2-1.2 5.4-7.6 7.1-11.3 1-2.1 2.4-1.4 1.6 1.2-1.2 3.9-2.8 8.4-1.4 9.3 1.5 1 3.4-4.4 4.6-4.1 1.1.3-.3 3.3.8 3.5 1.3.2 2.6-2.4 3.8-2.2 1 .2.6 1.8 1.6 1.9 1 .1 2.1-.8 3-1.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 28.5h20" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+    </svg>
+    <span class="brand-text"><span class="brand-name">Adobe Sign PHP SDK</span><span class="brand-package">conceptlz/adobe-sign</span></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <div class="search" role="search">
+    <label class="visually-hidden" for="docs-search">Search the documentation</label>
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+    <input class="search-input" id="docs-search" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-search-results" aria-autocomplete="list">
+    <kbd class="search-key">/</kbd>
+    <ul class="search-results" id="docs-search-results" role="listbox" aria-label="Search results" hidden></ul>
+  </div>
+  <a class="topbar-link" href="https://github.com/conceptlz/adobe-sign">GitHub</a>
+  <button class="icon-button theme-toggle" type="button" aria-label="Switch theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+  </button>
+</header>
+<!-- /docs:topbar -->
+<div class="layout">
+<!-- docs:sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Documentation">
+  <div class="nav-group">
+    <p class="nav-group-title">Start here</p>
+    <ul class="nav-list">
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="getting-started.html">Getting started</a></li>
+      <li><a href="concepts.html">How Acrobat Sign works</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Guides</p>
+    <ul class="nav-list">
+      <li><a href="authentication.html">Authentication</a></li>
+      <li><a href="documents.html">Uploading documents</a></li>
+      <li><a href="agreements.html">Creating agreements</a></li>
+      <li><a href="signing-order.html">Signing order</a></li>
+      <li><a href="managing-agreements.html">Managing agreements</a></li>
+      <li><a href="downloads.html">Downloading signed files</a></li>
+      <li><a href="signature-levels.html">Signature levels: SES, AES, QES</a></li>
+      <li><a href="identity-verification.html">Identity verification</a></li>
+      <li><a href="webhooks.html">Webhooks</a></li>
+      <li><a href="other-resources.html">Library, web forms, users, bulk</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Reference</p>
+    <ul class="nav-list">
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="http-layer.html">Data centres, retries &amp; ETags</a></li>
+      <li><a href="errors.html">Errors &amp; exceptions</a></li>
+      <li><a href="models.html">Models &amp; raw data</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Help</p>
+    <ul class="nav-list">
+      <li><a href="testing.html">Testing your integration</a></li>
+      <li><a href="examples.html">Example scripts</a></li>
+      <li><a href="troubleshooting.html" aria-current="page">Troubleshooting</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+    </ul>
+  </div>
+  <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+</nav>
+<div class="nav-backdrop" hidden></div>
+<!-- /docs:sidebar -->
+<main id="content" class="content">
+<article class="doc">
+  <header class="doc-header">
+    <p class="eyebrow">Help</p>
+    <h1>Troubleshooting</h1>
+    <p class="lede">
+      Find the symptom, read the cause, apply the fix. Most entries come from running the SDK against a real
+      Acrobat Sign account, where the API sometimes behaves differently from its specification. If your
+      problem isn't here, attach a logger, look at <code>$e-&gt;errorCode</code>, and check
+      <a href="errors.html">Errors &amp; exceptions</a>.
+    </p>
+  </header>
+
+  <div class="callout callout-tip">
+    <p class="callout-title">First, get the facts</p>
+    <p>
+      Almost every problem is easier with three pieces of information: the exception class, its
+      <code>errorCode</code>, and the request path in its message. A PSR-3 logger on the client adds the
+      status and timing of every call. None of these contain your credentials, so they are safe to paste into
+      an issue.
+    </p>
+  </div>
+
+  <h2 id="install-and-setup">Installation and setup</h2>
+
+  <h3 id="no-psr18-client">No PSR-18 client found</h3>
+  <p><strong>Symptom.</strong> <code>composer require conceptlz/adobe-sign</code> fails because nothing provides <code>psr/http-client-implementation</code>, or building the client throws <code>Http\Discovery\Exception\NotFoundException</code>: "No PSR-18 clients found".</p>
+  <p><strong>Cause.</strong> The SDK depends on the PSR-18 and PSR-17 interfaces, not on a specific HTTP library, so your project has to provide one. Discovery can only find a client that is installed.</p>
+  <p><strong>Fix.</strong> Install a client and PSR-17 factories, then require the SDK again:</p>
+  <pre><code class="language-bash">composer require symfony/http-client nyholm/psr7
+# or
+composer require guzzlehttp/guzzle</code></pre>
+  <p>Or skip discovery and pass <code>httpClient</code>, <code>requestFactory</code> and <code>streamFactory</code> yourself (<a href="configuration.html#http-client">Choosing a PSR-18 client</a>). This exception comes from <code>php-http/discovery</code>, not the SDK, so <code>catch (AdobeSignException)</code> doesn't cover it; it happens once at boot.</p>
+
+  <h3 id="php-version">Composer refuses the package</h3>
+  <p><strong>Symptom.</strong> Composer reports that <code>conceptlz/adobe-sign</code> requires <code>php ^8.2</code>.</p>
+  <p><strong>Cause.</strong> The SDK targets PHP 8.2 and later (it relies on features such as <code>#[\SensitiveParameter]</code>) and is tested on PHP 8.2 to 8.5.</p>
+  <p><strong>Fix.</strong> Upgrade PHP, and check that <code>config.platform.php</code> in your <code>composer.json</code>, if set, says 8.2 or later.</p>
+
+  <h2 id="authentication-problems">Authentication</h2>
+
+  <h3 id="invalid-access-token">401 INVALID_ACCESS_TOKEN</h3>
+  <p><strong>Symptom.</strong> <code>AuthenticationException</code> with <code>errorCode</code> <code>INVALID_ACCESS_TOKEN</code>. With an Integration Key it often happens on the very first call, <code>GET /api/rest/v6/baseUris</code>.</p>
+  <p><strong>Cause.</strong> Adobe doesn't accept the token: the Integration Key is mistyped, was revoked or belongs to a deactivated user; or an OAuth access token expired and the refresh didn't produce a working one.</p>
+  <p><strong>Fix.</strong></p>
+  <ul>
+    <li>Integration Key: copy it again from Acrobat Sign (<em>Account → Acrobat Sign API → API Information → Integration Key</em>), with no surrounding spaces or quotes. Check that the user it belongs to is still active.</li>
+    <li>OAuth: the SDK already refreshed once and retried. If it still fails, the user's grant is gone; send them through authorization again.</li>
+    <li>Don't retry in a loop: a rejected credential stays rejected.</li>
+  </ul>
+
+  <h3 id="oauth-no-token">OAuthException NO_TOKEN or NO_REFRESH_TOKEN</h3>
+  <p><strong>Symptom.</strong> <code>OAuthException</code> with <code>errorCode</code> <code>NO_TOKEN</code> ("No OAuth token stored for …") or <code>NO_REFRESH_TOKEN</code>.</p>
+  <p><strong>Cause.</strong> These codes are set by the SDK, not Adobe. <code>NO_TOKEN</code>: your <code>TokenStore</code> has nothing under the key you passed to <code>withOAuth()</code>. <code>NO_REFRESH_TOKEN</code>: the stored token expired and has no refresh token to renew it with.</p>
+  <p><strong>Fix.</strong> Check that you <code>put()</code> and <code>get()</code> with the same key, and that your store round-trips tokens with <code>AccessToken::toArray()</code> and <code>fromArray()</code> without losing <code>refreshToken</code>. Otherwise, the user has to connect again.</p>
+
+  <h3 id="oauth-disconnected">OAuth users are disconnected after a while</h3>
+  <p><strong>Symptom.</strong> Users who connected weeks ago start failing with an <code>OAuthException</code> such as <code>INVALID_TOKEN</code> or <code>EXPIRED_TOKEN</code> during refresh.</p>
+  <p><strong>Cause.</strong> Adobe expires refresh tokens after 60 days without use, and a user or admin can revoke access at any time.</p>
+  <p><strong>Fix.</strong> Catch <code>OAuthException</code>, mark the connection as broken, and ask the user to reconnect. To keep dormant connections alive, use them (any call refreshes as needed) within the 60 days.</p>
+
+  <h3 id="oauth-state-mismatch">STATE_MISMATCH on the OAuth callback</h3>
+  <p><strong>Symptom.</strong> <code>handleCallback()</code> throws <code>OAuthException</code> with <code>STATE_MISMATCH</code>.</p>
+  <p><strong>Cause.</strong> The <code>state</code> in the callback doesn't match the one you stored when sending the user to Adobe. Usually the session was lost between the two requests (a different domain or port, a cookie with <code>SameSite=Strict</code>, a new session), the user used the back button, or the callback really is forged.</p>
+  <p><strong>Fix.</strong> Keep the state in the user's session from <code>OAuthClient::generateState()</code>, make sure the redirect URI is on the same host as the page that started the flow, and use a session cookie that survives a top-level redirect (<code>SameSite=Lax</code>). Don't skip the check.</p>
+
+  <h3 id="untrusted-access-point">InvalidArgumentException about api_access_point</h3>
+  <p><strong>Symptom.</strong> An <code>InvalidArgumentException</code> mentioning the access point during the OAuth callback or a refresh.</p>
+  <p><strong>Cause.</strong> The <code>api_access_point</code> isn't HTTPS on one of <code>OAuthConfig::$allowedDomains</code> (<code>adobesign.com</code>, <code>echosign.com</code>, <code>adobesigngov.us</code>). The SDK refuses to send your client secret to any other host.</p>
+  <p><strong>Fix.</strong> If someone tampered with the callback URL, this is the SDK doing its job. If your account genuinely uses another Adobe domain, add it to <code>allowedDomains</code> in <code>OAuthConfig</code>.</p>
+
+  <h3 id="as-user-rejected">asUser() is rejected</h3>
+  <p><strong>Symptom.</strong> <code>AuthenticationException</code> with <code>INVALID_X_API_USER_HEADER</code> or <code>INVALID_ON_BEHALF_OF_USER</code>, even though the same client works without <code>asUser()</code>.</p>
+  <p><strong>Cause.</strong> The person isn't a user in the token's account, the address is mistyped, or the token isn't an account admin's.</p>
+  <p><strong>Fix.</strong> Check the address with <code>$sign-&gt;users()-&gt;all()</code>, and use an Integration Key or OAuth token that belongs to an account administrator.</p>
+
+  <h2 id="data-centre-problems">Data centres</h2>
+
+  <h3 id="invalid-api-access-point">403 INVALID_API_ACCESS_POINT</h3>
+  <p><strong>Symptom.</strong> <code>ApiException</code> with status 403 and <code>errorCode</code> <code>INVALID_API_ACCESS_POINT</code>.</p>
+  <p><strong>Cause.</strong> The request went to a data centre that doesn't hold the account. The SDK already handled the common case: it dropped the cached data centre, rediscovered it and retried once. Seeing the exception means the retry failed too, typically because the bootstrap host is wrong for this account (a Government environment with the default <code>bootstrapUrl</code>), or because a custom middleware rewrites hosts.</p>
+  <p><strong>Fix.</strong> Check <code>ClientOptions::$bootstrapUrl</code> and any middleware that touches the URI. Clearing the shared cache does no harm. See <a href="http-layer.html#rediscovery">Rediscovery</a>.</p>
+
+  <h3 id="baseuris-every-request">GET /baseUris on every request</h3>
+  <p><strong>Symptom.</strong> Every web request or job makes an extra call to <code>api.adobesign.com</code> before its real work.</p>
+  <p><strong>Cause.</strong> No shared cache was passed, so each new client discovers its data centre again, and in PHP-FPM every request builds a new client.</p>
+  <p><strong>Fix.</strong> Pass a shared PSR-16 cache (Redis, APCu, files) as <code>cache:</code>. See <a href="configuration.html#cache">PSR-16 cache</a>.</p>
+
+  <h2 id="update-problems">Updates and cancellations</h2>
+
+  <h3 id="precondition-failed-412">412 on update or cancel</h3>
+  <p><strong>Symptom.</strong> <code>PreconditionFailedException</code> (<code>RESOURCE_MODIFIED</code>) from <code>update()</code>, <code>updateState()</code> or <code>cancel()</code>.</p>
+  <p><strong>Cause.</strong> The ETag sent in <code>If-Match</code> is older than the resource. Either someone else changed it since your <code>get()</code>, or, very often, you are within a few seconds of sending the agreement: Adobe keeps updating it in the background while it delivers emails, so an ETag read in that window is already stale.</p>
+  <p><strong>Fix.</strong> Fetch again and repeat, once or twice with a short pause:</p>
+  <pre><code class="language-php">try {
+    $sign-&gt;agreements()-&gt;cancel($agreementId, 'Sent in error');
+} catch (PreconditionFailedException) {
+    sleep(3);
+    $sign-&gt;agreements()-&gt;get($agreementId);                      // remembers the current ETag
+    $sign-&gt;agreements()-&gt;cancel($agreementId, 'Sent in error');
+}</code></pre>
+  <p>If you are on 0.2.0 and see this on a <code>cancel()</code> right after another state change from the same client, upgrade: 0.2.1 fixed a case where the ETag from a state change was reused. How the ETag memory works: <a href="http-layer.html#etags">ETags and If-Match</a>.</p>
+
+  <h3 id="permission-denied">403 PERMISSION_DENIED</h3>
+  <p><strong>Symptom.</strong> <code>ApiException</code> with status 403 and <code>PERMISSION_DENIED</code>.</p>
+  <p><strong>Cause.</strong> The user behind the token may not see or change this resource: someone else's agreement, or an operation reserved for the sender or an admin. For OAuth, the token may also lack the scope (for example <code>agreement_write</code>).</p>
+  <p><strong>Fix.</strong> Act as the right user with <code>asUser()</code> (admin token required), or request the missing scope and have the user reconnect.</p>
+
+  <h2 id="rate-limit-problems">Rate limits and slowness</h2>
+
+  <h3 id="rate-limit-429">RateLimitException or frequent 429s</h3>
+  <p><strong>Symptom.</strong> <code>RateLimitException</code>, or warnings "Adobe Sign throttled request, retrying" in your log.</p>
+  <p><strong>Cause.</strong> Your account made more calls than Adobe allows in the current period. The SDK retried (default three times) and either ran out of retries or was asked to wait longer than <code>maxRetryDelay</code>.</p>
+  <p><strong>Fix.</strong></p>
+  <ul>
+    <li>Defer the work by <code>$e-&gt;retryAfter</code> seconds (a delayed queue job is ideal) rather than retrying immediately.</li>
+    <li>Make fewer calls: use webhooks instead of polling status, raise <code>pageSize</code> on lists, share the data-centre cache, and reuse fetched data within a request.</li>
+    <li>Move bulk operations to background jobs so a burst doesn't hit user-facing requests.</li>
+  </ul>
+
+  <h3 id="requests-hang">A call takes a long time before failing</h3>
+  <p><strong>Symptom.</strong> A page or command hangs for tens of seconds, then fails or succeeds.</p>
+  <p><strong>Cause.</strong> Either the retry middleware is sleeping between attempts (up to <code>maxRetryDelay</code>, 60 s by default, per retry), or the HTTP client has no timeout and is waiting on the network.</p>
+  <p><strong>Fix.</strong> In web requests, use <code>new ClientOptions(maxRetries: 1, maxRetryDelay: 5.0)</code> and move slow work to jobs. Set a timeout on your PSR-18 client; the SDK sets none. A logger shows which it is: retry warnings, or one request with a long <code>duration_ms</code>.</p>
+
+  <h2 id="after-create-problems">Right after creating an agreement</h2>
+
+  <h3 id="documents-not-yet-processed">Status is DOCUMENTS_NOT_YET_PROCESSED</h3>
+  <p><strong>Symptom.</strong> <code>status()</code> returns <code>DOCUMENTS_NOT_YET_PROCESSED</code> instead of <code>OUT_FOR_SIGNATURE</code>.</p>
+  <p><strong>Cause.</strong> Adobe converts and prepares documents asynchronously after <code>create()</code>. That usually takes a few seconds, longer for big files.</p>
+  <p><strong>Fix.</strong> Nothing is wrong. Poll every couple of seconds until the status changes, or better, subscribe to a webhook and react when the agreement is out for signature. The example scripts poll every 2 seconds, 10 to 15 times.</p>
+
+  <h3 id="agreement-not-exposed">AGREEMENT_NOT_EXPOSED or AGREEMENT_NOT_SIGNABLE</h3>
+  <p><strong>Symptom.</strong> <code>signingUrls()</code> or <code>signingUrlFor()</code> throws <code>NotFoundException</code> with one of these codes for an agreement you just created.</p>
+  <p><strong>Cause.</strong> The agreement isn't ready to be signed yet, because the document is still processing, or nobody can sign at this moment.</p>
+  <p><strong>Fix.</strong> Wait until the status is <code>OUT_FOR_SIGNATURE</code>, then retry after a few seconds. In a web flow, show "preparing your document" and retry from the browser rather than blocking the request.</p>
+
+  <h3 id="next-participant-sets-empty">nextParticipantSets is missing or empty</h3>
+  <p><strong>Symptom.</strong> <code>members($id)</code> has no <code>nextParticipantSets</code>, so you can't tell whose turn it is.</p>
+  <p><strong>Cause.</strong> Two things. The live API leaves the key out unless you ask for it, even though the spec lists it. And for a moment after the status turns <code>OUT_FOR_SIGNATURE</code>, participant data can still lag (sets reading <code>NOT_YET_VISIBLE</code>).</p>
+  <p><strong>Fix.</strong> Call <code>members($id, includeNextParticipantSet: true)</code>, and if the list is empty right after sending, poll again a few seconds later. Each participant set's own <code>status</code> (<code>WAITING_FOR_MY_SIGNATURE</code>, …) is another way to find the current step.</p>
+
+  <h3 id="reminder-nobody-to-remind">sendReminder() says nobody is left to remind</h3>
+  <p><strong>Symptom.</strong> <code>InvalidArgumentException</code> from <code>sendReminder($id)</code> without participant ids.</p>
+  <p><strong>Cause.</strong> Without ids, the SDK reminds whoever's turn it is, and found nobody: the agreement is completed or cancelled, or still processing. Before 0.2.1 this also happened on active agreements, because <code>nextParticipantSets</code> wasn't requested.</p>
+  <p><strong>Fix.</strong> Check the status first, and upgrade if you are on 0.2.0. To remind specific people, pass their participant ids.</p>
+
+  <h3 id="transient-document-rejected">The transient document id is rejected</h3>
+  <p><strong>Symptom.</strong> <code>create()</code> fails with a <code>ValidationException</code> such as <code>INVALID_FILE_INFO</code> for an id you uploaded earlier.</p>
+  <p><strong>Cause.</strong> Transient documents expire 7 days after upload, and an id belongs to the account (and user) that uploaded it.</p>
+  <p><strong>Fix.</strong> Upload again right before creating the agreement. For documents you reuse, create a library document and reference it with <code>FileInfo::libraryDocument()</code>.</p>
+
+  <h2 id="account-restriction-problems">Account settings and plan</h2>
+
+  <h3 id="hybrid-routing">403 HYBRID_ROUTING_NOT_ALLOWED</h3>
+  <p><strong>Symptom.</strong> <code>AccountCapabilityException</code> with <code>HYBRID_ROUTING_NOT_ALLOWED</code> when creating an agreement.</p>
+  <p><strong>Cause.</strong> The signing order mixes sequential and parallel steps, for example 1, then 2 and 2 together, then 3. Adobe calls this hybrid routing and it is an account setting, off on some accounts.</p>
+  <p><strong>Fix.</strong> An Acrobat Sign administrator can enable it in the account's send settings. Until then, use a purely sequential (1, 2, 3) or purely parallel (1, 1, 1) order. Versions before 0.3.0 reported this as a plain <code>ApiException</code>. See <a href="signing-order.html">Signing order</a>.</p>
+
+  <h3 id="not-allowed-by-account-settings">"Not allowed by account settings"</h3>
+  <p><strong>Symptom.</strong> <code>AccountCapabilityException</code> whose message contains "not allowed by account settings", "enabled for your account" or "not enabled for this account", often with Adobe's generic <code>BAD_REQUEST</code> code.</p>
+  <p><strong>Cause.</strong> The request is valid, but the account doesn't enable the feature: typically an identity method (phone, KBA, government ID, a digital identity provider) or digital signatures. Adobe reports some of these only as a 400, and the SDK recognises them by their wording.</p>
+  <p><strong>Fix.</strong> Ask an Acrobat Sign administrator to enable the method or feature, or check that your plan includes it. It can't be fixed in code; choosing another method can work around it.</p>
+
+  <h3 id="gov-id-limit">GOV_ID_LIMIT_EXCEEDED</h3>
+  <p><strong>Symptom.</strong> <code>AccountCapabilityException</code> with <code>GOV_ID_LIMIT_EXCEEDED</code> when a signer must verify with a government ID.</p>
+  <p><strong>Cause.</strong> Government-ID verification uses a paid quota, and the account has none left or never had any. Developer accounts usually have none.</p>
+  <p><strong>Fix.</strong> Buy or top up the quota through Adobe, or use another identity check, such as <code>Verification::emailOtp()</code>, for this agreement.</p>
+
+  <h3 id="demo-use-only">[DEMO USE ONLY] in agreement names</h3>
+  <p><strong>Symptom.</strong> Agreement names come back as <code>[DEMO USE ONLY] Master Services Agreement</code>.</p>
+  <p><strong>Cause.</strong> The agreement was created on a free developer account, and Adobe prefixes every agreement name there.</p>
+  <p><strong>Fix.</strong> Expected behaviour. Production accounts don't do this. If you compare names in tests, strip the prefix or compare <code>externalId</code> instead.</p>
+
+  <h2 id="signature-level-problems">Signature levels and evidence</h2>
+
+  <h3 id="provider-name-empty">signingProvider is empty on digital signatures</h3>
+  <p><strong>Symptom.</strong> <code>signatureEvidence()</code> reports <code>digitallySigned: true</code> and a <code>certificateIssuer</code>, but <code>SignerEvidence::$signingProvider</code> is <code>null</code>.</p>
+  <p><strong>Cause.</strong> In 0.3.0 the SDK read the spec's <code>digitalSignatureInfo.cloudProviderName</code>; the live API sends <code>providerName</code>.</p>
+  <p><strong>Fix.</strong> Upgrade to 0.3.1 or later, which reads both.</p>
+
+  <h3 id="evidence-shows-ses">Evidence says SES although you asked for AES</h3>
+  <p><strong>Symptom.</strong> <code>shortfalls(SignatureLevel::AES)</code> says a signer "signed with an electronic signature … not a digital one".</p>
+  <p><strong>Cause.</strong> Check <code>$signer-&gt;digitalSignatureRequired</code>. If it is <code>false</code>, the requirement never reached Adobe: the agreement was sent as a raw array or generated model (the default level applies only to <code>AgreementInfo</code>), or the level was set on a different participant set. If it is <code>true</code>, compare with the agreement's events: the signature may have been completed in a way Adobe records differently.</p>
+  <p><strong>Fix.</strong> Build agreements with <code>AgreementInfo</code> and set the level there or in <code>ClientOptions</code>; for raw payloads, set <code>isDigitalSignatureRequired: true</code> on each signer set yourself. See <a href="signature-levels.html">Signature levels</a>.</p>
+
+  <h3 id="qes-check-throws">QES check throws InvalidArgumentException</h3>
+  <p><strong>Symptom.</strong> <code>meets(SignatureLevel::QES)</code> or <code>shortfalls(SignatureLevel::QES)</code> throws.</p>
+  <p><strong>Cause.</strong> Whether a certificate is qualified depends on who issued it, which the SDK can't know. Checking for QES without the list of issuers you accept as qualified would be meaningless.</p>
+  <p><strong>Fix.</strong> Pass your qualified issuers: <code>$evidence-&gt;meets(SignatureLevel::QES, ['DigiCert', 'TrustPro QTSP'])</code>. In Laravel, set <code>ADOBE_SIGN_QUALIFIED_ISSUERS</code>.</p>
+
+  <h3 id="level-rejected-locally">InvalidArgumentException when setting a level</h3>
+  <p><strong>Symptom.</strong> The builder throws before anything is sent: a set "does not sign, so it cannot be held to AES", or a digital level combined with written signatures.</p>
+  <p><strong>Cause.</strong> AES and QES are properties of a signature. Approvers, acceptors and form fillers don't sign, and a written (wet ink) signature can't carry a digital certificate.</p>
+  <p><strong>Fix.</strong> Set the level only on signer sets, and keep <code>signatureType</code> at <code>ESIGN</code> for digital levels.</p>
+
+  <h2 id="webhook-problems">Webhooks</h2>
+
+  <h3 id="webhook-not-verified">Creating a webhook fails verification</h3>
+  <p><strong>Symptom.</strong> <code>webhooks()-&gt;create()</code> fails, with Adobe's message saying the URL couldn't be verified or reached.</p>
+  <p><strong>Cause.</strong> Before creating the webhook, Adobe sends a <code>GET</code> to your URL with an <code>X-AdobeSign-ClientId</code> header and expects a 2xx answer that echoes the value within 5 seconds. The URL isn't public HTTPS, the endpoint rejected the client id, or it didn't echo.</p>
+  <p><strong>Fix.</strong> Make the URL reachable over HTTPS (a tunnel for local development), allowlist the right client id in <code>WebhookHandler</code>, and return the handler's response unchanged. Test the endpoint first with a <code>curl</code> GET carrying the header (<a href="examples.html#webhook-receiver-local-test">example</a>).</p>
+
+  <h3 id="webhook-disabled">Notifications stopped arriving</h3>
+  <p><strong>Symptom.</strong> Events used to arrive and then stopped; <code>webhooks()-&gt;get($id)</code> shows the webhook is no longer active.</p>
+  <p><strong>Cause.</strong> Adobe retries a failed delivery with growing intervals for 72 hours, then disables the webhook. Failures include non-2xx answers, a missing echo, and answers slower than 5 seconds.</p>
+  <p><strong>Fix.</strong> Fix the endpoint first: acknowledge immediately and do slow work on a queue. Then reactivate with <code>$sign-&gt;webhooks()-&gt;updateState($id, 'ACTIVE')</code>. Notifications from the disabled period are lost, so reconcile by fetching the affected agreements. One webhook per agreement limits the damage from a failure to that agreement.</p>
+
+  <h3 id="webhook-403">Your endpoint answers 403</h3>
+  <p><strong>Symptom.</strong> <code>WebhookHandler::handle()</code> returns a 403 and <code>$result-&gt;error</code> says the client id is unexpected or missing.</p>
+  <p><strong>Cause.</strong> The <code>X-AdobeSign-ClientId</code> header doesn't match the allowlist, often because the webhook was created by a different API application than the one whose id you configured.</p>
+  <p><strong>Fix.</strong> Allowlist the client id of every application that creates your webhooks (the handler accepts a list). Requests without the header aren't from Adobe.</p>
+
+  <h3 id="webhook-duplicates">The same event arrives twice</h3>
+  <p><strong>Symptom.</strong> Your handler processes one signature twice.</p>
+  <p><strong>Cause.</strong> Adobe retries deliveries it considers failed, including slow ones, so at-least-once delivery is normal.</p>
+  <p><strong>Fix.</strong> Store <code>$event-&gt;notificationId</code> and skip ones you have seen, and make your processing idempotent (re-fetch the agreement and act on its current status).</p>
+
+  <h2 id="download-problems">Downloads</h2>
+
+  <h3 id="empty-download">The saved PDF is empty</h3>
+  <p><strong>Symptom.</strong> The file you wrote has zero bytes, or <code>getContents()</code> returns an empty string.</p>
+  <p><strong>Cause.</strong> A PSR-7 stream has a read position. If something already read it (a debug dump, a size check), the position is at the end.</p>
+  <p><strong>Fix.</strong> Read it once, or call <code>$stream-&gt;rewind()</code> first when <code>isSeekable()</code> is true. Write with a chunked loop or <code>detach()</code> as shown in <a href="http-layer.html#streaming-downloads">Downloads</a>.</p>
+
+  <h3 id="download-memory">Memory runs out on large downloads</h3>
+  <p><strong>Symptom.</strong> "Allowed memory size exhausted" while saving a combined PDF.</p>
+  <p><strong>Cause.</strong> Converting the stream to a string (<code>(string) $stream</code>, <code>getContents()</code>) loads the whole file into memory.</p>
+  <p><strong>Fix.</strong> Copy in chunks (<code>read(65536)</code> in a loop) or pass <code>detach()</code> to your storage layer. Also check the PSR-18 client: some buffer whole responses unless configured to stream.</p>
+
+  <h2 id="troubleshooting-questions">Common questions</h2>
+  <div class="faq">
+    <details id="troubleshooting-faq-report-bug">
+      <summary>What should I include when reporting a bug?</summary>
+      <div class="faq-answer">
+        <p>
+          The SDK version (<code>AdobeSign::VERSION</code>), the PHP version, the exception class, its
+          <code>errorCode</code> and message, and Adobe's response body (<code>(string) $e-&gt;response?-&gt;getBody()</code>).
+          Remove personal data such as signer emails. Never include your Integration Key, tokens or client secret;
+          the SDK keeps them out of exceptions, so you shouldn't have to.
+        </p>
+      </div>
+    </details>
+    <details id="troubleshooting-faq-sandbox">
+      <summary>Is there a sandbox environment?</summary>
+      <div class="faq-answer">
+        <p>
+          Adobe's free developer account serves that purpose for most teams: it is a real account that sends real
+          emails, with agreement names marked <code>[DEMO USE ONLY]</code>, meant for building and testing. Ask your
+          Adobe contact whether your plan includes a separate sandbox environment.
+        </p>
+      </div>
+    </details>
+    <details id="troubleshooting-faq-works-locally">
+      <summary>It works on my machine but not on the server. Where do I look?</summary>
+      <div class="faq-answer">
+        <p>
+          Usually the environment: a different key or account, outbound HTTPS blocked by a firewall or proxy (you
+          will see <code>TransportException</code>), an old CA bundle breaking TLS, or a missing PSR-18 package
+          because dev dependencies weren't installed. A logger on the client shows quickly whether requests leave
+          the server at all.
+        </p>
+      </div>
+    </details>
+    <details id="troubleshooting-faq-spec-differs">
+      <summary>The API returned something the spec doesn't describe. Is that a bug?</summary>
+      <div class="faq-answer">
+        <p>
+          Sometimes it is just Adobe's API: several such differences are known and handled (missing
+          <code>nextParticipantSets</code>, <code>providerName</code> versus <code>cloudProviderName</code>). The
+          generated models ignore unknown fields, and <code>$raw</code> holds the full response. If the SDK
+          mishandles it, please report it with the response body.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <ul class="next-links">
+    <li><a href="errors.html"><strong>Errors &amp; exceptions</strong><span>The full map from Adobe error codes to exceptions.</span></a></li>
+    <li><a href="faq.html"><strong>FAQ</strong><span>Short answers to common questions.</span></a></li>
+    <li><a href="http-layer.html"><strong>Data centres, retries &amp; ETags</strong><span>The mechanics behind several of these problems.</span></a></li>
+  </ul>
+</article>
+<!-- docs:pager -->
+<nav class="pager" aria-label="Previous and next pages">
+  <a class="pager-prev" href="examples.html" rel="prev"><span class="pager-label">Previous</span><span class="pager-title">Example scripts</span></a>
+  <a class="pager-next" href="faq.html" rel="next"><span class="pager-label">Next</span><span class="pager-title">FAQ</span></a>
+</nav>
+<!-- /docs:pager -->
+</main>
+<aside class="toc" aria-label="On this page"></aside>
+</div>
+<!-- docs:footer -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>conceptlz/adobe-sign · MIT licensed · <a href="https://github.com/conceptlz/adobe-sign">Source on GitHub</a></p>
+    <p>An independent SDK, not affiliated with or endorsed by Adobe. Adobe and Acrobat Sign are trademarks of Adobe Inc.</p>
+  </div>
+</footer>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/docs.js"></script>
+<!-- /docs:footer -->
+</body>
+</html>

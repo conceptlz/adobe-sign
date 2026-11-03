@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- docs:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>
+(function () {
+  var theme = null;
+  try { theme = localStorage.getItem('docs-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap">
+<link rel="stylesheet" href="assets/css/docs.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<!-- /docs:head -->
+<title>Signature levels: SES, AES and QES · conceptlz/adobe-sign</title>
+<meta name="description" content="What simple, advanced and qualified electronic signatures mean under eIDAS and in the UAE, how Acrobat Sign implements each one, and how to request, mix and verify levels with the PHP SDK.">
+</head>
+<body>
+<!-- docs:topbar -->
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="topbar">
+  <button class="icon-button menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+  </button>
+  <a class="brand" href="index.html">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="15.5" fill="none" stroke="currentColor" stroke-width="0.6" stroke-dasharray="1.5 2"/>
+      <path d="M9.5 24.5c3.2-1.2 5.4-7.6 7.1-11.3 1-2.1 2.4-1.4 1.6 1.2-1.2 3.9-2.8 8.4-1.4 9.3 1.5 1 3.4-4.4 4.6-4.1 1.1.3-.3 3.3.8 3.5 1.3.2 2.6-2.4 3.8-2.2 1 .2.6 1.8 1.6 1.9 1 .1 2.1-.8 3-1.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 28.5h20" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+    </svg>
+    <span class="brand-text"><span class="brand-name">Adobe Sign PHP SDK</span><span class="brand-package">conceptlz/adobe-sign</span></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <div class="search" role="search">
+    <label class="visually-hidden" for="docs-search">Search the documentation</label>
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+    <input class="search-input" id="docs-search" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-search-results" aria-autocomplete="list">
+    <kbd class="search-key">/</kbd>
+    <ul class="search-results" id="docs-search-results" role="listbox" aria-label="Search results" hidden></ul>
+  </div>
+  <a class="topbar-link" href="https://github.com/conceptlz/adobe-sign">GitHub</a>
+  <button class="icon-button theme-toggle" type="button" aria-label="Switch theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+  </button>
+</header>
+<!-- /docs:topbar -->
+<div class="layout">
+<!-- docs:sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Documentation">
+  <div class="nav-group">
+    <p class="nav-group-title">Start here</p>
+    <ul class="nav-list">
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="getting-started.html">Getting started</a></li>
+      <li><a href="concepts.html">How Acrobat Sign works</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Guides</p>
+    <ul class="nav-list">
+      <li><a href="authentication.html">Authentication</a></li>
+      <li><a href="documents.html">Uploading documents</a></li>
+      <li><a href="agreements.html">Creating agreements</a></li>
+      <li><a href="signing-order.html">Signing order</a></li>
+      <li><a href="managing-agreements.html">Managing agreements</a></li>
+      <li><a href="downloads.html">Downloading signed files</a></li>
+      <li><a href="signature-levels.html" aria-current="page">Signature levels: SES, AES, QES</a></li>
+      <li><a href="identity-verification.html">Identity verification</a></li>
+      <li><a href="webhooks.html">Webhooks</a></li>
+      <li><a href="other-resources.html">Library, web forms, users, bulk</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Reference</p>
+    <ul class="nav-list">
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="http-layer.html">Data centres, retries &amp; ETags</a></li>
+      <li><a href="errors.html">Errors &amp; exceptions</a></li>
+      <li><a href="models.html">Models &amp; raw data</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Help</p>
+    <ul class="nav-list">
+      <li><a href="testing.html">Testing your integration</a></li>
+      <li><a href="examples.html">Example scripts</a></li>
+      <li><a href="troubleshooting.html">Troubleshooting</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+    </ul>
+  </div>
+  <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+</nav>
+<div class="nav-backdrop" hidden></div>
+<!-- /docs:sidebar -->
+<main id="content" class="content">
+<article class="doc">
+  <header class="doc-header">
+    <p class="eyebrow">Guides</p>
+    <h1>Signature levels: SES, AES and QES</h1>
+    <p class="lede">
+      Not every signature carries the same legal weight. This page explains the three levels that
+      European law (and laws modelled on it, such as the UAE's) recognises, what each one means
+      technically inside Acrobat Sign, and how to request a level per project, per agreement or per
+      signer. It also shows how to prove afterwards which level each person actually reached.
+    </p>
+  </header>
+
+  <h2 id="short-version">The short version</h2>
+  <p>
+    The SDK defaults to <strong>SES</strong>, Acrobat Sign's normal e-signature. You can raise the
+    level for a whole project, for one agreement, or for one signer. AES and QES are the same API
+    request; what makes a signature <em>qualified</em> is the trust service provider that issues the
+    signer's certificate, which is configured on your Acrobat Sign account, not in code.
+  </p>
+
+  <div class="levels">
+    <div class="level">
+      <p class="level-name">SES</p>
+      <p class="level-full">Simple electronic signature</p>
+      <p>The signer types, draws or clicks. Adobe seals the finished PDF with its own certificate and records an audit trail.</p>
+      <p>Good for most commercial paperwork: NDAs, order forms, HR acknowledgements.</p>
+    </div>
+    <div class="level">
+      <p class="level-name">AES</p>
+      <p class="level-full">Advanced electronic signature</p>
+      <p>The signer signs with a digital certificate issued to them by a cloud signature provider. Their own certificate is embedded in the PDF.</p>
+      <p>For higher-value or regulated agreements where you want the signature bound to an identified person.</p>
+    </div>
+    <div class="level">
+      <p class="level-name">QES</p>
+      <p class="level-full">Qualified electronic signature</p>
+      <p>An AES made with a <em>qualified</em> certificate from a qualified trust service provider, on a qualified signature creation device.</p>
+      <p>Treated like a handwritten signature in the EU. Needed where a law or contract asks for it.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-legal">
+    <p class="callout-title">This page is orientation, not legal advice</p>
+    <p>
+      It summarises how the frameworks are generally understood, so that developers and technical leads
+      can have an informed conversation. Whether a given signature satisfies a requirement depends on
+      the jurisdiction, the type of document and the facts. Confirm your choice of level with your own
+      counsel or compliance team. The SDK requests a level and reports what happened; it does not
+      decide what the law requires.
+    </p>
+  </div>
+
+  <h2 id="eidas">What eIDAS says</h2>
+  <p>
+    <strong>eIDAS</strong> is the European Union's regulation on electronic identification and trust
+    services, Regulation (EU) No 910/2014. It has applied across the EU since 2016 and was amended by
+    Regulation (EU) 2024/1183, often called "eIDAS 2". Because it is a regulation rather than a
+    directive, the rules are the same in every member state, and the EEA countries follow it too. It
+    defines three levels of electronic signature, each building on the one below.
+  </p>
+
+  <h3 id="eidas-ses">Simple electronic signature (SES)</h3>
+  <p>
+    The regulation's baseline definition is broad: data in electronic form that is attached to, or
+    logically associated with, other electronic data and that the signatory uses to sign. A typed name,
+    a drawn squiggle, a scanned image or a click on "I agree" can all qualify.
+  </p>
+  <p>
+    The important legal point is the <em>non-discrimination</em> rule: a court may not refuse an
+    electronic signature as evidence, or deny it legal effect, just because it is electronic or because
+    it isn't qualified. An SES is valid. What it lacks is a built-in presumption: if the signer later
+    says "that wasn't me", the party relying on the signature has to prove otherwise, using evidence
+    such as Acrobat Sign's audit report (email address, IP address, timestamps, identity checks).
+  </p>
+
+  <h3 id="eidas-aes">Advanced electronic signature (AES)</h3>
+  <p>An advanced signature is an electronic signature that meets four requirements:</p>
+  <ol class="steps">
+    <li><span class="step-title">Uniquely linked to the signatory</span><p>The signature belongs to one person and no one else.</p></li>
+    <li><span class="step-title">Capable of identifying the signatory</span><p>From the signature you can tell who signed, typically because the certificate names them.</p></li>
+    <li><span class="step-title">Created under the signatory's sole control</span><p>The signing key is something only the signer can use, with a high level of confidence; for cloud signatures that means the provider authenticates the signer before each use.</p></li>
+    <li><span class="step-title">Linked to the signed data so that changes are detectable</span><p>Alter a single byte of the document afterwards and the signature no longer validates.</p></li>
+  </ol>
+  <p>
+    In practice these requirements point towards public-key cryptography: a certificate issued to the
+    signer, and a signature computed over a hash of the document. That is exactly what Acrobat Sign
+    produces when you ask for a digital signature.
+  </p>
+
+  <h3 id="eidas-qes">Qualified electronic signature (QES)</h3>
+  <p>
+    A qualified signature is an advanced signature with two extra ingredients: it is based on a
+    <strong>qualified certificate</strong> for electronic signatures, and it is created by a
+    <strong>qualified signature creation device</strong> (QSCD). Qualified certificates may only be
+    issued by a <strong>qualified trust service provider</strong> (QTSP): a provider that has been
+    audited against the regulation's requirements, granted qualified status by a national supervisory
+    body and listed on that country's trusted list. Before issuing a qualified certificate, the QTSP
+    must verify the person's identity to a high standard (in person, by video identification, with a
+    national eID, and so on).
+  </p>
+  <p>
+    The QSCD used to be a smart card or USB token. Today it is usually a certified hardware security
+    module run by the QTSP, which holds the signer's key and lets them use it remotely after strong
+    authentication. This "remote QSCD" model is what makes QES possible from a browser, and it is how
+    cloud providers integrated with Acrobat Sign work.
+  </p>
+  <p>
+    The legal effect is the strongest the regulation offers: a QES has the equivalent legal effect of a
+    handwritten signature, and a QES based on a qualified certificate issued in one member state must be
+    recognised as a QES in all the others.
+  </p>
+
+  <h3 id="eidas-trusted-lists">Trusted lists</h3>
+  <p>
+    Each member state publishes a trusted list of its QTSPs and their qualified services, and the
+    European Commission publishes the list of those lists. Validation software uses them to decide
+    whether a certificate was qualified at the moment of signing. You can browse them through the
+    Commission's
+    <a href="https://eidas.ec.europa.eu/efda/trust-services/browse/eidas/tls">trusted list browser</a>.
+    When this page says a provider is "qualified", it means the provider and the specific service used
+    appear on a trusted list.
+  </p>
+
+  <h3 id="eidas-2024-amendment">What changed with Regulation (EU) 2024/1183</h3>
+  <p>
+    The 2024 amendment keeps the three signature levels as they were. Its headline change is the
+    <strong>European Digital Identity Wallet</strong>: member states must offer citizens a wallet that
+    holds identity data and attestations, and the wallets are expected to let people create qualified
+    electronic signatures. It also adds new trust services such as electronic attestations of
+    attributes and electronic ledgers. For an integration built on Acrobat Sign, the practical effect so
+    far is that more people may already hold a qualified signing means, and more providers may appear
+    as options. The way you request levels through the API is unchanged.
+  </p>
+
+  <h2 id="uae">How the UAE recognises electronic signatures</h2>
+  <p>
+    The UAE's main federal law is <strong>Federal Decree-Law No. 46 of 2021</strong> on electronic
+    transactions and trust services, which replaced the earlier federal e-commerce law. In broad
+    terms:
+  </p>
+  <ul>
+    <li>
+      Electronic signatures and electronic records are recognised, and a signature is not refused
+      legal effect only because it is electronic.
+    </li>
+    <li>
+      The law describes tiers that broadly mirror eIDAS: an ordinary electronic signature, a
+      trusted (reliable) electronic signature, and a qualified electronic signature backed by a
+      qualified certificate from a licensed provider. The stronger tiers carry stronger presumptions,
+      and qualified signatures are generally given the same force as handwritten ones.
+    </li>
+    <li>
+      The <strong>Telecommunications and Digital Government Regulatory Authority (TDRA)</strong>
+      supervises trust services and licenses trust service providers. There are also arrangements for
+      recognising foreign trust services.
+    </li>
+    <li>
+      <a href="https://docs.uaepass.ae/guides">UAE PASS</a>, the national digital identity, offers
+      digital signing to residents and citizens.
+    </li>
+    <li>
+      Some transactions are excluded from electronic execution or need extra formalities. Historically
+      these have included personal-status matters, wills, certain real-estate dealings and documents
+      that must be notarised. Check the current list for your document type.
+    </li>
+    <li>
+      Financial free zones such as the DIFC and ADGM have their own legislation on electronic
+      transactions, which can differ from the federal rules.
+    </li>
+  </ul>
+  <div class="callout callout-legal">
+    <p class="callout-title">Confirm UAE specifics locally</p>
+    <p>
+      Implementing regulations and the list of licensed providers change over time, and the answer can
+      depend on the emirate, the free zone and the counterparty (government entities often have their
+      own requirements). Treat this section as a map of the questions to ask, and get the answers from
+      counsel who practise in the UAE.
+    </p>
+  </div>
+
+  <h2 id="which-level">Which level do I need?</h2>
+  <p>
+    Start from the highest requirement anyone places on the document, then step down. Most commercial
+    agreements are fine with SES plus a sensible identity check. AES is a business choice for higher
+    assurance. QES is usually driven by a specific legal or contractual requirement.
+  </p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 330" role="img" aria-label="Decision flow. First question: must the signature be qualified because a law, regulator or contract asks for QES? If yes, use QES: a qualified certificate from a QTSP on a QSCD. If no, second question: must the signature name a verified signer with a certificate bound to the person? If yes, use AES: the signer's own certificate from a cloud provider. If no, use SES: a typed, drawn or clicked signature with Adobe's seal on the PDF. A side note says identity checks such as Email OTP, SMS or ID can be added at any level and don't change the level.">
+      <defs>
+        <marker id="arrow-sl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="d-arrowhead" d="M0 0 10 5 0 10z"/></marker>
+      </defs>
+      <rect class="d-box" x="20" y="20" width="330" height="70" rx="8"/>
+      <text class="d-text-strong" x="185" y="49" text-anchor="middle">Must it be qualified?</text>
+      <text class="d-text-soft" x="185" y="71" text-anchor="middle">a law, regulator or contract asks for QES</text>
+
+      <rect class="d-box-stamp" x="500" y="20" width="200" height="70" rx="8"/>
+      <text class="d-text-display" x="600" y="46" text-anchor="middle">QES</text>
+      <text class="d-text-soft" x="600" y="64" text-anchor="middle">qualified certificate</text>
+      <text class="d-text-soft" x="600" y="80" text-anchor="middle">from a QTSP, on a QSCD</text>
+
+      <path class="d-line" d="M350 55H497" marker-end="url(#arrow-sl)"/>
+      <text class="d-text-soft" x="424" y="47" text-anchor="middle">yes</text>
+
+      <path class="d-line" d="M185 90V127" marker-end="url(#arrow-sl)"/>
+      <text class="d-text-soft" x="195" y="113">no</text>
+
+      <rect class="d-box" x="20" y="130" width="330" height="70" rx="8"/>
+      <text class="d-text-strong" x="185" y="159" text-anchor="middle">Must it name a verified signer?</text>
+      <text class="d-text-soft" x="185" y="181" text-anchor="middle">certificate bound to the person, tamper-evident</text>
+
+      <rect class="d-box-brand" x="500" y="130" width="200" height="70" rx="8"/>
+      <text class="d-text-display" x="600" y="156" text-anchor="middle">AES</text>
+      <text class="d-text-soft" x="600" y="174" text-anchor="middle">signer's own certificate</text>
+      <text class="d-text-soft" x="600" y="190" text-anchor="middle">from a cloud provider</text>
+
+      <path class="d-line" d="M350 165H497" marker-end="url(#arrow-sl)"/>
+      <text class="d-text-soft" x="424" y="157" text-anchor="middle">yes</text>
+
+      <path class="d-line" d="M185 200V237" marker-end="url(#arrow-sl)"/>
+      <text class="d-text-soft" x="195" y="223">no</text>
+
+      <rect class="d-box-ok" x="20" y="240" width="330" height="70" rx="8"/>
+      <text class="d-text-display" x="185" y="266" text-anchor="middle">SES</text>
+      <text class="d-text-soft" x="185" y="284" text-anchor="middle">typed, drawn or clicked signature</text>
+      <text class="d-text-soft" x="185" y="300" text-anchor="middle">Adobe's seal protects the PDF</text>
+
+      <path class="d-line-dashed" d="M350 275H400"/>
+      <rect class="d-box-muted" x="400" y="240" width="300" height="70" rx="8"/>
+      <text class="d-text-soft" x="550" y="264" text-anchor="middle">Identity checks (Email OTP, SMS, ID)</text>
+      <text class="d-text-soft" x="550" y="281" text-anchor="middle">can be added at any level.</text>
+      <text class="d-text-soft" x="550" y="298" text-anchor="middle">They don't change the level.</text>
+    </svg>
+    <figcaption>Work from the top: the first "yes" decides the level. If you can't answer the first question confidently, that is a question for counsel, not for the code.</figcaption>
+  </figure>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Typical document</th><th>Level people usually choose</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>NDA, order form, statement of work, HR policy acknowledgement</td><td>SES</td><td>Low dispute risk; the audit report is ample evidence.</td></tr>
+        <tr><td>Sales contract or lease with a known customer</td><td>SES with Email OTP or SMS</td><td>Cheap extra assurance that the right person opened it.</td></tr>
+        <tr><td>Loan, guarantee, high-value or cross-border contract</td><td>AES</td><td>Signature bound to an identified person; tamper-evident.</td></tr>
+        <tr><td>Documents where a statute or regulator asks for a qualified signature, or where a counterparty insists on "handwritten-equivalent" signatures</td><td>QES</td><td>Equivalent legal effect to a handwritten signature in the EU.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>These are common patterns, not rules. Your counsel decides; the SDK makes any of the three a one-line change.</p>
+
+  <h2 id="how-acrobat-sign-implements">How Acrobat Sign implements each level</h2>
+  <p>
+    Acrobat Sign has a single switch for this, <code>isDigitalSignatureRequired</code>, set per
+    participant set. The SDK translates levels into that switch:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Level</th><th>What the SDK sends</th><th>What the signer does</th><th>What ends up in the PDF</th></tr></thead>
+      <tbody>
+        <tr><td><strong>SES</strong></td><td>nothing extra (Acrobat Sign's default)</td><td>types, draws or uploads a signature image</td><td>Adobe's certification seal over the whole document</td></tr>
+        <tr><td><strong>AES</strong></td><td><code>"isDigitalSignatureRequired": true</code> on the signer's set</td><td>picks a cloud signature provider, authenticates with it, signs with their certificate</td><td>Adobe's seal plus the signer's own certificate as an embedded PDF signature</td></tr>
+        <tr><td><strong>QES</strong></td><td>the same as AES</td><td>the same, with a qualified provider</td><td>the same, with a qualified certificate</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The API cannot express "qualified": Adobe offers a digital signature and lets the account decide
+    which providers are available. That is why the SDK keeps QES as a separate value at all: it records
+    your intent, so you can check the result against it after signing.
+  </p>
+
+  <h2 id="choosing-a-level">Choosing a level in code</h2>
+  <p>
+    Levels come from <code>Conceptlz\AdobeSign\Enum\SignatureLevel</code>, a backed enum with the
+    cases <code>SES</code>, <code>AES</code> and <code>QES</code>. Two helper methods make comparisons
+    easy: <code>requiresDigitalSignature()</code> is true for AES and QES, and
+    <code>satisfies(SignatureLevel $required)</code> is true when a level is at least as strong as the
+    one required (QES satisfies AES, AES satisfies SES).
+  </p>
+
+  <h3 id="project-default">A project-wide default</h3>
+  <p>
+    Set <code>ClientOptions::$defaultSignatureLevel</code> once and every agreement built with
+    <code>AgreementInfo</code> uses it unless it says otherwise:
+  </p>
+  <figure class="code">
+    <figcaption>bootstrap.php</figcaption>
+    <pre><code class="language-php">use Conceptlz\AdobeSign\AdobeSign;
+use Conceptlz\AdobeSign\ClientOptions;
+use Conceptlz\AdobeSign\Enum\SignatureLevel;
+
+$sign = AdobeSign::withIntegrationKey(
+    getenv('ADOBE_SIGN_INTEGRATION_KEY'),
+    options: new ClientOptions(defaultSignatureLevel: SignatureLevel::AES),
+);</code></pre>
+  </figure>
+  <p>
+    The default is <code>SignatureLevel::SES</code>, which sends nothing extra and keeps Acrobat Sign's
+    normal behaviour. The default applies only to agreements built with the <code>AgreementInfo</code>
+    builder: raw arrays and generated <code>AgreementCreationInfo</code> models are sent exactly as you
+    wrote them.
+  </p>
+
+  <h3 id="per-agreement">Per agreement</h3>
+  <p><code>AgreementInfo::signatureLevel()</code> sets the level for every signer in the agreement, overriding the client default:</p>
+  <pre><code class="language-php">use Conceptlz\AdobeSign\Builder\AgreementInfo;
+use Conceptlz\AdobeSign\Enum\SignatureLevel;
+
+$agreementId = $sign-&gt;agreements()-&gt;create(
+    AgreementInfo::create('Employment contract')
+        -&gt;file($documentId)
+        -&gt;signers('employee@example.com', 'hr-director@example.com')
+        -&gt;signatureLevel(SignatureLevel::QES),
+);</code></pre>
+
+  <h3 id="per-signer">Per signer, in either direction</h3>
+  <p>
+    <code>ParticipantSetInfo::signatureLevel()</code> overrides the agreement's level for one
+    participant set. It works both ways: raise one signer above the rest, or let one signer sign more
+    simply than the rest. Here is one agreement where the borrower signs with AES and the witness with
+    SES:
+  </p>
+  <figure class="code">
+    <figcaption>One agreement, two levels</figcaption>
+    <pre><code class="language-php">use Conceptlz\AdobeSign\Builder\{AgreementInfo, ParticipantInfo, ParticipantSetInfo};
+use Conceptlz\AdobeSign\Enum\SignatureLevel;
+
+$agreementId = $sign-&gt;agreements()-&gt;create(
+    AgreementInfo::create('Loan agreement')
+        -&gt;file($documentId)
+        // Step 1: the borrower signs with a certificate (AES)
+        -&gt;participantSet(
+            ParticipantSetInfo::signer(ParticipantInfo::email('borrower@example.com', 'Borrower'))
+                -&gt;signatureLevel(SignatureLevel::AES),
+        )
+        // Step 2: the witness signs normally (SES, the client default)
+        -&gt;participantSet(ParticipantSetInfo::signer('witness@example.com')),
+);</code></pre>
+  </figure>
+  <p>The builder turns that into a payload where only the first set asks for a digital signature:</p>
+  <pre><code class="language-json">"participantSetsInfo": [
+  {
+    "role": "SIGNER",
+    "order": 1,
+    "memberInfos": [{ "email": "borrower@example.com", "name": "Borrower" }],
+    "isDigitalSignatureRequired": true
+  },
+  {
+    "role": "SIGNER",
+    "order": 2,
+    "memberInfos": [{ "email": "witness@example.com" }]
+  }
+]</code></pre>
+  <p>The opposite direction works the same way: a QES agreement with one internal signer who only needs SES.</p>
+  <pre><code class="language-php">AgreementInfo::create('Share purchase agreement')
+    -&gt;file($documentId)
+    -&gt;signatureLevel(SignatureLevel::QES)                                  // everyone…
+    -&gt;participantSet(ParticipantSetInfo::signer('buyer@example.com'))
+    -&gt;participantSet(ParticipantSetInfo::signer('seller@example.com'))
+    -&gt;participantSet(
+        ParticipantSetInfo::signer('company-secretary@example.com')
+            -&gt;signatureLevel(SignatureLevel::SES),                          // …except this signer
+    );</code></pre>
+
+  <h3 id="level-precedence">Which level wins</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Source</th><th>Applies to</th><th>Precedence</th></tr></thead>
+      <tbody>
+        <tr><td><code>ParticipantSetInfo::signatureLevel()</code></td><td>that participant set</td><td>highest</td></tr>
+        <tr><td><code>AgreementInfo::signatureLevel()</code></td><td>every signer set without its own level</td><td>middle</td></tr>
+        <tr><td><code>ClientOptions::$defaultSignatureLevel</code></td><td>agreements whose builder sets no level</td><td>lowest</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Only sets with the <code>SIGNER</code> role ever receive a level. Approvers, acceptors, form fillers,
+    certified recipients and delegates don't sign, so the agreement-level and project-level settings
+    skip them. You can read back what you set with <code>AgreementInfo::getSignatureLevel()</code> and
+    <code>ParticipantSetInfo::getSignatureLevel()</code>.
+  </p>
+
+  <h3 id="validation-rules">Validation before anything is sent</h3>
+  <p>
+    The builders refuse combinations that can't work and throw
+    <code>Conceptlz\AdobeSign\Exception\InvalidArgumentException</code> before any request is made, so a
+    requested level is never dropped without you knowing:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>You do this</th><th>The SDK says</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Ask for AES or QES on an agreement with <code>signatureType(SignatureType::WRITTEN)</code></td>
+          <td><code>AES and QES need electronic signatures; this agreement uses signatureType WRITTEN.</code></td>
+        </tr>
+        <tr>
+          <td>Call <code>AgreementInfo::signatureLevel()</code> with AES or QES on an agreement that has no <code>SIGNER</code> set (only approvers, say)</td>
+          <td><code>AES was requested but the agreement has no signer to apply it to.</code></td>
+        </tr>
+        <tr>
+          <td>Call <code>signatureLevel(SignatureLevel::AES)</code> on an approver set</td>
+          <td><code>A APPROVER set does not sign, so it cannot be held to AES.</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Two details are easy to miss:</p>
+  <ul>
+    <li>
+      The "no signer" rule applies only to a level set explicitly on the agreement. A project default of
+      AES does not break approval-only agreements; it simply has no one to apply to.
+    </li>
+    <li>
+      The <code>WRITTEN</code> rule does include the project default. If your client defaults to AES and
+      you need a written (wet-ink) agreement, set <code>-&gt;signatureLevel(SignatureLevel::SES)</code> on
+      it explicitly.
+    </li>
+  </ul>
+  <p>
+    Adobe can also refuse a digital-signature request for account reasons: the spec lists
+    <code>DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_NOT_ALLOWED</code> and
+    <code>..._DISABLED</code> as possible 403 answers to <code>POST /agreements</code>. These arrive as an
+    <code>ApiException</code> with that <code>$errorCode</code>, and are fixed in Acrobat Sign admin, not in
+    code. See <a href="errors.html">Errors &amp; exceptions</a>.
+  </p>
+
+  <h2 id="signer-experience">What the signer experiences</h2>
+  <p>
+    For an SES, nothing changes: the signer opens the email, clicks through to the document and types or
+    draws a signature. For AES and QES, the signing step looks different:
+  </p>
+  <ol class="steps">
+    <li><span class="step-title">The usual email</span><p>The invitation looks the same as for any agreement. If you added an <a href="identity-verification.html">identity check</a>, that happens first.</p></li>
+    <li><span class="step-title">A provider dropdown</span><p>When the signer clicks the signature field, Acrobat Sign asks them to sign with a digital ID and shows a dropdown of the cloud signature providers (trust service providers) that your account has enabled for their region.</p></li>
+    <li><span class="step-title">Authenticate with the provider</span><p>The signer is sent to the chosen provider and logs in with whatever that provider requires, for example a username, a PIN and a one-time code. Someone without an identity at that provider has to enrol first, which can include the provider's own identity proofing.</p></li>
+    <li><span class="step-title">Sign with a cloud certificate</span><p>The provider uses the certificate it holds for the signer to sign the document hash, and hands the signature back to Acrobat Sign. The signer never installs anything.</p></li>
+    <li><span class="step-title">Back in Acrobat Sign</span><p>Adobe embeds the signature in the PDF, logs a <code>DIGSIGNED</code> event and moves the agreement to the next step in the signing order.</p></li>
+  </ol>
+
+  <h3 id="live-example">What a real AES looked like</h3>
+  <p>
+    When the SDK was tested against a real account, the signer picked <em>Intesi Group Cloud
+    Signature</em> from the dropdown and signed with a test certificate issued by
+    <em>Intesi Group Advanced Cloud Signature CA Test</em>. That is an advanced certificate, not a
+    qualified one, so the result was an AES and not a QES. Adobe recorded the signature like this (trimmed):
+  </p>
+  <pre><code class="language-json">{
+  "type": "DIGSIGNED",
+  "participantRole": "SIGNER",
+  "signatureInputType": "TYPED",
+  "digitalSignatureInfo": {
+    "certificateIssuer": "Intesi Group Advanced Cloud Signature CA Test",
+    "providerName": "Intesi Group Cloud Signature",
+    "providerUrl": "https://services.time4mind.com/csc/v1/",
+    "providerIp": "194.15.44.117"
+  }
+}</code></pre>
+  <p>Two things in that payload are worth knowing:</p>
+  <ul>
+    <li>
+      Adobe's spec names the provider fields <code>cloudProviderName</code>, <code>cloudProviderUrl</code>
+      and <code>cloudProviderIp</code>; the live API sent <code>providerName</code>,
+      <code>providerUrl</code> and <code>providerIp</code>. <code>signatureEvidence()</code> reads both
+      spellings. The generated <code>DigitalSignatureInfo</code> model only has the spec's names, so if
+      you read events yourself, look in the raw array too.
+    </li>
+    <li>
+      <code>signatureInputType</code> was <code>TYPED</code> even though the signature was digital: it
+      describes how the visible signature appearance was made, not the cryptography. Use the event type
+      and <code>digitalSignatureInfo</code> to tell digital signatures apart.
+    </li>
+  </ul>
+
+  <h2 id="why-qes-depends-on-provider">Why QES depends on the provider</h2>
+  <p>
+    Everything that makes a signature qualified lives at the provider: the qualified certificate, the
+    identity proofing done before issuing it, and the certified device (the QSCD) that holds the key.
+    Acrobat Sign orchestrates the signing, but the provider performs it. So the same API request yields
+    an AES with one provider and a QES with another. Even one provider can offer both an advanced and a
+    qualified service, as the test above shows.
+  </p>
+
+  <h3 id="qes-account-setup">Setting an account up for QES</h3>
+  <ol class="steps">
+    <li><span class="step-title">Check the plan</span><p>Digital signatures with cloud providers need an Acrobat Sign plan that includes them. Ask your Adobe representative; QTSPs also charge for their certificates and signatures.</p></li>
+    <li><span class="step-title">Enable digital signatures and add a qualified provider</span><p>In Acrobat Sign admin, enable digital signatures and add a qualified trust service provider as a cloud signature provider. Restrict the list for the regions or groups that need QES, so signers can't pick a non-qualified option by mistake.</p></li>
+    <li><span class="step-title">Make sure signers can get a qualified certificate</span><p>Each signer needs an identity with that provider. Tell them in the agreement message, because enrolment can take a few minutes the first time.</p></li>
+    <li><span class="step-title">Request QES in code and record the accepted issuers</span><p>Use <code>SignatureLevel::QES</code>, and keep the certificate issuers your compliance team accepts as qualified in configuration, for the check after signing.</p></li>
+  </ol>
+  <p>
+    The <a href="https://eidas.ec.europa.eu/efda/trust-services/browse/eidas/tls">EU trusted lists</a>
+    show which providers and services are qualified. Several QTSPs advertise integrations with Acrobat
+    Sign; confirm with the provider which of its services is qualified, and under which jurisdiction.
+  </p>
+
+  <h3 id="qualified-issuers">The qualified-issuers list</h3>
+  <p>
+    The SDK can see the certificate issuer of each digital signature, but it cannot know by itself
+    whether that issuer is qualified. You tell it, with a list of issuer names you accept. Matching is
+    case-insensitive and by substring, so <code>'TrustPro QTSP'</code> matches an issuer called
+    <code>"TrustPro QTSP Qualified CA 1"</code>.
+  </p>
+  <pre><code class="language-php">// Keep this in configuration so compliance can change it without a deploy.
+$qualifiedIssuers = array_values(array_filter(array_map(
+    'trim',
+    explode(',', getenv('QUALIFIED_ISSUERS') ?: ''),
+)));</code></pre>
+  <p>
+    The bundled <code>examples/live-lifecycle.php</code> reads the same <code>QUALIFIED_ISSUERS</code>
+    variable, and the Laravel bridge reads it from its <code>qualified_issuers</code> config key. Keep the
+    names specific: a bare company name can match that company's advanced (non-qualified) CA too.
+  </p>
+
+  <h2 id="signature-evidence">Checking what was achieved</h2>
+  <p>
+    Requesting a level is half the job. After signing, ask the SDK what each signer actually did:
+  </p>
+
+  <div class="api" id="api-agreements-signature-evidence">
+    <pre class="api-signature">agreements()-&gt;signatureEvidence(string $agreementId): SignatureEvidence<span class="endpoint"><b>GET</b> /agreements/{agreementId} + /members + /events</span></pre>
+    <div class="api-body">
+      <p>
+        Makes three calls (the agreement's status, its members and its events) and joins them per signer.
+        A signer counts as signed when Adobe recorded a signing event for their email
+        (<code>ACTION_COMPLETED</code>, <code>ACTION_COMPLETED_HOSTED</code>,
+        <code>ACTION_COMPLETED_OFFLINE</code> or <code>DIGSIGNED</code>), and as digitally signed when
+        that event is a <code>DIGSIGNED</code> event or carries a non-empty
+        <code>digitalSignatureInfo</code>. Only <code>SIGNER</code> sets are included, in signing order.
+      </p>
+    </div>
+  </div>
+
+  <pre><code class="language-php">use Conceptlz\AdobeSign\Enum\SignatureLevel;
+
+$evidence = $sign-&gt;agreements()-&gt;signatureEvidence($agreementId);
+
+if (!$evidence-&gt;allSigned()) {
+    return; // try again after AGREEMENT_WORKFLOW_COMPLETED
+}
+
+if ($evidence-&gt;meets(SignatureLevel::QES, $qualifiedIssuers)) {
+    $contract-&gt;markQualified();
+} else {
+    foreach ($evidence-&gt;shortfalls(SignatureLevel::QES, $qualifiedIssuers) as $problem) {
+        $log-&gt;warning($problem);
+        // "cfo@example.com signed digitally, but the certificate issuer "Intesi Group Advanced
+        //  Cloud Signature CA Test" is not in your list of qualified issuers: AES, QES required."
+    }
+}</code></pre>
+
+  <h3 id="signature-evidence-model">SignatureEvidence</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Member</th><th>What it gives you</th></tr></thead>
+      <tbody>
+        <tr><td><code>$agreementId</code>, <code>$status</code></td><td>The agreement and its status when you asked (e.g. <code>SIGNED</code>).</td></tr>
+        <tr><td><code>$signers</code></td><td>A list of <code>SignerEvidence</code>, sorted by signing order.</td></tr>
+        <tr><td><code>allSigned(): bool</code></td><td>True when every signer has signed (and there is at least one).</td></tr>
+        <tr><td><code>meets(SignatureLevel $required, array $qualifiedIssuers = []): bool</code></td><td>True when <em>every</em> signer reached <code>$required</code> or stronger.</td></tr>
+        <tr><td><code>shortfalls(SignatureLevel $required, array $qualifiedIssuers = []): array</code></td><td>Human-readable reasons, one per signer who falls short; empty when <code>meets()</code> is true.</td></tr>
+        <tr><td><code>lowestLevel(array $qualifiedIssuers = []): ?SignatureLevel</code></td><td>The weakest level any signer reached, or <code>null</code> while someone still has to sign.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <code>meets()</code> and <code>shortfalls()</code> throw <code>InvalidArgumentException</code> when you
+    check for QES with an empty issuer list, because without it no signature could ever be counted as
+    qualified.
+  </p>
+
+  <h3 id="signer-evidence-fields">SignerEvidence</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Property or method</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>$email</code>, <code>$name</code></td><td>The signer (the name from the signing event when Adobe has one).</td></tr>
+        <tr><td><code>$order</code></td><td>Their step in the signing order.</td></tr>
+        <tr><td><code>$signed</code>, <code>$signedAt</code></td><td>Whether and when (ISO 8601) they signed.</td></tr>
+        <tr><td><code>$signatureInputType</code></td><td>How the visible signature was made, e.g. <code>TYPED</code> or <code>SCRIBBLE</code> (drawn).</td></tr>
+        <tr><td><code>$digitalSignatureRequired</code></td><td>Whether the agreement asked this signer for a digital signature (AES or QES requested).</td></tr>
+        <tr><td><code>$digitallySigned</code></td><td>Whether a certificate-based signature was actually applied.</td></tr>
+        <tr><td><code>$certificateIssuer</code></td><td>The issuer of the signer's certificate, when digitally signed.</td></tr>
+        <tr><td><code>$signingProvider</code></td><td>The cloud provider that produced the signature, when digitally signed.</td></tr>
+        <tr><td><code>$verification</code></td><td>The identity check required before signing: <code>NONE</code>, <code>EMAIL_OTP</code>, <code>PHONE</code>, <code>KBA</code>, <code>GOV_ID</code>, <code>DIG_ID</code>, …</td></tr>
+        <tr><td><code>achievedLevel(array $qualifiedIssuers = []): ?SignatureLevel</code></td><td><code>null</code> if not signed; SES for an e-signature; AES for a digital signature; QES when the issuer is in your list.</td></tr>
+        <tr><td><code>issuedByAnyOf(array $issuers): bool</code></td><td>Whether the certificate issuer matches any name in the list.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="mixed-agreement-checks">Checking a mixed agreement</h3>
+  <p>
+    <code>meets()</code> holds every signer to one level. In the loan example above the witness signed
+    with SES on purpose, so <code>$evidence-&gt;meets(SignatureLevel::AES)</code> is false even though
+    everything went to plan. For agreements that mix levels, check each signer against what you asked of
+    them:
+  </p>
+  <figure class="code">
+    <figcaption>Per-signer check</figcaption>
+    <pre><code class="language-php">use Conceptlz\AdobeSign\Enum\SignatureLevel;
+
+// What you requested, stored when you created the agreement.
+$required = [
+    'borrower@example.com' =&gt; SignatureLevel::AES,
+    'witness@example.com'  =&gt; SignatureLevel::SES,
+];
+
+$evidence = $sign-&gt;agreements()-&gt;signatureEvidence($agreementId);
+$problems = [];
+
+foreach ($evidence-&gt;signers as $signer) {
+    $needed = $required[strtolower($signer-&gt;email)]
+        // Fallback: Adobe remembers whether a digital signature was required,
+        // but not whether you meant AES or QES.
+        ?? ($signer-&gt;digitalSignatureRequired ? SignatureLevel::AES : SignatureLevel::SES);
+
+    $achieved = $signer-&gt;achievedLevel($qualifiedIssuers);
+
+    if ($achieved === null) {
+        $problems[] = "{$signer-&gt;email} has not signed yet.";
+    } elseif (!$achieved-&gt;satisfies($needed)) {
+        $problems[] = sprintf('%s reached %s, %s required.', $signer-&gt;email, $achieved-&gt;value, $needed-&gt;value);
+    }
+}</code></pre>
+  </figure>
+
+  <h3 id="how-levels-are-inferred">How the SDK infers the level, and its limits</h3>
+  <ul>
+    <li><strong>SES</strong>: a signing event without digital signature data.</li>
+    <li><strong>AES</strong>: a <code>DIGSIGNED</code> event, or a signing event with <code>digitalSignatureInfo</code>.</li>
+    <li><strong>QES</strong>: an AES whose <code>certificateIssuer</code> matches your list.</li>
+  </ul>
+  <p>
+    Signers are matched by email. If a signer delegated to someone else, the delegate's signature is
+    matched only when Adobe reports it under the original signer's email. Identity checks are reported in
+    <code>$verification</code> but never change the inferred level.
+  </p>
+
+  <h3 id="formal-validation">Formal validation of the PDF</h3>
+  <p>
+    <code>signatureEvidence()</code> reads Adobe's records, which is the right tool for workflow decisions
+    ("can we release the goods?"). For an authoritative statement, for example in a dispute, validate the
+    signatures inside the signed PDF itself against the trusted lists, using validation software such as
+    the EU's <a href="https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/validation">DSS
+    demonstration service</a> or Acrobat's signature panel. <a href="downloads.html#whats-in-the-pdf">What
+    is inside the signed PDF</a> explains which signatures you will find there.
+  </p>
+
+  <h2 id="identity-is-separate">Identity checks are a separate dimension</h2>
+  <p>
+    Email OTP, SMS codes, knowledge-based questions, government ID scans and national eIDs control who
+    can <em>open</em> the agreement. They make an SES much more convincing as evidence, and they are
+    worth adding at any level, but they don't turn an SES into an AES. Only a certificate-based
+    digital signature does that. Combine the two dimensions freely:
+  </p>
+  <pre><code class="language-php">use Conceptlz\AdobeSign\Builder\{ParticipantInfo, ParticipantSetInfo, Verification};
+use Conceptlz\AdobeSign\Enum\SignatureLevel;
+
+ParticipantSetInfo::signer(
+    ParticipantInfo::email('buyer@example.com')-&gt;verifyWith(Verification::emailOtp()),  // who may open it
+)-&gt;signatureLevel(SignatureLevel::AES);                                                 // how they sign</code></pre>
+  <p>The methods and their trade-offs are covered in <a href="identity-verification.html">Identity verification</a>.</p>
+
+  <h2 id="signature-levels-questions">Common questions</h2>
+  <div class="faq">
+    <details id="signature-levels-faq-email-otp-aes">
+      <summary>Is a signature with Email OTP an AES?</summary>
+      <div class="faq-answer">
+        <p>
+          No. It is still an SES. The one-time code proves that the person who opened the agreement
+          controlled the email inbox at that moment, which strengthens your evidence, but it doesn't give
+          the signer a certificate or bind the signature cryptographically to them. Ask for
+          <code>SignatureLevel::AES</code> if you need an advanced signature; you can keep the OTP as well.
+        </p>
+      </div>
+    </details>
+    <details id="signature-levels-faq-provider-dropdown">
+      <summary>Why did I see a provider dropdown when I signed?</summary>
+      <div class="faq-answer">
+        <p>
+          Because the agreement asked for a digital signature (AES or QES), either through the client
+          default, <code>AgreementInfo::signatureLevel()</code> or the signer's own
+          <code>signatureLevel()</code>. Acrobat Sign then lists the cloud signature providers enabled on
+          the account, and the signer picks the one they hold a certificate with. If the list is empty or
+          has the wrong providers, that is an account setting in Acrobat Sign admin.
+        </p>
+      </div>
+    </details>
+    <details id="signature-levels-faq-aes-vs-qes">
+      <summary>What's the difference between AES and QES if both use a provider?</summary>
+      <div class="faq-answer">
+        <p>
+          The certificate and the device. A QES uses a <em>qualified</em> certificate from a provider on an
+          EU trusted list, after identity proofing to qualified standards, and the key lives on a certified
+          QSCD. An AES can use any certificate that meets the four advanced requirements. The API request
+          is identical, so the provider (and the specific service it offers) decides the outcome. Check it
+          with <code>signatureEvidence()</code> and your qualified-issuers list.
+        </p>
+      </div>
+    </details>
+    <details id="signature-levels-faq-mixed-levels">
+      <summary>Can one signer be AES and another SES?</summary>
+      <div class="faq-answer">
+        <p>
+          Yes. Levels are set per participant set: call <code>signatureLevel()</code> on the
+          <code>ParticipantSetInfo</code> that needs a different level. It overrides the agreement's level in
+          either direction. After signing, check each signer against their own requirement, because
+          <code>meets()</code> applies one level to everyone (see <a href="#mixed-agreement-checks">Checking
+          a mixed agreement</a>).
+        </p>
+      </div>
+    </details>
+    <details id="signature-levels-faq-ses-valid">
+      <summary>Is a simple electronic signature legally binding?</summary>
+      <div class="faq-answer">
+        <p>
+          In the EU and the UAE, an electronic signature cannot be rejected just because it is electronic,
+          so an SES can bind the parties to most commercial contracts. Its weakness is evidential: if the
+          signer denies signing, you have to prove it, which is where the audit report and identity checks
+          help. Some documents need a higher level or are excluded from e-signing altogether; ask counsel.
+        </p>
+      </div>
+    </details>
+    <details id="signature-levels-faq-typed">
+      <summary>Why does the evidence say TYPED for a digital signature?</summary>
+      <div class="faq-answer">
+        <p>
+          <code>signatureInputType</code> describes the visible appearance the signer chose, and Adobe
+          reported <code>TYPED</code> for a certificate-based signature in live testing. Look at
+          <code>$signer-&gt;digitallySigned</code> and <code>$signer-&gt;certificateIssuer</code> instead.
+        </p>
+      </div>
+    </details>
+    <details id="signature-levels-faq-prove-qes">
+      <summary>Can the SDK prove that a signature is qualified?</summary>
+      <div class="faq-answer">
+        <p>
+          It can tell you that a signature was digital and which CA issued the certificate, and it compares
+          that issuer with the list you provide. It cannot check the trusted list itself. For a formal
+          answer, validate the signed PDF with trusted-list-aware validation software.
+        </p>
+      </div>
+    </details>
+    <details id="signature-levels-faq-default-change">
+      <summary>If I change the project default to AES, what happens to agreements already sent?</summary>
+      <div class="faq-answer">
+        <p>
+          Nothing. The level is part of the request that creates the agreement; changing
+          <code>ClientOptions</code> later affects only new agreements built with <code>AgreementInfo</code>.
+          To change an agreement in flight, cancel it and send a new one (see
+          <a href="managing-agreements.html#cancelling">Managing agreements</a>).
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 id="signature-levels-next">Where next</h2>
+  <ul class="next-links">
+    <li><a href="identity-verification.html"><strong>Identity verification</strong><span>Email OTP, SMS, government ID and national eIDs, and what each costs.</span></a></li>
+    <li><a href="downloads.html"><strong>Downloading signed files</strong><span>Get the signed PDF and see the certificates inside it.</span></a></li>
+    <li><a href="webhooks.html"><strong>Webhooks</strong><span>Run the evidence check as soon as the last person signs.</span></a></li>
+    <li><a href="agreements.html"><strong>Creating agreements</strong><span>Everything else the AgreementInfo builder can do.</span></a></li>
+  </ul>
+</article>
+<!-- docs:pager -->
+<nav class="pager" aria-label="Previous and next pages">
+  <a class="pager-prev" href="downloads.html" rel="prev"><span class="pager-label">Previous</span><span class="pager-title">Downloading signed files</span></a>
+  <a class="pager-next" href="identity-verification.html" rel="next"><span class="pager-label">Next</span><span class="pager-title">Identity verification</span></a>
+</nav>
+<!-- /docs:pager -->
+</main>
+<aside class="toc" aria-label="On this page"></aside>
+</div>
+<!-- docs:footer -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>conceptlz/adobe-sign · MIT licensed · <a href="https://github.com/conceptlz/adobe-sign">Source on GitHub</a></p>
+    <p>An independent SDK, not affiliated with or endorsed by Adobe. Adobe and Acrobat Sign are trademarks of Adobe Inc.</p>
+  </div>
+</footer>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/docs.js"></script>
+<!-- /docs:footer -->
+</body>
+</html>

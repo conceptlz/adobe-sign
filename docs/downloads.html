@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- docs:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>
+(function () {
+  var theme = null;
+  try { theme = localStorage.getItem('docs-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap">
+<link rel="stylesheet" href="assets/css/docs.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<!-- /docs:head -->
+<title>Downloading signed files · conceptlz/adobe-sign</title>
+<meta name="description" content="Download signed PDFs, audit reports, individual documents and form data from Acrobat Sign as PSR-7 streams, know what is inside the signed PDF, and pick the right moment to fetch it.">
+</head>
+<body>
+<!-- docs:topbar -->
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="topbar">
+  <button class="icon-button menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+  </button>
+  <a class="brand" href="index.html">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="15.5" fill="none" stroke="currentColor" stroke-width="0.6" stroke-dasharray="1.5 2"/>
+      <path d="M9.5 24.5c3.2-1.2 5.4-7.6 7.1-11.3 1-2.1 2.4-1.4 1.6 1.2-1.2 3.9-2.8 8.4-1.4 9.3 1.5 1 3.4-4.4 4.6-4.1 1.1.3-.3 3.3.8 3.5 1.3.2 2.6-2.4 3.8-2.2 1 .2.6 1.8 1.6 1.9 1 .1 2.1-.8 3-1.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 28.5h20" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+    </svg>
+    <span class="brand-text"><span class="brand-name">Adobe Sign PHP SDK</span><span class="brand-package">conceptlz/adobe-sign</span></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <div class="search" role="search">
+    <label class="visually-hidden" for="docs-search">Search the documentation</label>
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+    <input class="search-input" id="docs-search" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-search-results" aria-autocomplete="list">
+    <kbd class="search-key">/</kbd>
+    <ul class="search-results" id="docs-search-results" role="listbox" aria-label="Search results" hidden></ul>
+  </div>
+  <a class="topbar-link" href="https://github.com/conceptlz/adobe-sign">GitHub</a>
+  <button class="icon-button theme-toggle" type="button" aria-label="Switch theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+  </button>
+</header>
+<!-- /docs:topbar -->
+<div class="layout">
+<!-- docs:sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Documentation">
+  <div class="nav-group">
+    <p class="nav-group-title">Start here</p>
+    <ul class="nav-list">
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="getting-started.html">Getting started</a></li>
+      <li><a href="concepts.html">How Acrobat Sign works</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Guides</p>
+    <ul class="nav-list">
+      <li><a href="authentication.html">Authentication</a></li>
+      <li><a href="documents.html">Uploading documents</a></li>
+      <li><a href="agreements.html">Creating agreements</a></li>
+      <li><a href="signing-order.html">Signing order</a></li>
+      <li><a href="managing-agreements.html">Managing agreements</a></li>
+      <li><a href="downloads.html" aria-current="page">Downloading signed files</a></li>
+      <li><a href="signature-levels.html">Signature levels: SES, AES, QES</a></li>
+      <li><a href="identity-verification.html">Identity verification</a></li>
+      <li><a href="webhooks.html">Webhooks</a></li>
+      <li><a href="other-resources.html">Library, web forms, users, bulk</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Reference</p>
+    <ul class="nav-list">
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="http-layer.html">Data centres, retries &amp; ETags</a></li>
+      <li><a href="errors.html">Errors &amp; exceptions</a></li>
+      <li><a href="models.html">Models &amp; raw data</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Help</p>
+    <ul class="nav-list">
+      <li><a href="testing.html">Testing your integration</a></li>
+      <li><a href="examples.html">Example scripts</a></li>
+      <li><a href="troubleshooting.html">Troubleshooting</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+    </ul>
+  </div>
+  <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+</nav>
+<div class="nav-backdrop" hidden></div>
+<!-- /docs:sidebar -->
+<main id="content" class="content">
+<article class="doc">
+  <header class="doc-header">
+    <p class="eyebrow">Guides</p>
+    <h1>Downloading signed files</h1>
+    <p class="lede">
+      The signed PDF is usually the reason the whole integration exists. This page shows how to fetch it
+      (with or without the audit report), the individual documents and the data signers typed in; how to
+      move those bytes to disk or cloud storage without filling memory; what is actually inside the
+      signed file; and when it is ready to download.
+    </p>
+  </header>
+
+  <h2 id="at-a-glance">At a glance</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>You want</th><th>Method</th><th>Returns</th></tr></thead>
+      <tbody>
+        <tr><td>The signed document, all files merged</td><td><code>combinedDocument($id)</code></td><td>PDF stream</td></tr>
+        <tr><td>The same, with the audit report appended</td><td><code>combinedDocument($id, attachAuditReport: true)</code></td><td>PDF stream</td></tr>
+        <tr><td>The audit report alone</td><td><code>auditTrail($id)</code></td><td>PDF stream</td></tr>
+        <tr><td>The list of documents in the agreement</td><td><code>documents($id)</code></td><td><code>AgreementDocuments</code></td></tr>
+        <tr><td>One document</td><td><code>document($id, $documentId)</code></td><td>stream</td></tr>
+        <tr><td>A short-lived link instead of bytes</td><td><code>combinedDocumentUrl($id)</code></td><td><code>DocumentUrl</code></td></tr>
+        <tr><td>What signers typed into fields</td><td><code>formData($id)</code></td><td>CSV stream</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Binary endpoints return a <a href="https://www.php-fig.org/psr/psr-7/">PSR-7</a>
+    <code>Psr\Http\Message\StreamInterface</code>, never a string, so you decide where the bytes go.
+    <a href="#working-with-streams">Working with streams</a> shows the options.
+  </p>
+
+  <h2 id="when-to-download">When to download</h2>
+  <p>
+    Download once the agreement's status is <code>SIGNED</code> (or <code>APPROVED</code>,
+    <code>ACCEPTED</code>, <code>FORM_FILLED</code>, … for agreements without signers). Before that, the
+    file is a work in progress. There are two ways to know the moment has come:
+  </p>
+  <ol class="steps">
+    <li>
+      <span class="step-title">A webhook (recommended)</span>
+      <p>
+        Subscribe to <code>AGREEMENT_WORKFLOW_COMPLETED</code> (or <code>AGREEMENT_ALL</code>). When the
+        notification arrives, queue a job; the job confirms the status with <code>get()</code> and
+        downloads. See <a href="webhooks.html#queueing-work">Webhooks</a>.
+      </p>
+    </li>
+    <li>
+      <span class="step-title">Polling</span>
+      <p>
+        Fine for scripts and small volumes: check <code>get($id)-&gt;isSigned()</code> every few minutes
+        and download when it turns true.
+      </p>
+    </li>
+  </ol>
+  <pre><code class="language-php">$agreement = $sign-&gt;agreements()-&gt;get($agreementId);
+
+if ($agreement-&gt;isSigned()) {
+    $pdf = $sign-&gt;agreements()-&gt;combinedDocument($agreementId, attachAuditReport: true);
+    file_put_contents("/var/app/agreements/$agreementId.pdf", $pdf-&gt;detach());
+}</code></pre>
+
+  <h3 id="agreement-not-exposed">AGREEMENT_NOT_EXPOSED while Adobe is processing</h3>
+  <p>
+    Acrobat Sign does a lot of work asynchronously: converting uploads to PDF after creation, and
+    sealing and assembling the final file after the last signature. During those windows some calls
+    answer with the error code <code>AGREEMENT_NOT_EXPOSED</code>. It is temporary. Catch
+    <code>ApiException</code> (every API error extends it), check <code>$errorCode</code>, and retry with
+    a growing delay:
+  </p>
+  <figure class="code">
+    <figcaption>Retry while the agreement is being processed</figcaption>
+    <pre><code class="language-php">use Conceptlz\AdobeSign\AdobeSign;
+use Conceptlz\AdobeSign\Exception\ApiException;
+use Psr\Http\Message\StreamInterface;
+
+function signedPdf(AdobeSign $sign, string $agreementId, int $attempts = 5): StreamInterface
+{
+    for ($attempt = 1; ; $attempt++) {
+        try {
+            return $sign-&gt;agreements()-&gt;combinedDocument($agreementId, attachAuditReport: true);
+        } catch (ApiException $e) {
+            if ($e-&gt;errorCode !== 'AGREEMENT_NOT_EXPOSED' || $attempt &gt;= $attempts) {
+                throw $e;
+            }
+            sleep(2 * $attempt);   // 2, 4, 6, 8 seconds
+        }
+    }
+}</code></pre>
+  </figure>
+  <p>
+    In a queue, prefer releasing the job back onto the queue with a delay over sleeping in the worker.
+    Other codes you may meet on downloads are <code>AGREEMENT_IN_DRAFT_STATE</code> (nothing to download
+    yet), <code>DOCUMENT_NOT_AVAILABLE</code>, and <code>INVALID_AGREEMENT_ID</code> or
+    <code>AGREEMENT_DELETED</code> (a <code>NotFoundException</code>).
+  </p>
+
+  <h2 id="combined-document">The signed PDF</h2>
+  <div class="api" id="api-agreements-combined-document">
+    <pre class="api-signature">agreements()-&gt;combinedDocument(string $agreementId, ?bool $attachAuditReport = null, ?bool $attachSupportingDocuments = null, ?string $versionId = null, ?string $participantId = null, ?bool $includeMergedFieldData = null): StreamInterface<span class="endpoint"><b>GET</b> /agreements/{agreementId}/combinedDocument</span></pre>
+    <div class="api-body">
+      <p>
+        Every document in the agreement merged into one PDF, in the order the files were added. Options
+        left as <code>null</code> are not sent, so Adobe's defaults apply.
+      </p>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Option</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>attachAuditReport</code></td><td>Append the audit report as extra pages. One self-contained file for your archive.</td></tr>
+        <tr><td><code>attachSupportingDocuments</code></td><td>Include files signers uploaded in "attachment" fields.</td></tr>
+        <tr><td><code>versionId</code></td><td>A specific version of the agreement (versions change when documents are modified); the latest when omitted.</td></tr>
+        <tr><td><code>participantId</code></td><td>The document as that participant sees it, e.g. when some content is private to a participant.</td></tr>
+        <tr><td><code>includeMergedFieldData</code></td><td>Include data merged into form fields when the agreement was created.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code class="language-php">// The archive copy: signed documents + audit report in one file
+$pdf = $sign-&gt;agreements()-&gt;combinedDocument($agreementId, attachAuditReport: true);
+
+// Everything, including files signers attached
+$pdf = $sign-&gt;agreements()-&gt;combinedDocument(
+    $agreementId,
+    attachAuditReport: true,
+    attachSupportingDocuments: true,
+);</code></pre>
+
+  <h2 id="audit-trail">The audit report</h2>
+  <div class="api" id="api-agreements-audit-trail">
+    <pre class="api-signature">agreements()-&gt;auditTrail(string $agreementId): StreamInterface<span class="endpoint"><b>GET</b> /agreements/{agreementId}/auditTrail</span></pre>
+    <div class="api-body">
+      <p>
+        The audit report on its own: a PDF listing every event with time, email address, IP address and
+        identity checks (for example "authenticated with Email OTP by verifying one-time code sent via
+        email"). It is your main evidence for an SES.
+      </p>
+    </div>
+  </div>
+  <p>
+    Whether to store it separately or appended to the signed PDF is a matter of taste. Appending
+    (<code>attachAuditReport: true</code>) keeps one file per agreement; storing it separately keeps the
+    signed document byte-for-byte as the parties saw it. Many teams store both.
+  </p>
+
+  <h2 id="individual-documents">Individual documents</h2>
+  <div class="api" id="api-agreements-documents">
+    <pre class="api-signature">agreements()-&gt;documents(string $agreementId, ?string $versionId = null, ?string $participantId = null): AgreementDocuments<span class="endpoint"><b>GET</b> /agreements/{agreementId}/documents</span></pre>
+    <div class="api-body"><p>The documents in the agreement (and any supporting documents), with ids, names, MIME types and page counts.</p></div>
+  </div>
+  <div class="api" id="api-agreements-document">
+    <pre class="api-signature">agreements()-&gt;document(string $agreementId, string $documentId): StreamInterface<span class="endpoint"><b>GET</b> /agreements/{agreementId}/documents/{documentId}</span></pre>
+    <div class="api-body"><p>One document's file, in whatever format Adobe stores it (usually PDF).</p></div>
+  </div>
+  <pre><code class="language-php">$documents = $sign-&gt;agreements()-&gt;documents($agreementId);
+
+foreach ($documents-&gt;getDocuments() ?? [] as $document) {
+    $stream = $sign-&gt;agreements()-&gt;document($agreementId, $document-&gt;getId());
+    $target = sprintf('/var/app/agreements/%s/%s', $agreementId, basename($document-&gt;getName()));
+
+    file_put_contents($target, $stream-&gt;detach());
+    printf("%s, %d pages, %s\n", $document-&gt;getName(), $document-&gt;getNumPages(), $document-&gt;getMimeType());
+}
+
+// Files signers attached during signing
+$supporting = $documents-&gt;getSupportingDocuments() ?? [];</code></pre>
+  <p>
+    Use this when the agreement had several files and you need them apart, for example a contract and
+    its price schedule filed in different places. Document names come from the uploads, so sanitise them
+    (as <code>basename()</code> does above) before using them in a path.
+  </p>
+
+  <h2 id="download-url">A download link instead of bytes</h2>
+  <div class="api" id="api-agreements-combined-document-url">
+    <pre class="api-signature">agreements()-&gt;combinedDocumentUrl(string $agreementId, ?bool $attachAuditReport = null, ?bool $attachSupportingDocuments = null): DocumentUrl<span class="endpoint"><b>GET</b> /agreements/{agreementId}/combinedDocument/url</span></pre>
+    <div class="api-body">
+      <p>
+        A short-lived URL from which anyone holding it can download the combined PDF. Handy for sending a
+        user's browser straight to Adobe, so the file never passes through your server.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">$url = $sign-&gt;agreements()-&gt;combinedDocumentUrl($agreementId, attachAuditReport: true)-&gt;getUrl();
+
+header('Location: ' . $url, true, 302);</code></pre>
+  <p>
+    Generate the link when the user clicks, after checking they may see the agreement. Don't store it or
+    email it: it expires, and until then it works for whoever has it.
+  </p>
+
+  <h2 id="form-data">Form data</h2>
+  <div class="api" id="api-agreements-form-data">
+    <pre class="api-signature">agreements()-&gt;formData(string $agreementId, ?string $participantId = null, ?bool $allowInProcessAgreement = null): StreamInterface<span class="endpoint"><b>GET</b> /agreements/{agreementId}/formData</span></pre>
+    <div class="api-body">
+      <p>
+        A CSV of the values signers entered in form fields, one row per participant. Only the agreement's
+        creator can read it. Pass <code>allowInProcessAgreement: true</code> to read it before everyone has
+        signed, and <code>participantId</code> for one participant's row.
+      </p>
+    </div>
+  </div>
+  <pre><code class="language-php">$csv = $sign-&gt;agreements()-&gt;formData($agreementId)-&gt;detach();
+
+$header = fgetcsv($csv);
+while (($row = fgetcsv($csv)) !== false) {
+    $values = array_combine($header, $row);
+    // e.g. $values['Company registration number']
+}
+fclose($csv);</code></pre>
+  <p>
+    Column headers come from the field names in the document, so agree on stable names with whoever
+    designs your templates. To see which fields exist without the values, use
+    <a href="managing-agreements.html#form-fields-and-data"><code>formFields()</code></a>.
+  </p>
+
+  <h2 id="working-with-streams">Working with streams</h2>
+  <p>
+    A <code>StreamInterface</code> is a handle on the response body. The most important rule: don't turn
+    it into a string unless you mean to hold the whole file in memory. <code>(string) $stream</code> and
+    <code>$stream-&gt;getContents()</code> both do exactly that.
+  </p>
+
+  <h3 id="streams-to-a-file">To a file</h3>
+  <pre><code class="language-php">$pdf = $sign-&gt;agreements()-&gt;combinedDocument($agreementId, attachAuditReport: true);
+
+// Option 1: detach() hands you the underlying PHP resource; copy it in one call
+$in = $pdf-&gt;detach();
+$out = fopen("/var/app/agreements/$agreementId.pdf", 'wb');
+stream_copy_to_stream($in, $out);
+fclose($in);
+fclose($out);
+
+// Option 2: read in chunks through the PSR-7 interface
+$out = fopen("/var/app/agreements/$agreementId.pdf", 'wb');
+while (!$pdf-&gt;eof()) {
+    fwrite($out, $pdf-&gt;read(65536));
+}
+fclose($out);</code></pre>
+  <p>
+    <code>detach()</code> separates the resource from the stream object: afterwards the
+    <code>StreamInterface</code> is unusable and the resource is yours to close. A
+    <code>file_put_contents($path, $pdf-&gt;detach())</code> one-liner works too, because
+    <code>file_put_contents()</code> accepts a stream resource and copies it in chunks.
+  </p>
+
+  <h3 id="streams-to-storage">To cloud storage</h3>
+  <p>Most storage libraries accept a PHP stream resource, which is what <code>detach()</code> gives you:</p>
+  <pre><code class="language-php">// Flysystem (and Laravel's Storage facade, which wraps it)
+$filesystem-&gt;writeStream("agreements/$agreementId.pdf", $pdf-&gt;detach());
+
+// AWS SDK for PHP
+$s3-&gt;putObject([
+    'Bucket'      =&gt; 'signed-contracts',
+    'Key'         =&gt; "agreements/$agreementId.pdf",
+    'Body'        =&gt; $pdf-&gt;detach(),
+    'ContentType' =&gt; 'application/pdf',
+]);</code></pre>
+
+  <h3 id="streams-to-the-browser">To the browser</h3>
+  <pre><code class="language-php">$pdf = $sign-&gt;agreements()-&gt;combinedDocument($agreementId);
+
+header('Content-Type: application/pdf');
+header('Content-Disposition: attachment; filename="agreement-' . $agreementId . '.pdf"');
+fpassthru($pdf-&gt;detach());</code></pre>
+  <p>
+    In a PSR-15 application you can return the stream directly as a response body:
+    <code>$response-&gt;withBody($pdf)</code>.
+  </p>
+
+  <h3 id="streams-and-memory">Memory, rewinding and integrity</h3>
+  <ul>
+    <li>
+      <strong>Where the bytes live</strong> depends on your PSR-18 client. Some stream from the network as
+      you read; many buffer the body into <code>php://temp</code>, which keeps small bodies in memory and
+      spills larger ones to a temporary file. Either way, reading in chunks or via <code>detach()</code>
+      keeps your own memory use flat.
+    </li>
+    <li>
+      <strong>A stream is read once.</strong> After copying it, it is at the end. If you need the bytes
+      twice (save and hash, say), save first and then work from the saved file, or call
+      <code>rewind()</code> when <code>isSeekable()</code> is true.
+    </li>
+    <li>
+      <strong>Record a hash.</strong> Store <code>hash_file('sha256', $path)</code> alongside the file, so
+      you can later show the archived copy hasn't changed since you downloaded it.
+    </li>
+  </ul>
+  <pre><code class="language-php">$path = "/var/app/agreements/$agreementId.pdf";
+file_put_contents($path, $sign-&gt;agreements()-&gt;combinedDocument($agreementId, attachAuditReport: true)-&gt;detach());
+
+$archive-&gt;record($agreementId, $path, hash_file('sha256', $path), filesize($path));</code></pre>
+
+  <h2 id="whats-in-the-pdf">What is inside the signed PDF</h2>
+  <p>
+    Open a signed agreement in Acrobat or another PDF reader with a signature panel and you'll see one
+    or more cryptographic signatures. What you find depends on the <a href="signature-levels.html">signature
+    level</a> each person signed at:
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>File</th><th>Signatures inside</th><th>What they prove</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Signed PDF, everyone signed with SES</td>
+          <td>Adobe's certification seal</td>
+          <td>Acrobat Sign produced this document and it hasn't been altered since. The visible signatures are images; who made them is evidenced by the audit report.</td>
+        </tr>
+        <tr>
+          <td>Signed PDF, one or more AES or QES signers</td>
+          <td>Each digital signer's own certificate as an embedded PDF signature, plus Adobe's seal</td>
+          <td>The named certificate holder signed exactly these bytes. The certificate chain shows the issuer (the trust service provider) and whether it is qualified.</td>
+        </tr>
+        <tr>
+          <td>Audit report (<code>auditTrail()</code>)</td>
+          <td>Only Adobe's seal</td>
+          <td>The event log is authentic. It never contains the signers' certificates.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    So the file to archive for an AES or QES is the signed PDF from <code>combinedDocument()</code> or
+    <code>document()</code>; the audit report alone is not enough to show the advanced signature. In the
+    live test of an AES through Intesi Group Cloud Signature, the signed PDF carried the signer's
+    certificate issued by "Intesi Group Advanced Cloud Signature CA Test", while the audit report carried
+    only Adobe's seal.
+  </p>
+  <div class="callout callout-tip">
+    <p class="callout-title">Validating the signatures</p>
+    <p>
+      For an independent check, open the PDF in Acrobat's signature panel or upload it to trusted-list-aware
+      validation software such as the EU's DSS demonstration service. That is the authoritative way to show
+      that a signature is qualified; <a href="signature-levels.html#signature-evidence"><code>signatureEvidence()</code></a>
+      reads Adobe's records instead, which is faster and fine for workflow decisions.
+    </p>
+  </div>
+
+  <h2 id="storing-signed-files">What to keep</h2>
+  <p>A sensible archive record per agreement, so you can answer questions years later without calling Adobe:</p>
+  <ul class="ledger">
+    <li><span class="ledger-term">Signed PDF</span><span class="ledger-desc">From <code>combinedDocument()</code>; with the audit report attached, or stored next to it.</span></li>
+    <li><span class="ledger-term">Audit report</span><span class="ledger-desc">From <code>auditTrail()</code> if you didn't attach it.</span></li>
+    <li><span class="ledger-term">Identifiers</span><span class="ledger-desc">The agreement id and your own <code>externalId</code>.</span></li>
+    <li><span class="ledger-term">Integrity</span><span class="ledger-desc">A SHA-256 hash and the file size, recorded at download time.</span></li>
+    <li><span class="ledger-term">Evidence snapshot</span><span class="ledger-desc">The per-signer result of <code>signatureEvidence()</code>: level reached, certificate issuer, identity check.</span></li>
+    <li><span class="ledger-term">Form data</span><span class="ledger-desc">The CSV from <code>formData()</code>, or the values you parsed out of it.</span></li>
+  </ul>
+  <p>
+    Keep your own copy even though Adobe stores agreements too: account retention policies can remove
+    documents, and your archive shouldn't depend on an API key still working in ten years.
+  </p>
+
+  <h2 id="signed-documents-in-webhooks">Signed documents in webhook payloads</h2>
+  <p>
+    A webhook can carry the signed PDF itself:
+    <code>WebhookInfo::...-&gt;agreementPayload(signedDocuments: true)</code> asks Adobe to include it,
+    base64-encoded, once signing completes. It saves a request, but webhook payloads are not signed, so
+    anyone who can reach your endpoint could post a fake "signed document". Downloading through the API
+    with your credentials is the trustworthy route; see <a href="webhooks.html#unsigned-payloads">Webhooks</a>.
+  </p>
+
+  <h2 id="other-downloads">Downloads from other resources</h2>
+  <p>
+    Library documents, web forms and bulk sends have their own <code>combinedDocument()</code> and, where
+    Adobe offers them, <code>auditTrail()</code>, <code>formData()</code> and (for bulk sends)
+    <code>errorReport()</code>. They work the same way and return streams too. See
+    <a href="other-resources.html">Library, web forms, users, bulk</a>.
+  </p>
+
+  <h2 id="downloads-questions">Common questions</h2>
+  <div class="faq">
+    <details id="downloads-faq-only-adobe">
+      <summary>Why does Acrobat show only Adobe as the signer of my PDF?</summary>
+      <div class="faq-answer">
+        <p>
+          Because everyone signed with an SES. Adobe certifies the finished document with its own seal; the
+          signers' typed or drawn signatures are visual, and the audit report records who made them. Only
+          AES and QES signers add a certificate of their own to the PDF.
+        </p>
+      </div>
+    </details>
+    <details id="downloads-faq-not-exposed">
+      <summary>Why does my download fail with AGREEMENT_NOT_EXPOSED?</summary>
+      <div class="faq-answer">
+        <p>
+          Adobe is still processing the agreement, typically right after it was created or right after the
+          last signature. Wait a few seconds and retry; see <a href="#agreement-not-exposed">the retry
+          example</a>.
+        </p>
+      </div>
+    </details>
+    <details id="downloads-faq-before-signed">
+      <summary>Can I download the document before everyone has signed?</summary>
+      <div class="faq-answer">
+        <p>
+          Generally yes: <code>combinedDocument()</code> returns the document as it currently stands, with the
+          signatures collected so far. Don't archive that as the final copy; wait for <code>SIGNED</code>.
+          Form data needs <code>allowInProcessAgreement: true</code> for an agreement still in progress.
+        </p>
+      </div>
+    </details>
+    <details id="downloads-faq-memory">
+      <summary>My worker runs out of memory when downloading large agreements. What's wrong?</summary>
+      <div class="faq-answer">
+        <p>
+          Somewhere the stream is being turned into a string: <code>(string) $stream</code>,
+          <code>getContents()</code>, or a library that buffers the whole body. Use <code>detach()</code> with
+          <code>stream_copy_to_stream()</code>, Flysystem's <code>writeStream()</code> or a chunked read loop.
+        </p>
+      </div>
+    </details>
+    <details id="downloads-faq-url-expiry">
+      <summary>Can I store the link from combinedDocumentUrl() and use it later?</summary>
+      <div class="faq-answer">
+        <p>
+          No. It is short-lived and works for anyone who holds it. Generate it when a user asks for the file,
+          and store the PDF itself if you need it later.
+        </p>
+      </div>
+    </details>
+    <details id="downloads-faq-audit-or-not">
+      <summary>Should I attach the audit report to the signed PDF?</summary>
+      <div class="faq-answer">
+        <p>
+          For an archive copy, attaching it is convenient: one file holds both the agreement and its
+          evidence. If you also share the document with the other party or feed it to another system, keep a
+          copy without the report as well.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <h2 id="downloads-next">Where next</h2>
+  <ul class="next-links">
+    <li><a href="webhooks.html"><strong>Webhooks</strong><span>Download as soon as the last person signs.</span></a></li>
+    <li><a href="signature-levels.html"><strong>Signature levels</strong><span>Which certificates end up in the PDF, and why.</span></a></li>
+    <li><a href="managing-agreements.html"><strong>Managing agreements</strong><span>Status, members, events and reminders.</span></a></li>
+    <li><a href="errors.html"><strong>Errors &amp; exceptions</strong><span>Every exception the SDK throws, and when.</span></a></li>
+  </ul>
+</article>
+<!-- docs:pager -->
+<nav class="pager" aria-label="Previous and next pages">
+  <a class="pager-prev" href="managing-agreements.html" rel="prev"><span class="pager-label">Previous</span><span class="pager-title">Managing agreements</span></a>
+  <a class="pager-next" href="signature-levels.html" rel="next"><span class="pager-label">Next</span><span class="pager-title">Signature levels: SES, AES, QES</span></a>
+</nav>
+<!-- /docs:pager -->
+</main>
+<aside class="toc" aria-label="On this page"></aside>
+</div>
+<!-- docs:footer -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>conceptlz/adobe-sign · MIT licensed · <a href="https://github.com/conceptlz/adobe-sign">Source on GitHub</a></p>
+    <p>An independent SDK, not affiliated with or endorsed by Adobe. Adobe and Acrobat Sign are trademarks of Adobe Inc.</p>
+  </div>
+</footer>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/docs.js"></script>
+<!-- /docs:footer -->
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- docs:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>
+(function () {
+  var theme = null;
+  try { theme = localStorage.getItem('docs-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap">
+<link rel="stylesheet" href="assets/css/docs.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<!-- /docs:head -->
+<title>Example scripts · conceptlz/adobe-sign</title>
+<meta name="description" content="The four runnable scripts in examples/: send-agreement.php with its offline dry run, live-lifecycle.php and all its options, oauth-server.php and webhook-receiver.php, with how to run each and what it prints.">
+</head>
+<body>
+<!-- docs:topbar -->
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="topbar">
+  <button class="icon-button menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+  </button>
+  <a class="brand" href="index.html">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="15.5" fill="none" stroke="currentColor" stroke-width="0.6" stroke-dasharray="1.5 2"/>
+      <path d="M9.5 24.5c3.2-1.2 5.4-7.6 7.1-11.3 1-2.1 2.4-1.4 1.6 1.2-1.2 3.9-2.8 8.4-1.4 9.3 1.5 1 3.4-4.4 4.6-4.1 1.1.3-.3 3.3.8 3.5 1.3.2 2.6-2.4 3.8-2.2 1 .2.6 1.8 1.6 1.9 1 .1 2.1-.8 3-1.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 28.5h20" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+    </svg>
+    <span class="brand-text"><span class="brand-name">Adobe Sign PHP SDK</span><span class="brand-package">conceptlz/adobe-sign</span></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <div class="search" role="search">
+    <label class="visually-hidden" for="docs-search">Search the documentation</label>
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+    <input class="search-input" id="docs-search" type="search" placeholder="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="docs-search-results" aria-autocomplete="list">
+    <kbd class="search-key">/</kbd>
+    <ul class="search-results" id="docs-search-results" role="listbox" aria-label="Search results" hidden></ul>
+  </div>
+  <a class="topbar-link" href="https://github.com/conceptlz/adobe-sign">GitHub</a>
+  <button class="icon-button theme-toggle" type="button" aria-label="Switch theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+  </button>
+</header>
+<!-- /docs:topbar -->
+<div class="layout">
+<!-- docs:sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Documentation">
+  <div class="nav-group">
+    <p class="nav-group-title">Start here</p>
+    <ul class="nav-list">
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="getting-started.html">Getting started</a></li>
+      <li><a href="concepts.html">How Acrobat Sign works</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Guides</p>
+    <ul class="nav-list">
+      <li><a href="authentication.html">Authentication</a></li>
+      <li><a href="documents.html">Uploading documents</a></li>
+      <li><a href="agreements.html">Creating agreements</a></li>
+      <li><a href="signing-order.html">Signing order</a></li>
+      <li><a href="managing-agreements.html">Managing agreements</a></li>
+      <li><a href="downloads.html">Downloading signed files</a></li>
+      <li><a href="signature-levels.html">Signature levels: SES, AES, QES</a></li>
+      <li><a href="identity-verification.html">Identity verification</a></li>
+      <li><a href="webhooks.html">Webhooks</a></li>
+      <li><a href="other-resources.html">Library, web forms, users, bulk</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Reference</p>
+    <ul class="nav-list">
+      <li><a href="configuration.html">Configuration</a></li>
+      <li><a href="http-layer.html">Data centres, retries &amp; ETags</a></li>
+      <li><a href="errors.html">Errors &amp; exceptions</a></li>
+      <li><a href="models.html">Models &amp; raw data</a></li>
+    </ul>
+  </div>
+  <div class="nav-group">
+    <p class="nav-group-title">Help</p>
+    <ul class="nav-list">
+      <li><a href="testing.html">Testing your integration</a></li>
+      <li><a href="examples.html" aria-current="page">Example scripts</a></li>
+      <li><a href="troubleshooting.html">Troubleshooting</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+    </ul>
+  </div>
+  <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+</nav>
+<div class="nav-backdrop" hidden></div>
+<!-- /docs:sidebar -->
+<main id="content" class="content">
+<article class="doc">
+  <header class="doc-header">
+    <p class="eyebrow">Help</p>
+    <h1>Example scripts</h1>
+    <p class="lede">
+      The package ships four plain-PHP scripts that exercise the SDK end to end, with no framework. One runs
+      offline, one walks a real agreement through signing while you watch, and two are tiny servers for the
+      OAuth and webhook flows. Each section below says what the script shows, how to run it and what it prints.
+    </p>
+  </header>
+
+  <h2 id="overview">The scripts at a glance</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Script</th><th>Shows</th><th>Needs</th><th>Sends real email</th></tr></thead>
+      <tbody>
+        <tr><td><a href="#send-agreement"><code>send-agreement.php</code></a></td><td>Upload, create, status, reminder, download</td><td>nothing with <code>--dry-run</code>; otherwise an Integration Key</td><td>only without <code>--dry-run</code></td></tr>
+        <tr><td><a href="#live-lifecycle"><code>live-lifecycle.php</code></a></td><td>The full flow: signing order, waiting for signatures, saving the signed PDF, events, signature evidence</td><td>Integration Key, a PDF, signer addresses you control</td><td>yes</td></tr>
+        <tr><td><a href="#oauth-server"><code>oauth-server.php</code></a></td><td>OAuth connect, automatic refresh, revoke</td><td>An API application's client id and secret</td><td>no</td></tr>
+        <tr><td><a href="#webhook-receiver"><code>webhook-receiver.php</code></a></td><td>A webhook endpoint: verification, echo, typed events</td><td>Your API application's client id; a tunnel for real deliveries</td><td>no</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="before-you-start">Before you start</h2>
+  <p>
+    The scripts load <code>vendor/autoload.php</code> from the package directory, so run them from a checkout of
+    the SDK rather than from your application's <code>vendor/</code> folder:
+  </p>
+  <pre><code class="language-bash">git clone https://github.com/conceptlz/adobe-sign.git
+cd adobe-sign
+composer install          # includes the dev dependencies the dry run needs</code></pre>
+  <p>
+    Every command below is run from that directory. Pass secrets as environment variables on the command line
+    or from a shell you trust; don't paste them into files you might commit.
+  </p>
+  <div class="callout callout-warning">
+    <p class="callout-title">Live runs reach real people</p>
+    <p>
+      Without <code>--dry-run</code>, these scripts create real agreements, and Adobe emails every signer.
+      Use addresses you control, preferably on a free developer account. The scripts don't cancel what they
+      create; cancel leftover agreements in Acrobat Sign or with <code>agreements()-&gt;cancel()</code>.
+    </p>
+  </div>
+
+  <h2 id="send-agreement">send-agreement.php</h2>
+  <p>
+    The shortest complete walkthrough: upload a PDF, create an agreement with one signer, wait until Adobe has
+    processed it, send a reminder, and download the combined PDF to the system temp directory. Any SDK error is
+    printed as its class and message, and the script exits with status 2.
+  </p>
+
+  <h3 id="send-agreement-dry-run">Offline dry run</h3>
+  <p>
+    With <code>--dry-run</code>, the script uses <code>php-http/mock-client</code> and the canned responses in
+    <code>tests/Fixtures</code>, so it needs no account and no network. It ends by listing every request the
+    SDK would have sent, which is a quick way to see the data-centre discovery and the exact endpoints:
+  </p>
+  <pre><code class="language-bash">php examples/send-agreement.php --dry-run</code></pre>
+  <pre><code class="language-text">1. Uploaded transient document: 3AAABLblqZhCx7Q1pLx2Vbzc1sNEW9bhAw6PdCEMUhNjfVn6eVOAZsxmJtAQjXq2nnDqp0RkAHyE
+2. Created agreement: CBJCHBCAABAAx1aFQyYF-aGrLsBZtVqaT9gPh6Xw42kK
+3. Status: OUT_FOR_SIGNATURE
+4. Reminder sent: CBJCHBCAABAArem1
+5. Combined PDF saved: /tmp/agreement-CBJCHBCAABAAx1aFQyYF-aGrLsBZtVqaT9gPh6Xw42kK.pdf (125 bytes)
+
+Requests sent:
+  1. GET  https://api.adobesign.com/api/rest/v6/baseUris
+  2. POST https://api.na4.adobesign.com/api/rest/v6/transientDocuments
+  3. POST https://api.na4.adobesign.com/api/rest/v6/agreements
+  4. GET  https://api.na4.adobesign.com/api/rest/v6/agreements/CBJCHBCAABAAx1aFQyYF-aGrLsBZtVqaT9gPh6Xw42kK
+  5. GET  https://api.na4.adobesign.com/api/rest/v6/agreements/CBJCHBCAABAAx1aFQyYF-aGrLsBZtVqaT9gPh6Xw42kK/members?includeNextParticipantSet=true
+  6. POST https://api.na4.adobesign.com/api/rest/v6/agreements/CBJCHBCAABAAx1aFQyYF-aGrLsBZtVqaT9gPh6Xw42kK/reminders
+  7. GET  https://api.na4.adobesign.com/api/rest/v6/agreements/CBJCHBCAABAAx1aFQyYF-aGrLsBZtVqaT9gPh6Xw42kK/combinedDocument</code></pre>
+  <p>Two things worth noticing in that list:</p>
+  <ul>
+    <li>Request 1 goes to the shard-agnostic host; everything after it goes to <code>na4</code>, the data centre
+      the discovery returned.</li>
+    <li>Request 5 is made by <code>sendReminder()</code>: without explicit participant ids it asks who is
+      next, and passes <code>includeNextParticipantSet=true</code> because the live API leaves that data out
+      otherwise.</li>
+  </ul>
+
+  <h3 id="send-agreement-live">Against your account</h3>
+  <pre><code class="language-bash">ADOBE_SIGN_INTEGRATION_KEY=your-integration-key \
+  php examples/send-agreement.php contract.pdf signer@example.com</code></pre>
+  <p>
+    The live run attaches a small logger that writes the SDK's request log to stderr, so you see each call
+    with its status and duration alongside the numbered steps on stdout:
+  </p>
+  <pre><code class="language-text">[debug] Adobe Sign request {"method":"POST","path":"/api/rest/v6/transientDocuments","status":201,"duration_ms":934}
+1. Uploaded transient document: 3AAABLblqZhB2k9xTq…
+[debug] Adobe Sign request {"method":"POST","path":"/api/rest/v6/agreements","status":201,"duration_ms":1611}
+2. Created agreement: CBJCHBCAABAA8sQ1fN0r…
+[debug] Adobe Sign request {"method":"GET","path":"/api/rest/v6/agreements/CBJCHBCAABAA8sQ1fN0r…","status":200,"duration_ms":288}
+[debug] Adobe Sign request {"method":"GET","path":"/api/rest/v6/agreements/CBJCHBCAABAA8sQ1fN0r…","status":200,"duration_ms":251}
+3. Status: OUT_FOR_SIGNATURE
+[debug] Adobe Sign request {"method":"GET","path":"/api/rest/v6/agreements/CBJCHBCAABAA8sQ1fN0r…/members","status":200,"duration_ms":305}
+[debug] Adobe Sign request {"method":"POST","path":"/api/rest/v6/agreements/CBJCHBCAABAA8sQ1fN0r…/reminders","status":201,"duration_ms":412}
+4. Reminder sent: CBJCHBCAABAAqk2W…
+[debug] Adobe Sign request {"method":"GET","path":"/api/rest/v6/agreements/CBJCHBCAABAA8sQ1fN0r…/combinedDocument","status":200,"duration_ms":702}
+5. Combined PDF saved: /tmp/agreement-CBJCHBCAABAA8sQ1fN0r….pdf (48211 bytes)</code></pre>
+  <ul>
+    <li>The data-centre lookup doesn't appear in the log: discovery bypasses the request log (see
+      <a href="configuration.html#logging">PSR-3 logging</a>).</li>
+    <li>Step 3 may take a few polls: right after creation the status is
+      <code>DOCUMENTS_NOT_YET_PROCESSED</code>, and the script checks every 2 seconds, up to 10 times.</li>
+    <li>The downloaded PDF is the document as it stands, unsigned so far. The signer receives the original
+      invitation and the reminder, so two emails.</li>
+  </ul>
+  <p>Without a key or arguments it prints its usage line and exits with status 1.</p>
+
+  <h2 id="live-lifecycle">live-lifecycle.php</h2>
+  <p>
+    The real thing, end to end: upload a PDF, send it in the signing order you describe, print whose turn it is
+    and their signing links, wait while people sign, save the signed PDF with its audit report, list the
+    agreement's events, and finish with the signature evidence for each signer. It is how the SDK is checked by
+    hand against a real account.
+  </p>
+  <pre><code class="language-bash">ADOBE_SIGN_INTEGRATION_KEY=your-integration-key \
+  php examples/live-lifecycle.php contract.pdf "alice@example.com,bob@example.com+carol@example.com,dan@example.com"</code></pre>
+
+  <h3 id="live-lifecycle-signers">Signer syntax: "a,b+c,d"</h3>
+  <p>
+    The second argument describes the signing order. <strong>Commas separate steps; a plus sign puts people in
+    the same step</strong>, where they sign in parallel, in any order. Each person becomes a signer with the
+    order number of their step.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Argument</th><th>Meaning</th><th>Orders sent</th></tr></thead>
+      <tbody>
+        <tr><td><code>"a@x.com"</code></td><td>one signer</td><td>1</td></tr>
+        <tr><td><code>"a@x.com,b@x.com"</code></td><td>a, then b</td><td>1, 2</td></tr>
+        <tr><td><code>"a@x.com+b@x.com"</code></td><td>a and b in parallel</td><td>1, 1</td></tr>
+        <tr><td><code>"a@x.com,b@x.com+c@x.com,d@x.com"</code></td><td>a, then b and c together, then d</td><td>1, 2, 2, 3</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Purely sequential and purely parallel orders work on any account. Mixing the two, as in the last row, is
+    "hybrid routing", an account setting; when it's off, creation fails with an
+    <code>AccountCapabilityException</code> (<code>HYBRID_ROUTING_NOT_ALLOWED</code>). See
+    <a href="signing-order.html">Signing order</a>.
+  </p>
+
+  <h3 id="live-lifecycle-options">Options</h3>
+  <p>Everything else is set through environment variables:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Variable</th><th>Values</th><th>Default</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>ADOBE_SIGN_INTEGRATION_KEY</code></td><td>your key</td><td>required</td><td>The account to use.</td></tr>
+        <tr><td><code>SIGNATURE_LEVEL</code></td><td><code>ses</code>, <code>aes</code>, <code>qes</code></td><td><code>ses</code></td><td>Applied with <code>AgreementInfo::signatureLevel()</code>. <code>aes</code> and <code>qes</code> make every signer sign with a digital ID from a cloud signature provider.</td></tr>
+        <tr><td><code>QUALIFIED_ISSUERS</code></td><td>comma-separated issuer names</td><td>empty</td><td>Certificate issuers you accept as qualified, used in the final QES check. Matched case-insensitively as substrings.</td></tr>
+        <tr><td><code>VERIFICATION</code></td><td><code>none</code>, <code>email_otp</code>, <code>kba</code>, <code>adobe_account</code></td><td><code>none</code></td><td>Identity check every signer must pass before opening the document. Independent of the signature level.</td></tr>
+        <tr><td><code>WEBHOOK_URL</code></td><td>an HTTPS URL</td><td>none</td><td>Also registers an agreement webhook for <code>AGREEMENT_ALL</code> events at that URL (run <a href="#webhook-receiver"><code>webhook-receiver.php</code></a> there).</td></tr>
+        <tr><td><code>WAIT_MINUTES</code></td><td>whole minutes</td><td><code>30</code></td><td>How long to wait for everyone to sign. <code>0</code> stops after printing the first signing links.</td></tr>
+        <tr><td><code>OUTPUT_DIR</code></td><td>a directory</td><td><code>.</code></td><td>Where to save <code>signed-&lt;agreementId&gt;.pdf</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    An invalid <code>SIGNATURE_LEVEL</code> or <code>VERIFICATION</code> value stops the script with a message
+    naming the allowed values. <code>kba</code> (knowledge-based questions) is US-only, and every method must be
+    enabled on the account; if it isn't, creation fails with an <code>AccountCapabilityException</code>.
+  </p>
+
+  <h3 id="live-lifecycle-output">What it prints</h3>
+  <p>A run with an AES requirement and an email code, where three people sign over about ten minutes:</p>
+  <pre><code class="language-bash">SIGNATURE_LEVEL=aes VERIFICATION=email_otp WAIT_MINUTES=30 OUTPUT_DIR=/tmp/out \
+  php examples/live-lifecycle.php contract.pdf "alice@example.com,bob@example.com+carol@example.com"</code></pre>
+  <pre><code class="language-text">== 1. Upload contract.pdf
+transientDocumentId: 3AAABLblqZhC0nTq7mXw…
+
+== 2. Create with signing order and send
+  signature level: AES (each signer signs with a digital ID)
+  identity check: EMAIL_OTP
+  order 1: alice@example.com
+  order 2: bob@example.com
+  order 2: carol@example.com
+agreementId: CBJCHBCAABAAu3ZpQ8LkR2vW…
+status: OUT_FOR_SIGNATURE
+
+== 4. Who signs now
+  14:02:11 now waiting for: alice@example.com
+    sign as alice@example.com: https://secure.na4.adobesign.com/public/apiesign?pid=CBFCIBAA3AAABLblqZh…
+Signers also get an email from Adobe.
+
+== 5. Waiting up to 30 min while people sign (Ctrl+C to stop)
+  14:06:41 now waiting for: bob@example.com + carol@example.com
+    sign as bob@example.com: https://secure.na4.adobesign.com/public/apiesign?pid=CBFCIBAA3AAABLblqZh…
+    sign as carol@example.com: https://secure.na4.adobesign.com/public/apiesign?pid=CBFCIBAA3AAABLblqZh…
+  14:09:58 now waiting for: carol@example.com
+    sign as carol@example.com: https://secure.na4.adobesign.com/public/apiesign?pid=CBFCIBAA3AAABLblqZh…
+  14:12:30 everyone has signed: SIGNED
+
+== 6. Download the signed PDF (with audit report)
+saved /tmp/out/signed-CBJCHBCAABAAu3ZpQ8LkR2vW….pdf (412398 bytes)
+
+== 7. What happened (agreement events)
+  2026-11-03T14:02:05Z  CREATED                  sender@example.com
+  2026-11-03T14:02:06Z  ACTION_REQUESTED         alice@example.com
+  2026-11-03T14:04:12Z  EMAIL_OTP_AUTHENTICATED  alice@example.com
+  2026-11-03T14:06:30Z  DIGSIGNED                alice@example.com
+  2026-11-03T14:06:31Z  ACTION_REQUESTED         bob@example.com
+  2026-11-03T14:06:31Z  ACTION_REQUESTED         carol@example.com
+  2026-11-03T14:09:47Z  DIGSIGNED                bob@example.com
+  2026-11-03T14:12:19Z  DIGSIGNED                carol@example.com
+  2026-11-03T14:12:20Z  SIGNED                   sender@example.com
+
+== 8. Signature evidence (required: AES)
+  alice@example.com: TYPED, digital (Intesi Group Cloud Signature; issuer: Intesi Group Advanced Cloud Signature CA), verification EMAIL_OTP -&gt; AES
+  bob@example.com: TYPED, digital (Intesi Group Cloud Signature; issuer: Intesi Group Advanced Cloud Signature CA), verification EMAIL_OTP -&gt; AES
+  carol@example.com: SCRIBBLE, digital (Intesi Group Cloud Signature; issuer: Intesi Group Advanced Cloud Signature CA), verification EMAIL_OTP -&gt; AES
+  meets AES</code></pre>
+  <p>Reading it:</p>
+  <ul>
+    <li><strong>Step 3 is missing</strong> because no <code>WEBHOOK_URL</code> was set.</li>
+    <li><strong>"now waiting for"</strong> is printed only when the turn moves on. The script polls every 10
+      seconds; while Adobe is still processing it says <code>(Adobe is still processing)</code> and shows the
+      links on the next poll.</li>
+    <li><strong>Events</strong> come straight from <code>agreements()-&gt;events()</code>; the exact list
+      depends on the account and on what each person did.</li>
+    <li><strong>Evidence</strong>: the provider and issuer depend on the trust provider your account offers.
+      With the default <code>ses</code> the lines read <code>TYPED, not digital, verification NONE -&gt; SES</code>.
+      With <code>qes</code> and no <code>QUALIFIED_ISSUERS</code>, the last line is
+      <code>(set QUALIFIED_ISSUERS to check QES)</code>; with issuers that don't match, it reads
+      <code>falls short:</code> followed by the reasons from <code>shortfalls()</code>.</li>
+  </ul>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Exit status</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>0</code></td><td>Everyone signed and the PDF was saved, or <code>WAIT_MINUTES=0</code> ended the run after step 4</td></tr>
+        <tr><td><code>1</code></td><td>Usage error (no key, no readable PDF, no signers) or an SDK exception, printed with its class</td></tr>
+        <tr><td><code>2</code></td><td>Stopped waiting: the agreement was cancelled, expired or archived, or the time ran out</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-tip">
+    <p class="callout-title">Run it in the background</p>
+    <p>
+      A run can take as long as your signers do. Start it in a second terminal or with output redirected to a
+      file, sign from the emails or the printed links, and read the result when it finishes. With
+      <code>WAIT_MINUTES=0</code> the agreement stays out for signature; cancel it when you're done.
+    </p>
+  </div>
+
+  <h2 id="oauth-server">oauth-server.php</h2>
+  <p>
+    A complete OAuth authorization-code flow on PHP's built-in web server: connect an Acrobat Sign account,
+    list its agreements with a token that refreshes itself, and revoke access. It stores tokens in a JSON file
+    in the system temp directory (mode 600) so you can restart the server and watch refresh-on-expiry work; a
+    real application stores them encrypted in its database.
+  </p>
+  <ol class="steps">
+    <li><span class="step-title">Configure the API application</span><p>In Acrobat Sign, on your API application's "Configure OAuth" page, add <code>http://localhost:8080/callback</code> as a redirect URI and enable the <code>user_login</code> and <code>agreement_read</code> scopes.</p></li>
+    <li><span class="step-title">Start the server</span>
+      <pre><code class="language-bash">ADOBE_SIGN_CLIENT_ID=your-client-id ADOBE_SIGN_CLIENT_SECRET=your-client-secret \
+  php -S localhost:8080 examples/oauth-server.php</code></pre></li>
+    <li><span class="step-title">Connect</span><p>Open <code>http://localhost:8080/login</code>. You are sent to Adobe, sign in and approve, and Adobe redirects back to <code>/callback</code>, which checks the <code>state</code>, exchanges the code and stores the token.</p></li>
+    <li><span class="step-title">Use and revoke</span><p><code>http://localhost:8080/</code> lists up to ten agreements. <code>/logout</code> revokes the token pair at Adobe and deletes the file.</p></li>
+  </ol>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Path</th><th>What it does</th><th>SDK calls</th></tr></thead>
+      <tbody>
+        <tr><td><code>/login</code></td><td>Redirects to Adobe's consent page</td><td><code>OAuthClient::generateState()</code>, <code>authorizationUrl()</code></td></tr>
+        <tr><td><code>/callback</code></td><td>Verifies the state, exchanges the code, stores the token</td><td><code>handleCallback()</code>, <code>TokenStore::put()</code></td></tr>
+        <tr><td><code>/</code></td><td>Lists agreements, refreshing the token if needed</td><td><code>AdobeSign::withOAuth()</code>, <code>agreements()-&gt;all(pageSize: 20)</code></td></tr>
+        <tr><td><code>/logout</code></td><td>Revokes the token pair</td><td><code>OAuthClient::revoke()</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>After connecting, the home page shows something like:</p>
+  <pre><code class="language-text">Connected to https://api.na4.adobesign.com/ (token expires 2026-11-03T15:04:05+00:00)
+
+SIGNED       CBJCHBCAABAAu3ZpQ8LkR2vW Supplier agreement 2026
+OUT_FOR_SIGNATURE CBJCHBCAABAA8sQ1fN0rTb5c Mutual NDA
+WAITING_FOR_MY_SIGNATURE CBJCHBCAABAAp0Lx2Vbzc1sN Office lease renewal
+CANCELLED    CBJCHBCAABAAk3mQ7wRt9YhZ [DEMO USE ONLY] SDK live check: contract.pdf
+
+/logout revokes the token.</code></pre>
+  <ul>
+    <li>The data centre comes from the token's <code>api_access_point</code>, so there is no
+      <code>GET /baseUris</code> call.</li>
+    <li>Statuses longer than 12 characters push the columns out; the script keeps formatting minimal.</li>
+    <li>Without the environment variables the server answers <code>Set ADOBE_SIGN_CLIENT_ID and
+      ADOBE_SIGN_CLIENT_SECRET.</code> with status 500. Any SDK error is shown as its class and message with
+      status 400; a denied consent, for example, appears as an <code>OAuthException</code>.</li>
+  </ul>
+  <p>The full OAuth guide, including token storage and security checks, is in <a href="authentication.html">Authentication</a>.</p>
+
+  <h2 id="webhook-receiver">webhook-receiver.php</h2>
+  <p>
+    A minimal webhook endpoint in plain PHP. It checks the <code>X-AdobeSign-ClientId</code> header against an
+    allowlist, acknowledges first (Adobe allows five seconds), and then logs the event, noting when an
+    agreement has completed. Rejected requests get 403 (unknown client) or 400 (unreadable body) and no echo.
+  </p>
+  <ol class="steps">
+    <li><span class="step-title">Start it</span><p><code>ADOBE_SIGN_CLIENT_ID</code> is the client id (application id) of the API application that creates your webhooks; Adobe sends it with every delivery.</p>
+      <pre><code class="language-bash">ADOBE_SIGN_CLIENT_ID=your-client-id php -S localhost:8081 examples/webhook-receiver.php</code></pre></li>
+    <li><span class="step-title">Make it reachable</span><p>Adobe only calls public HTTPS URLs. Put a tunnel such as ngrok or cloudflared in front of port 8081 and note its HTTPS address.</p></li>
+    <li><span class="step-title">Register a webhook</span><p>Point a webhook at the tunnel. Adobe first sends a verification GET, which the script answers.</p>
+      <pre><code class="language-php">$sign-&gt;webhooks()-&gt;create(
+    WebhookInfo::forAgreement('Sync', 'https://your-tunnel.example.com/', $agreementId)
+        -&gt;events(EventType::AGREEMENT_ALL),
+);</code></pre>
+      <p>Or let <a href="#live-lifecycle-options"><code>live-lifecycle.php</code></a> do it with <code>WEBHOOK_URL</code>.</p></li>
+  </ol>
+
+  <h3 id="webhook-receiver-local-test">Trying it without Adobe</h3>
+  <p>You can post a sample notification yourself, using a fixture from the test suite:</p>
+  <pre><code class="language-bash">curl -i http://localhost:8081/ \
+  -H 'X-AdobeSign-ClientId: your-client-id' \
+  -H 'Content-Type: application/json' \
+  --data @tests/Fixtures/webhook_agreement_workflow_completed.json</code></pre>
+  <p>The response (headers abridged) carries the echo Adobe requires, in a header and in the body:</p>
+  <pre><code class="language-http">HTTP/1.1 200 OK
+X-AdobeSign-ClientId: your-client-id
+Content-Type: application/json
+
+{"xAdobeSignClientId":"your-client-id"}</code></pre>
+  <p>The server's console shows the acknowledged event (PHP's built-in server adds its own timestamp and request lines around it):</p>
+  <pre><code class="language-text">[2026-11-03T14:22:10Z] AGREEMENT_WORKFLOW_COMPLETED CBJCHBCAABAAx1aFQyYF-aGrLsBZtVqaT9gPh6Xw42kK -&gt; completed, fetch the signed PDF with agreements()-&gt;combinedDocument()</code></pre>
+  <p>
+    The same request with a different client id gets <code>HTTP/1.1 403 Forbidden</code> and no echo, which is
+    what makes Adobe treat a delivery not meant for you as failed. The comments in the script point out what a
+    real application adds: put the event on a queue, drop duplicates by <code>notificationId</code>, and
+    re-fetch the agreement through the API before acting, because payloads are not signed.
+    See <a href="webhooks.html">Webhooks</a>.
+  </p>
+
+  <h2 id="examples-questions">Common questions</h2>
+  <div class="faq">
+    <details id="examples-faq-from-vendor">
+      <summary>Can I run the examples from my project's vendor directory?</summary>
+      <div class="faq-answer">
+        <p>
+          Not as they are: they require <code>vendor/autoload.php</code> relative to the package directory, and
+          the dry run needs the SDK's dev dependencies and test fixtures. Clone the repository and run
+          <code>composer install</code> there (<a href="#before-you-start">Before you start</a>).
+        </p>
+      </div>
+    </details>
+    <details id="examples-faq-cleanup">
+      <summary>How do I clean up agreements the examples created?</summary>
+      <div class="faq-answer">
+        <p>
+          Cancel them in Acrobat Sign's Manage page, or with
+          <code>$sign-&gt;agreements()-&gt;cancel($id, 'Test run', notifyOthers: false)</code>. On a developer
+          account they are clearly marked: Adobe prefixes their names with <code>[DEMO USE ONLY]</code>.
+        </p>
+      </div>
+    </details>
+    <details id="examples-faq-sign-myself">
+      <summary>Can the script sign for the test signers?</summary>
+      <div class="faq-answer">
+        <p>
+          No, and it shouldn't: a signature is a person's act. The script prints the signing links so the people
+          you listed can sign from the terminal output as well as from their email.
+        </p>
+      </div>
+    </details>
+    <details id="examples-faq-qes-run">
+      <summary>How do I check a QES run?</summary>
+      <div class="faq-answer">
+        <p>
+          Run with <code>SIGNATURE_LEVEL=qes</code> and set <code>QUALIFIED_ISSUERS</code> to the certificate
+          issuer names of your qualified provider. The last step then reports <code>meets QES</code> or why not.
+          The account must have a qualified trust service provider configured; see
+          <a href="signature-levels.html">Signature levels</a>.
+        </p>
+      </div>
+    </details>
+    <details id="examples-faq-oauth-port">
+      <summary>Can I run the OAuth example on a different port?</summary>
+      <div class="faq-answer">
+        <p>
+          The redirect URI <code>http://localhost:8080/callback</code> is written into the script and must match
+          the one registered with Adobe exactly. To use another port, change both.
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <ul class="next-links">
+    <li><a href="getting-started.html"><strong>Getting started</strong><span>From install to a sent agreement in your own code.</span></a></li>
+    <li><a href="testing.html"><strong>Testing your integration</strong><span>The same offline approach the dry run uses, for your tests.</span></a></li>
+    <li><a href="troubleshooting.html"><strong>Troubleshooting</strong><span>When a run stops with an error.</span></a></li>
+  </ul>
+</article>
+<!-- docs:pager -->
+<nav class="pager" aria-label="Previous and next pages">
+  <a class="pager-prev" href="testing.html" rel="prev"><span class="pager-label">Previous</span><span class="pager-title">Testing your integration</span></a>
+  <a class="pager-next" href="troubleshooting.html" rel="next"><span class="pager-label">Next</span><span class="pager-title">Troubleshooting</span></a>
+</nav>
+<!-- /docs:pager -->
+</main>
+<aside class="toc" aria-label="On this page"></aside>
+</div>
+<!-- docs:footer -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>conceptlz/adobe-sign · MIT licensed · <a href="https://github.com/conceptlz/adobe-sign">Source on GitHub</a></p>
+    <p>An independent SDK, not affiliated with or endorsed by Adobe. Adobe and Acrobat Sign are trademarks of Adobe Inc.</p>
+  </div>
+</footer>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/docs.js"></script>
+<!-- /docs:footer -->
+</body>
+</html>
