@@ -2308,7 +2308,7 @@ window.DOCS_INDEX = [
         "page": "Configuration",
         "url": "configuration.html#option-user-agent",
         "level": 3,
-        "text": "The default is conceptlz-adobe-sign-php/0.3.1 (the version comes from AdobeSign::VERSION). Adding your application's name helps when you ask Adobe support about specific requests: new ClientOptions(userAgent: 'acme-contracts/2.4 conceptlz-adobe-sign-php/' . AdobeSign::VERSION); A request that already has a User-Agent h…"
+        "text": "The default is conceptlz-adobe-sign-php/0.4.0 (the version comes from AdobeSign::VERSION). Adding your application's name helps when you ask Adobe support about specific requests: new ClientOptions(userAgent: 'acme-contracts/2.4 conceptlz-adobe-sign-php/' . AdobeSign::VERSION); A request that already has a User-Agent h…"
     },
     {
         "title": "defaultSignatureLevel",
@@ -2546,7 +2546,7 @@ window.DOCS_INDEX = [
         "page": "Data centres, retries & ETags",
         "url": "http-layer.html#user-agent-header",
         "level": 2,
-        "text": "UserAgentMiddleware adds ClientOptions::$userAgent, by default conceptlz-adobe-sign-php/0.3.1, to every request that doesn't already have a User-Agent. It identifies the SDK and its version in Adobe's logs, which helps support find your requests. Prefix your own application name if you like; see Configuration."
+        "text": "UserAgentMiddleware adds ClientOptions::$userAgent, by default conceptlz-adobe-sign-php/0.4.0, to every request that doesn't already have a User-Agent. It identifies the SDK and its version in Adobe's logs, which helps support find your requests. Prefix your own application name if you like; see Configuration."
     },
     {
         "title": "Cursor pagination",
@@ -3631,7 +3631,7 @@ window.DOCS_INDEX = [
         "page": "Frequently asked questions",
         "url": "faq.html#contributing",
         "level": 2,
-        "text": "How is the SDK versioned? With semantic versioning, currently in the 0.x series, where a minor version (0.3 to 0.4) may contain breaking changes. Require ^0.3 to get fixes without surprises. The core and Laravel packages always share one version number and are released together; the changes are listed in the changelog…"
+        "text": "How is the SDK versioned? With semantic versioning, currently in the 0.x series, where a minor version (0.4 to 0.5) may contain breaking changes. Require ^0.4 to get fixes without surprises. The core and Laravel packages always share one version number and are released together; the changes are listed in the changelog…"
     },
     {
         "title": "What is conceptlz/adobe-sign?",
@@ -3953,7 +3953,7 @@ window.DOCS_INDEX = [
         "page": "Frequently asked questions · FAQ",
         "url": "faq.html#faq-versioning",
         "level": 3,
-        "text": "With semantic versioning, currently in the 0.x series, where a minor version (0.3 to 0.4) may contain breaking changes. Require ^0.3 to get fixes without surprises. The core and Laravel packages always share one version number and are released together; the changes are listed in the changelog on GitHub."
+        "text": "With semantic versioning, currently in the 0.x series, where a minor version (0.4 to 0.5) may contain breaking changes. Require ^0.4 to get fixes without surprises. The core and Laravel packages always share one version number and are released together; the changes are listed in the changelog on GitHub."
     },
     {
         "title": "What if the SDK doesn't cover a field or endpoint I need?",
