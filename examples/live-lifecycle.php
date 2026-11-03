@@ -13,6 +13,8 @@
  *   WEBHOOK_URL=https://...      also register a webhook for the agreement (run webhook-receiver.php there)
  *   WAIT_MINUTES=30              how long to wait for everyone to sign (default 30; 0 = don't wait)
  *   OUTPUT_DIR=.                 where to save the signed PDF
+ *   SIGNATURE_LEVEL=ses          ses (default), aes or qes: aes/qes make each signer use a digital ID
+ *   QUALIFIED_ISSUERS=a,b        certificate issuers you accept as qualified, for the QES check
  */
 
 declare(strict_types=1);
@@ -24,6 +26,7 @@ use Conceptlz\AdobeSign\Builder\AgreementInfo;
 use Conceptlz\AdobeSign\Builder\FileInfo;
 use Conceptlz\AdobeSign\Builder\ParticipantSetInfo;
 use Conceptlz\AdobeSign\Builder\WebhookInfo;
+use Conceptlz\AdobeSign\Enum\SignatureLevel;
 use Conceptlz\AdobeSign\Exception\AdobeSignException;
 use Conceptlz\AdobeSign\Exception\NotFoundException;
 use Conceptlz\AdobeSign\Webhook\EventType;
@@ -37,6 +40,9 @@ if ($key === '' || !is_file($pdf) || $signerSpec === '') {
 
 $waitMinutes = (int) (getenv('WAIT_MINUTES') !== false ? getenv('WAIT_MINUTES') : 30);
 $outputDir = rtrim(getenv('OUTPUT_DIR') ?: '.', '/');
+$level = SignatureLevel::tryFrom(strtoupper(getenv('SIGNATURE_LEVEL') ?: 'SES'))
+    ?? exit("SIGNATURE_LEVEL must be ses, aes or qes.\n");
+$qualifiedIssuers = array_values(array_filter(array_map('trim', explode(',', getenv('QUALIFIED_ISSUERS') ?: ''))));
 $step = static fn (string $text) => print("\n== $text\n");
 
 try {
@@ -49,7 +55,9 @@ try {
     $step('2. Create with signing order and send');
     $agreement = AgreementInfo::create('SDK live check: ' . basename($pdf) . ' ' . date('Y-m-d H:i'))
         ->file(FileInfo::transientDocument($documentId))
-        ->message('Live end-to-end check of the conceptlz/adobe-sign SDK. Please sign.');
+        ->message('Live end-to-end check of the conceptlz/adobe-sign SDK. Please sign.')
+        ->signatureLevel($level);
+    echo "  signature level: {$level->value}" . ($level->requiresDigitalSignature() ? ' (each signer signs with a digital ID)' : '') . "\n";
     foreach (explode(',', $signerSpec) as $i => $group) {
         foreach (explode('+', $group) as $email) {
             $agreement->participantSet(ParticipantSetInfo::signer(trim($email))->order($i + 1));
@@ -107,6 +115,25 @@ try {
     $step('7. What happened (agreement events)');
     foreach ($sign->agreements()->events($agreementId)->getEvents() ?? [] as $event) {
         printf("  %s  %-24s %s\n", $event->getDate(), $event->getType(), $event->getParticipantEmail());
+    }
+
+    $step("8. Signature evidence (required: {$level->value})");
+    $evidence = $sign->agreements()->signatureEvidence($agreementId);
+    foreach ($evidence->signers as $signer) {
+        printf(
+            "  %s: %s, %s, verification %s -> %s\n",
+            $signer->email,
+            $signer->signatureInputType ?? '-',
+            $signer->digitallySigned ? "digital ({$signer->signingProvider}; issuer: {$signer->certificateIssuer})" : 'not digital',
+            $signer->verification,
+            $signer->achievedLevel($qualifiedIssuers)?->value ?? 'not signed',
+        );
+    }
+    if ($level === SignatureLevel::QES && $qualifiedIssuers === []) {
+        echo "  (set QUALIFIED_ISSUERS to check QES)\n";
+    } else {
+        $problems = $evidence->shortfalls($level, $qualifiedIssuers);
+        echo $problems === [] ? "  meets {$level->value}\n" : '  falls short: ' . implode(' | ', $problems) . "\n";
     }
 } catch (AdobeSignException $e) {
     fwrite(STDERR, get_class($e) . ': ' . $e->getMessage() . "\n");
