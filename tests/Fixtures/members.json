@@ -1,0 +1,12 @@
+{
+  "participantSets": [
+    {"id": "CBJCHBCAABAApset1", "role": "SIGNER", "order": 1, "status": "WAITING_FOR_MY_SIGNATURE",
+     "memberInfos": [{"id": "CBJCHBCAABAAmem1", "email": "jane@example.com", "self": false}]},
+    {"id": "CBJCHBCAABAApset2", "role": "SIGNER", "order": 2, "status": "NOT_YET_VISIBLE",
+     "memberInfos": [{"id": "CBJCHBCAABAAmem2", "email": "john@example.com", "self": false}]}
+  ],
+  "nextParticipantSets": [
+    {"memberInfos": [{"id": "CBJCHBCAABAAmem1", "email": "jane@example.com"}], "waitingForOthers": false}
+  ],
+  "senderInfo": {"email": "sender@example.com", "participantId": "CBJCHBCAABAAsend", "self": true}
+}

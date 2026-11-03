@@ -1,0 +1,6 @@
+{
+  "userAgreementList": [
+    {"id": "agr-3", "name": "NDA 3", "status": "CANCELLED", "type": "AGREEMENT", "groupId": "g", "displayDate": "2026-10-03T00:00:00Z", "esign": true, "hidden": true, "latestVersionId": "v1", "displayParticipantSetInfos": []}
+  ],
+  "page": {}
+}

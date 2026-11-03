@@ -1,0 +1,4 @@
+{"events": [
+  {"type": "CREATED", "date": "2026-11-03T10:15:30Z", "actingUserEmail": "sender@example.com", "participantEmail": "sender@example.com"},
+  {"type": "ESIGNED", "date": "2026-11-03T14:22:10Z", "actingUserEmail": "jane@example.com", "participantEmail": "jane@example.com"}
+]}

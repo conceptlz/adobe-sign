@@ -1,0 +1,4 @@
+{"signingUrlSetInfos": [
+  {"signingUrlSetName": "Signer 1", "signingUrls": [{"email": "Jane@Example.com", "esignUrl": "https://secure.na4.adobesign.com/public/apiesign?pid=abc"}]},
+  {"signingUrls": [{"email": "john@example.com", "esignUrl": "https://secure.na4.adobesign.com/public/apiesign?pid=def"}]}
+]}

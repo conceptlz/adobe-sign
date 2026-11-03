@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Conceptlz\AdobeSign\Enum;
+
+/**
+ * ParticipantSetInfo.role (v6 spec).
+ */
+enum ParticipantRole: string
+{
+    case SIGNER = 'SIGNER';
+    case APPROVER = 'APPROVER';
+    case ACCEPTOR = 'ACCEPTOR';
+    case CERTIFIED_RECIPIENT = 'CERTIFIED_RECIPIENT';
+    case FORM_FILLER = 'FORM_FILLER';
+    case DELEGATE_TO_SIGNER = 'DELEGATE_TO_SIGNER';
+    case DELEGATE_TO_APPROVER = 'DELEGATE_TO_APPROVER';
+    case DELEGATE_TO_ACCEPTOR = 'DELEGATE_TO_ACCEPTOR';
+    case DELEGATE_TO_CERTIFIED_RECIPIENT = 'DELEGATE_TO_CERTIFIED_RECIPIENT';
+    case DELEGATE_TO_FORM_FILLER = 'DELEGATE_TO_FORM_FILLER';
+    case NOTARY_SIGNER = 'NOTARY_SIGNER';
+    case ELECTRONIC_SEALER = 'ELECTRONIC_SEALER';
+    case WITNESS = 'WITNESS';
+    case HOST = 'HOST';
+    case IN_PERSON_SIGNER = 'IN_PERSON_SIGNER';
+}

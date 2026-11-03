@@ -1,0 +1,77 @@
+{
+    "name": "conceptlz/adobe-sign",
+    "description": "Framework-agnostic PHP SDK for the Adobe Acrobat Sign REST API v6.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "adobe",
+        "acrobat sign",
+        "echosign",
+        "esignature",
+        "psr-18"
+    ],
+    "require": {
+        "php": "^8.2",
+        "ext-json": "*",
+        "php-http/discovery": "^1.19",
+        "psr/clock": "^1.0",
+        "psr/http-client": "^1.0",
+        "psr/http-client-implementation": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-factory-implementation": "^1.0",
+        "psr/http-message": "^1.1 || ^2.0",
+        "psr/log": "^2.0 || ^3.0",
+        "psr/simple-cache": "^2.0 || ^3.0"
+    },
+    "require-dev": {
+        "nyholm/psr7": "^1.8",
+        "php-http/mock-client": "^1.6",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^10.5 || ^11.0",
+        "symfony/http-client": "^6.4 || ^7.0"
+    },
+    "suggest": {
+        "symfony/http-client": "PSR-18 client implementation (auto-discovered)",
+        "guzzlehttp/guzzle": "PSR-18 client implementation (auto-discovered)",
+        "nyholm/psr7": "PSR-17 factories (auto-discovered)"
+    },
+    "autoload": {
+        "psr-4": {
+            "Conceptlz\\AdobeSign\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Conceptlz\\AdobeSign\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": [
+            "phpstan analyse --no-progress --memory-limit=1G",
+            "phpstan analyse --no-progress --memory-limit=1G -c phpstan-tests.neon.dist"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
+    },
+    "minimum-stability": "stable",
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    },
+    "authors": [
+        {
+            "name": "Conceptlz",
+            "email": "moiz@conceptualize.ae"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/conceptlz/adobe-sign/issues",
+        "source": "https://github.com/conceptlz/adobe-sign"
+    }
+}

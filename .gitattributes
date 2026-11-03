@@ -1,0 +1,8 @@
+# Keep dist archives (composer install --prefer-dist) lean: no tests, spec or dev config.
+/tests export-ignore
+/spec export-ignore
+/phpunit.xml.dist export-ignore
+/phpstan.neon.dist export-ignore
+/.gitattributes export-ignore
+/phpstan-tests.neon.dist export-ignore
+/.gitignore export-ignore

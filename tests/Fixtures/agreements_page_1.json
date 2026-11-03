@@ -1,0 +1,7 @@
+{
+  "userAgreementList": [
+    {"id": "agr-1", "name": "NDA 1", "status": "SIGNED", "type": "AGREEMENT", "groupId": "g", "displayDate": "2026-10-01T00:00:00Z", "esign": true, "hidden": false, "latestVersionId": "v1", "displayParticipantSetInfos": []},
+    {"id": "agr-2", "name": "NDA 2", "status": "OUT_FOR_SIGNATURE", "type": "AGREEMENT", "groupId": "g", "displayDate": "2026-10-02T00:00:00Z", "esign": true, "hidden": false, "latestVersionId": "v1", "displayParticipantSetInfos": []}
+  ],
+  "page": {"nextCursor": "cursor-page-2"}
+}
