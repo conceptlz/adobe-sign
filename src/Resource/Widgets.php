@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Conceptlz\AdobeSign\Resource;
 
+use Conceptlz\AdobeSign\Exception\PreconditionFailedException;
 use Conceptlz\AdobeSign\Generated\Model\FetchedWidgetInfo;
 use Conceptlz\AdobeSign\Generated\Model\UserWidget;
 use Conceptlz\AdobeSign\Generated\Model\WidgetAgreement;
@@ -17,6 +18,9 @@ use Psr\Http\Message\StreamInterface;
 
 /**
  * Web forms ("widgets" in the API): a public URL anyone can sign, each signing creates an agreement.
+ *
+ * Every method that calls the API throws ApiException (or a subclass) on an error response and
+ * TransportException on a network failure; see AbstractResource.
  */
 final class Widgets extends AbstractResource
 {
@@ -54,11 +58,14 @@ final class Widgets extends AbstractResource
     }
 
     /**
-     * PUT /widgets/{widgetId}. Call get() first to send If-Match automatically.
+     * PUT /widgets/{widgetId}. Adobe expects the full object (fileInfos, name, status,
+     * widgetParticipantSetInfo): fetch with get() (which also makes the client send If-Match),
+     * change what you need, send it back.
      *
-     * @param WidgetInfo|array<string, mixed> $info
+     * @param WidgetInfo|FetchedWidgetInfo|array<string, mixed> $info
+     * @throws PreconditionFailedException when the web form changed since it was fetched
      */
-    public function update(string $widgetId, WidgetInfo|array $info): void
+    public function update(string $widgetId, WidgetInfo|FetchedWidgetInfo|array $info): void
     {
         $this->put(self::path('widgets', $widgetId), $info);
     }
@@ -67,7 +74,9 @@ final class Widgets extends AbstractResource
      * PUT /widgets/{widgetId}/state
      *
      * @param string $state ACTIVE | INACTIVE | AUTHORING | CANCELLED
-     * @param array{message: string, redirectUrl: string}|null $inactiveInfo shown to visitors of a deactivated form
+     * @param array{message?: string, redirectUrl?: string}|null $inactiveInfo for visitors of a deactivated
+     *        form: give exactly one of message or redirectUrl
+     * @throws PreconditionFailedException when the web form changed since it was fetched
      */
     public function updateState(string $widgetId, string $state, ?array $inactiveInfo = null): void
     {
@@ -133,7 +142,7 @@ final class Widgets extends AbstractResource
     }
 
     /**
-     * GET /widgets/{widgetId}/combinedDocument
+     * GET /widgets/{widgetId}/combinedDocument: all documents merged into one PDF.
      */
     public function combinedDocument(string $widgetId, ?bool $attachAuditReport = null): StreamInterface
     {
@@ -141,7 +150,7 @@ final class Widgets extends AbstractResource
     }
 
     /**
-     * GET /widgets/{widgetId}/auditTrail
+     * GET /widgets/{widgetId}/auditTrail: the audit report PDF.
      */
     public function auditTrail(string $widgetId): StreamInterface
     {

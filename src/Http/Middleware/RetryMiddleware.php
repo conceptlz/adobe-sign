@@ -18,6 +18,9 @@ use Psr\Log\NullLogger;
  * Waits for the server's Retry-After when given, otherwise exponential backoff with full jitter.
  * If the server asks for longer than $maxDelaySeconds we stop and return the 429 so the caller
  * gets a RateLimitException carrying retryAfter rather than a request that blocks for minutes.
+ * Requests whose body stream can't be rewound are not retried.
+ *
+ * @internal AdobeSign installs it; tune it through ClientOptions.
  */
 final class RetryMiddleware implements Middleware
 {
@@ -25,6 +28,7 @@ final class RetryMiddleware implements Middleware
     private readonly \Closure $random;
 
     /**
+     * @param int $maxRetries retries after the first attempt
      * @param list<int> $retryStatuses
      * @param (callable(): float)|null $random returns [0, 1); injectable for deterministic tests
      */
@@ -42,6 +46,7 @@ final class RetryMiddleware implements Middleware
             : static fn (): float => mt_rand() / (mt_getrandmax() + 1);
     }
 
+    /** Send the request, sleeping and resending while the response is retryable. */
     public function handle(RequestInterface $request, callable $next): ResponseInterface
     {
         $attempt = 0;

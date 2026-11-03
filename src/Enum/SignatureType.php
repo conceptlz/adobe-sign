@@ -9,6 +9,8 @@ namespace Conceptlz\AdobeSign\Enum;
  */
 enum SignatureType: string
 {
+    /** Signed electronically. */
     case ESIGN = 'ESIGN';
+    /** Signed by hand; the signed document is uploaded afterwards. */
     case WRITTEN = 'WRITTEN';
 }

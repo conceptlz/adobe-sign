@@ -37,15 +37,19 @@ use Psr\Log\NullLogger;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * Entry point.
+ * Entry point: an authenticated client for one Acrobat Sign account, with one accessor per
+ * resource group.
  *
  *     $sign = AdobeSign::withIntegrationKey(getenv('ADOBE_SIGN_INTEGRATION_KEY'));
  *     $docId = $sign->transientDocuments()->upload('/path/contract.pdf');
  *
- * Any PSR-18 client / PSR-17 factory is auto-discovered when not passed in.
+ * Any PSR-18 client / PSR-17 factory is auto-discovered when not passed in. Resource methods
+ * throw Exception\ApiException (or a subclass) on error responses and
+ * Exception\TransportException on network failures.
  */
 final class AdobeSign
 {
+    /** SDK version, sent in the default User-Agent. */
     public const VERSION = '0.1.0';
 
     private Transport $transport;
@@ -54,7 +58,13 @@ final class AdobeSign
     private array $resources = [];
 
     /**
-     * @param list<Middleware> $middleware extra middleware, run outermost (before retry)
+     * Usually built through withIntegrationKey() or withOAuth(). No request is made until the
+     * first API call; the account's data center is discovered then.
+     *
+     * @param CacheInterface|null $cache holds the discovered data-center URL; defaults to an in-process cache
+     * @param LoggerInterface|null $logger request and retry logs; never receives headers or bodies
+     * @param Sleeper|null $sleeper waits between retries; replace it in tests
+     * @param list<Middleware> $middleware extra middleware, run outermost (before User-Agent, retry and ETag)
      */
     public function __construct(
         TokenProvider $tokens,
@@ -99,7 +109,10 @@ final class AdobeSign
     }
 
     /**
+     * Client authenticated with an account's Integration Key (non-expiring, no OAuth flow).
+     *
      * @param mixed ...$args any other constructor argument, by name
+     * @throws InvalidArgumentException when the key is empty
      */
     public static function withIntegrationKey(#[\SensitiveParameter] string $integrationKey, mixed ...$args): self
     {
@@ -120,7 +133,10 @@ final class AdobeSign
     /**
      * Act as another user in the account (requires an admin-level token), via the x-api-user header.
      *
+     * Returns a new client; this one is unchanged. Both share the HTTP pipeline and its ETag memory.
+     *
      * @param string $user "email:jane@example.com", "userid:CBJCHBCAABAA...", or a bare email / user id
+     * @throws InvalidArgumentException when $user is blank
      */
     public function asUser(string $user): self
     {
@@ -139,26 +155,31 @@ final class AdobeSign
         return $clone;
     }
 
+    /** Agreements: create, track, remind, download. */
     public function agreements(): Agreements
     {
         return $this->resource(Agreements::class);
     }
 
+    /** File uploads to reference from an agreement within 7 days. */
     public function transientDocuments(): TransientDocuments
     {
         return $this->resource(TransientDocuments::class);
     }
 
+    /** Library templates. */
     public function libraryDocuments(): LibraryDocuments
     {
         return $this->resource(LibraryDocuments::class);
     }
 
+    /** Webhook subscriptions (receiving them: Webhook\WebhookHandler). */
     public function webhooks(): Webhooks
     {
         return $this->resource(Webhooks::class);
     }
 
+    /** Users in the account. */
     public function users(): Users
     {
         return $this->resource(Users::class);
@@ -177,6 +198,8 @@ final class AdobeSign
     }
 
     /**
+     * One instance per resource class, created on first use.
+     *
      * @template T of Resource\AbstractResource
      * @param class-string<T> $class
      * @return T

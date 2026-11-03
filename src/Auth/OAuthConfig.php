@@ -16,10 +16,13 @@ final class OAuthConfig
      * @param list<string> $allowedDomains registrable domains an api_access_point may belong to.
      *                                     The callback's api_access_point arrives in a query string,
      *                                     so it is checked before the client secret is sent there.
+     * @throws InvalidArgumentException when the client id or secret is empty, or the redirect URI
+     *                                  is neither HTTPS nor http://localhost / http://127.0.0.1
      */
     public function __construct(
         public readonly string $clientId,
         #[\SensitiveParameter] public readonly string $clientSecret,
+        /** Must match a redirect URI registered for the application exactly. */
         public readonly string $redirectUri,
         /** Shard-agnostic authorization page; Adobe routes the user to their data center. */
         public readonly string $authorizationUrl = 'https://secure.adobesign.com/public/oauth/v2',
@@ -39,6 +42,8 @@ final class OAuthConfig
 
     /**
      * Normalised "https://host/" if $accessPoint is an HTTPS URL on an allowed domain.
+     *
+     * @throws InvalidArgumentException otherwise, or when it carries user info
      */
     public function validateAccessPoint(string $accessPoint): string
     {
@@ -61,6 +66,11 @@ final class OAuthConfig
         return 'https://' . $host . (isset($parts['port']) ? ':' . $parts['port'] : '') . '/';
     }
 
+    /**
+     * Masks the client secret in var_dump() and similar.
+     *
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         return [

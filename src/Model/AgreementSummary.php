@@ -16,11 +16,16 @@ final class AgreementSummary
     public function __construct(
         public readonly string $id,
         public readonly string $name,
+        /** Relative to the caller, e.g. WAITING_FOR_MY_SIGNATURE, OUT_FOR_SIGNATURE, SIGNED. */
         public readonly string $status,
+        /** e.g. AGREEMENT, MEGASIGN_CHILD, WIDGET_INSTANCE */
         public readonly ?string $type,
         public readonly ?string $groupId,
+        /** ISO 8601 date-time as Adobe sent it. */
         public readonly ?string $displayDate,
+        /** Hidden for the calling user. */
         public readonly bool $hidden,
+        /** The decoded list row, unmodified. */
         public readonly array $raw,
     ) {
     }
@@ -33,7 +38,11 @@ final class AgreementSummary
         return ModelMapper::hydrate(AgreementAgreement::class, $this->raw);
     }
 
-    /** @param array<mixed> $data */
+    /**
+     * Build from one decoded userAgreementList row. Missing strings become "".
+     *
+     * @param array<mixed> $data
+     */
     public static function fromArray(array $data): self
     {
         return new self(

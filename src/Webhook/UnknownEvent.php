@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Conceptlz\AdobeSign\Webhook;
 
 /**
- * An event this SDK version doesn't know (Adobe adds events without a version bump). Use $raw.
+ * An event this SDK version doesn't know (Adobe adds events without a version bump). Use $raw;
+ * resource() is always empty.
  */
 final class UnknownEvent extends WebhookEvent
 {

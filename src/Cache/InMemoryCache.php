@@ -8,7 +8,9 @@ use Psr\SimpleCache\CacheInterface;
 
 /**
  * Minimal PSR-16 cache used when the caller doesn't supply one.
- * Lives for the process only, so base URI discovery runs once per process.
+ * Lives only as long as the object: AdobeSign creates one per client, so without a shared
+ * cache base URI discovery runs once per client instance (asUser() copies share it).
+ * PSR-16 methods behave as the interface documents; keys are not validated.
  */
 final class InMemoryCache implements CacheInterface
 {

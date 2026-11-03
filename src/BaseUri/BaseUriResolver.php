@@ -20,15 +20,22 @@ use Psr\SimpleCache\CacheInterface;
  * The bootstrap host is shard-agnostic; Adobe answers with the account's apiAccessPoint
  * (e.g. https://api.na1.adobesign.com/) and every other call must go there, or the API
  * returns 403 INVALID_API_ACCESS_POINT.
+ *
+ * @internal AdobeSign builds it; configure it through ClientOptions and AdobeSign's $cache.
  */
 final class BaseUriResolver
 {
+    /** Appended to the access point to form the API root. */
     public const API_PATH = 'api/rest/v6';
     private const CACHE_PREFIX = 'adobe_sign.base_uri.';
 
     /** @var array<string, true> accounts whose token-provided access point was rejected */
     private array $distrustProvided = [];
 
+    /**
+     * @param ClientInterface $client sends GET /baseUris (AdobeSign passes its middleware pipeline)
+     * @param int $ttlSeconds how long a discovered root stays cached
+     */
     public function __construct(
         private readonly ClientInterface $client,
         private readonly RequestFactoryInterface $requests,
@@ -39,7 +46,12 @@ final class BaseUriResolver
     }
 
     /**
+     * The account's API root: the token's own access point if it carries one, else the cache,
+     * else GET /baseUris.
+     *
      * @return string API root for the account, e.g. "https://api.na1.adobesign.com/api/rest/v6"
+     * @throws ApiException when discovery fails or returns a non-HTTPS access point
+     * @throws TransportException when the discovery request gets no response
      */
     public function resolve(TokenProvider $tokens): string
     {
@@ -66,6 +78,8 @@ final class BaseUriResolver
 
     /**
      * Seed the cache from a known access point, e.g. the api_access_point an OAuth redirect returns.
+     *
+     * @throws ApiException when $apiAccessPoint is not HTTPS
      */
     public function remember(TokenProvider $tokens, string $apiAccessPoint): void
     {
@@ -83,6 +97,7 @@ final class BaseUriResolver
         $this->distrustProvided[$key] = true;
     }
 
+    /** GET /baseUris on the bootstrap host; returns the raw apiAccessPoint. */
     private function discover(TokenProvider $tokens): string
     {
         $request = $this->requests
@@ -109,6 +124,7 @@ final class BaseUriResolver
         return $accessPoint;
     }
 
+    /** "https://api.na1.adobesign.com/" -> "https://api.na1.adobesign.com/api/rest/v6", HTTPS only. */
     private static function apiRoot(string $accessPoint): string
     {
         $parts = parse_url($accessPoint);

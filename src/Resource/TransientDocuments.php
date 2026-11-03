@@ -11,14 +11,22 @@ use Psr\Http\Message\StreamInterface;
 
 /**
  * POST /transientDocuments: upload a file once, reference it from an agreement within 7 days.
+ *
+ * Every method that calls the API throws ApiException (or a subclass) on an error response and
+ * TransportException on a network failure; see AbstractResource.
  */
 final class TransientDocuments extends AbstractResource
 {
     /**
+     * POST /transientDocuments (multipart). The body is streamed through a temp file, so large
+     * PDFs are not held in memory.
+     *
      * @param string|resource|StreamInterface|\SplFileInfo $file a path, open stream resource or PSR-7 stream
      * @param string|null $fileName required unless $file is a path/SplFileInfo (max 255 chars)
      * @param string|null $mimeType optional; Adobe infers it from the file name extension otherwise
      * @return string transientDocumentId
+     * @throws InvalidArgumentException for an unreadable path, an unsupported $file, or a missing
+     *                                  or over-long file name
      */
     public function upload(mixed $file, ?string $fileName = null, ?string $mimeType = null, ?string $groupId = null): string
     {

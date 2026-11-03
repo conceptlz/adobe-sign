@@ -19,10 +19,14 @@ use Conceptlz\AdobeSign\Exception\InvalidArgumentException;
  * Unknown keys are ignored and mistyped values skipped, never fatal: Adobe adds fields
  * and enum values without a version bump.
  *
+ * The SDK uses it for every typed response; it is public so you can do the same with data you
+ * hold yourself (e.g. a stored API response), or serialise a model you built.
+ *
  * @phpstan-type PropertyMeta array{setter: string, getter: string, type: ?string, model: class-string|null, item: class-string|null}
  */
 final class ModelMapper
 {
+    /** Only classes under this namespace are accepted. */
     public const MODEL_NAMESPACE = 'Conceptlz\\AdobeSign\\Generated\\Model\\';
 
     /**
@@ -31,10 +35,13 @@ final class ModelMapper
     private static array $meta = [];
 
     /**
+     * Build a generated model from a decoded API array, recursing into nested models.
+     *
      * @template T of object
-     * @param class-string<T> $class
+     * @param class-string<T> $class a class under MODEL_NAMESPACE
      * @param array<mixed> $data
      * @return T
+     * @throws InvalidArgumentException when $class is not a generated model
      */
     public static function hydrate(string $class, array $data): object
     {
@@ -57,9 +64,11 @@ final class ModelMapper
     }
 
     /**
-     * Only properties that were set are emitted; nulls are dropped (Jane's skip-null-values).
+     * Serialise a generated model to an API array, recursing into nested models. Only properties
+     * that were set are emitted; nulls are dropped (Jane's skip-null-values).
      *
      * @return array<string, mixed>
+     * @throws InvalidArgumentException when $model is not a generated model
      */
     public static function toArray(object $model): array
     {
@@ -84,6 +93,10 @@ final class ModelMapper
     }
 
     /**
+     * Coerce one JSON value to the setter's type, leniently: numeric strings become numbers,
+     * boolean-like strings ("true", "0", ...) become booleans, non-array list items are dropped,
+     * and anything else that doesn't fit is reported unusable.
+     *
      * @param PropertyMeta $property
      * @return array{0: bool, 1: mixed} [usable, converted]
      */
@@ -138,6 +151,7 @@ final class ModelMapper
         }
     }
 
+    /** Nested models -> arrays, recursively; everything else unchanged. */
     private static function toJson(mixed $value): mixed
     {
         if (is_object($value) && str_starts_with($value::class, self::MODEL_NAMESPACE)) {
@@ -151,6 +165,8 @@ final class ModelMapper
     }
 
     /**
+     * Reflect a model's setter/getter pairs once per class (cached for the process).
+     *
      * @param class-string $class
      * @return array<string, PropertyMeta>
      */

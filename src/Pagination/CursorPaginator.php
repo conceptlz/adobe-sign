@@ -7,10 +7,15 @@ namespace Conceptlz\AdobeSign\Pagination;
 /**
  * Walks Adobe's cursor pagination lazily: the next page is fetched only when the
  * consumer iterates past the current one.
+ *
+ * @internal Resources return its generators from all() and similar list methods.
  */
 final class CursorPaginator
 {
     /**
+     * Yield mapped items page by page until the response has no (or a repeated) nextCursor.
+     * Nothing is fetched until the generator is first iterated.
+     *
      * @template T
      * @param callable(?string $cursor): array<mixed> $fetchPage returns the decoded page body
      * @param string $itemsKey e.g. "userAgreementList"

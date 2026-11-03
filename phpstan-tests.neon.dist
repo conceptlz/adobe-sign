@@ -2,3 +2,6 @@ parameters:
     level: 6
     paths:
         - tests
+    scanFiles:
+        # Not autoloaded on purpose (shared with tools/jane, excluded from dist archives).
+        - spec/normalize.php

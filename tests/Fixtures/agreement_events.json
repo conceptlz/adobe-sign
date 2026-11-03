@@ -1,4 +1,70 @@
-{"events": [
-  {"type": "CREATED", "date": "2026-11-03T10:15:30Z", "actingUserEmail": "sender@example.com", "participantEmail": "sender@example.com"},
-  {"type": "ESIGNED", "date": "2026-11-03T14:22:10Z", "actingUserEmail": "jane@example.com", "participantEmail": "jane@example.com"}
-]}
+{
+    "events": [
+        {
+            "type": "CREATED",
+            "date": "2026-11-03T10:15:30Z",
+            "actingUserEmail": "sender@example.com",
+            "participantEmail": "sender@example.com",
+            "actingUserIpAddress": "",
+            "actingUserName": "",
+            "description": "",
+            "device": "",
+            "deviceLocation": {
+                "latitude": 0,
+                "longitude": 0
+            },
+            "devicePhoneNumber": "",
+            "digitalSignatureInfo": {
+                "company": "",
+                "email": "",
+                "name": ""
+            },
+            "electronicSealInfo": {
+                "company": "",
+                "id": "",
+                "name": ""
+            },
+            "initiatingUserEmail": "",
+            "initiatingUserName": "",
+            "participantId": "",
+            "participantRole": "SIGNER",
+            "synchronizationId": "",
+            "vaultEventId": "",
+            "vaultProviderName": "",
+            "versionId": ""
+        },
+        {
+            "type": "ACTION_COMPLETED",
+            "date": "2026-11-03T14:22:10Z",
+            "actingUserEmail": "jane@example.com",
+            "participantEmail": "jane@example.com",
+            "actingUserIpAddress": "",
+            "actingUserName": "",
+            "description": "",
+            "device": "",
+            "deviceLocation": {
+                "latitude": 0,
+                "longitude": 0
+            },
+            "devicePhoneNumber": "",
+            "digitalSignatureInfo": {
+                "company": "",
+                "email": "",
+                "name": ""
+            },
+            "electronicSealInfo": {
+                "company": "",
+                "id": "",
+                "name": ""
+            },
+            "initiatingUserEmail": "",
+            "initiatingUserName": "",
+            "participantId": "",
+            "participantRole": "SIGNER",
+            "synchronizationId": "",
+            "vaultEventId": "",
+            "vaultProviderName": "",
+            "versionId": ""
+        }
+    ]
+}

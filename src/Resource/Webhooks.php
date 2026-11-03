@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Conceptlz\AdobeSign\Resource;
 
 use Conceptlz\AdobeSign\Builder\WebhookInfo as WebhookBuilder;
+use Conceptlz\AdobeSign\Exception\InvalidArgumentException;
+use Conceptlz\AdobeSign\Exception\PreconditionFailedException;
 use Conceptlz\AdobeSign\Generated\Model\UserWebhook;
 use Conceptlz\AdobeSign\Generated\Model\WebhookInfo;
 
 /**
  * Webhook subscriptions. To receive them, see Webhook\WebhookHandler.
+ *
+ * Every method that calls the API throws ApiException (or a subclass) on an error response and
+ * TransportException on a network failure; see AbstractResource.
  */
 final class Webhooks extends AbstractResource
 {
@@ -44,6 +49,7 @@ final class Webhooks extends AbstractResource
      *
      * @param WebhookBuilder|WebhookInfo|array<string, mixed> $info
      * @return string the new webhook id
+     * @throws InvalidArgumentException when the builder subscribes to no events
      */
     public function create(WebhookBuilder|WebhookInfo|array $info): string
     {
@@ -54,6 +60,7 @@ final class Webhooks extends AbstractResource
      * PUT /webhooks/{webhookId}. Call get() first to send If-Match automatically.
      *
      * @param WebhookBuilder|WebhookInfo|array<string, mixed> $info
+     * @throws PreconditionFailedException when the webhook changed since it was fetched
      */
     public function update(string $webhookId, WebhookBuilder|WebhookInfo|array $info): void
     {
@@ -65,6 +72,7 @@ final class Webhooks extends AbstractResource
      * notifications from while it was disabled are lost.
      *
      * @param string $state ACTIVE | INACTIVE
+     * @throws PreconditionFailedException when the webhook changed since it was fetched
      */
     public function updateState(string $webhookId, string $state): void
     {
@@ -72,7 +80,7 @@ final class Webhooks extends AbstractResource
     }
 
     /**
-     * DELETE /webhooks/{webhookId}
+     * DELETE /webhooks/{webhookId}. Call get() first to send If-Match automatically.
      */
     public function delete(string $webhookId): void
     {

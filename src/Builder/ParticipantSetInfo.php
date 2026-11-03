@@ -32,7 +32,11 @@ final class ParticipantSetInfo
     }
 
     /**
+     * A set with any role, e.g. ParticipantRole::FORM_FILLER.
+     *
      * @param ParticipantRole|string $role a string keeps you working when Adobe adds roles
+     * @param ParticipantInfo|string ...$members strings are treated as email addresses
+     * @throws InvalidArgumentException for an invalid member email
      */
     public static function role(ParticipantRole|string $role, ParticipantInfo|string ...$members): self
     {
@@ -45,18 +49,33 @@ final class ParticipantSetInfo
         return $set;
     }
 
+    /**
+     * A SIGNER set.
+     *
+     * @param ParticipantInfo|string ...$members strings are treated as email addresses
+     * @throws InvalidArgumentException for an invalid member email
+     */
     public static function signer(ParticipantInfo|string ...$members): self
     {
         return self::role(ParticipantRole::SIGNER, ...$members);
     }
 
+    /**
+     * An APPROVER set.
+     *
+     * @param ParticipantInfo|string ...$members strings are treated as email addresses
+     * @throws InvalidArgumentException for an invalid member email
+     */
     public static function approver(ParticipantInfo|string ...$members): self
     {
         return self::role(ParticipantRole::APPROVER, ...$members);
     }
 
     /**
+     * Add a member; any one member may act for the set.
+     *
      * @param ParticipantInfo|string $member a string is treated as an email address
+     * @throws InvalidArgumentException for an invalid email
      */
     public function member(ParticipantInfo|string $member): self
     {
@@ -68,6 +87,8 @@ final class ParticipantSetInfo
     /**
      * 1-based position in the signing sequence. Sets sharing an order act in parallel.
      * Left unset, AgreementInfo numbers sets in the order they were added.
+     *
+     * @throws InvalidArgumentException when $order is below 1
      */
     public function order(int $order): self
     {
@@ -79,6 +100,7 @@ final class ParticipantSetInfo
         return $this;
     }
 
+    /** Set name; must be unique within the agreement if given (max 255 characters). */
     public function name(string $name): self
     {
         $this->name = $name;
@@ -86,6 +108,7 @@ final class ParticipantSetInfo
         return $this;
     }
 
+    /** Unique label; maps the set to a step of a custom workflow. */
     public function label(string $label): self
     {
         $this->label = $label;
@@ -93,6 +116,7 @@ final class ParticipantSetInfo
         return $this;
     }
 
+    /** Message only this set's members receive. */
     public function privateMessage(string $message): self
     {
         $this->privateMessage = $message;
@@ -112,12 +136,19 @@ final class ParticipantSetInfo
         return $this;
     }
 
+    /** The explicit order(), or null if AgreementInfo should number it. */
     public function getOrder(): ?int
     {
         return $this->order;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * The ParticipantSetInfo array; with() fields are merged last.
+     *
+     * @param int|null $defaultOrder used when no order() was set
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException when the set has no members or no order at all
+     */
     public function toArray(?int $defaultOrder = null): array
     {
         if ($this->members === []) {

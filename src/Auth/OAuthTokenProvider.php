@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Conceptlz\AdobeSign\Auth;
 
+use Conceptlz\AdobeSign\Exception\InvalidArgumentException;
 use Conceptlz\AdobeSign\Exception\OAuthException;
+use Conceptlz\AdobeSign\Exception\TransportException;
 use Psr\Clock\ClockInterface;
 
 /**
@@ -22,6 +24,7 @@ final class OAuthTokenProvider implements TokenProvider, ProvidesApiAccessPoint
 
     /**
      * @param string $key identifies the user/account in the store (e.g. your user id)
+     * @param int $refreshLeewaySeconds refresh this long before the stored expiry
      */
     public function __construct(
         private readonly OAuthClient $client,
@@ -32,6 +35,14 @@ final class OAuthTokenProvider implements TokenProvider, ProvidesApiAccessPoint
     ) {
     }
 
+    /**
+     * The stored access token, refreshed first (and written back to the store) when it is about
+     * to expire or after invalidate().
+     *
+     * @throws OAuthException when nothing is stored under the key (NO_TOKEN) or the refresh fails
+     * @throws InvalidArgumentException when the stored api_access_point is not trusted
+     * @throws TransportException
+     */
     public function getAccessToken(): string
     {
         $token = $this->current();
@@ -46,17 +57,24 @@ final class OAuthTokenProvider implements TokenProvider, ProvidesApiAccessPoint
         return $token->accessToken;
     }
 
+    /** Force a refresh on the next getAccessToken(), after re-reading the store. */
     public function invalidate(): void
     {
         $this->token = null; // re-read: another process may already have refreshed
         $this->forceRefresh = true;
     }
 
+    /** A hash prefix of the store key. */
     public function cacheKey(): string
     {
         return 'oauth_' . substr(hash('sha256', $this->key), 0, 32);
     }
 
+    /**
+     * The stored token's api_access_point.
+     *
+     * @throws OAuthException when nothing is stored under the key (NO_TOKEN)
+     */
     public function apiAccessPoint(): ?string
     {
         return $this->current()->apiAccessPoint;

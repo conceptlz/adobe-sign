@@ -31,9 +31,12 @@ abstract class WebhookEvent
         public readonly ?string $webhookName,
         /** Unique per notification; use it to drop duplicate deliveries (Adobe retries). */
         public readonly ?string $notificationId,
+        /** ISO 8601 date-time as Adobe sent it. */
         public readonly ?string $eventDate,
+        /** e.g. agreement, megaSign, widget, libraryDocument */
         public readonly ?string $eventResourceType,
         public readonly ?string $participantRole,
+        /** What the participant did, e.g. ESIGNED on AGREEMENT_ACTION_COMPLETED. */
         public readonly ?string $actionType,
         public readonly ?string $participantUserId,
         public readonly ?string $participantUserEmail,
@@ -42,7 +45,9 @@ abstract class WebhookEvent
         public readonly ?string $actingUserIpAddress,
         public readonly ?string $initiatingUserId,
         public readonly ?string $initiatingUserEmail,
+        /** webhookNotificationApplicableUsers: the users this notification concerns. */
         public readonly array $applicableUsers,
+        /** The decoded payload, unmodified. */
         public readonly array $raw,
     ) {
     }
@@ -52,6 +57,7 @@ abstract class WebhookEvent
      * whichever resource key is present. Unknown kinds become UnknownEvent rather than failing.
      *
      * @param array<string, mixed> $payload
+     * @throws WebhookException when the payload has no "event"
      */
     public static function fromArray(array $payload): self
     {
@@ -110,21 +116,29 @@ abstract class WebhookEvent
         return is_array($resource) ? $resource : [];
     }
 
+    /** resource()["id"], or null. */
     public function resourceId(): ?string
     {
         return isset($this->resource()['id']) ? (string) $this->resource()['id'] : null;
     }
 
+    /** resource()["name"], or null. */
     public function resourceName(): ?string
     {
         return isset($this->resource()['name']) ? (string) $this->resource()['name'] : null;
     }
 
+    /** resource()["status"] (the resource's status after the event), or null. */
     public function resourceStatus(): ?string
     {
         return isset($this->resource()['status']) ? (string) $this->resource()['status'] : null;
     }
 
+    /**
+     * Whether $event is one of the given names.
+     *
+     * @param string ...$events EventType constants
+     */
     public function is(string ...$events): bool
     {
         return in_array($this->event, $events, true);

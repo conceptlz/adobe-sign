@@ -14,12 +14,17 @@ final class ReminderCreationResult
      *                                         (e.g. they disabled reminder emails)
      */
     public function __construct(
+        /** The reminder's id. */
         public readonly ?string $id,
         public readonly array $disabledRecipients,
     ) {
     }
 
-    /** @param array<mixed> $data */
+    /**
+     * Build from the decoded response body.
+     *
+     * @param array<mixed> $data
+     */
     public static function fromArray(array $data): self
     {
         return new self(

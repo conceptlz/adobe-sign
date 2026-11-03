@@ -46,13 +46,15 @@ final class ResourcesTest extends TestCase
         self::assertInstanceOf(LibraryDocumentCreationInfoV6::class, $doc);
         self::assertSame('ACCOUNT', $doc->getSharingMode());
 
-        $sign->libraryDocuments()->update('lib-1', ['name' => 'NDA v2'], documentUpdateOnly: false);
+        $doc->setName('NDA v2');
+        $sign->libraryDocuments()->update('lib-1', $doc, documentUpdateOnly: false); // fetched model goes straight back
 
         $put = $this->request(2);
         self::assertSame('PUT', $put->getMethod());
         self::assertSame(self::API . '/libraryDocuments/lib-1?documentUpdateOnly=false', (string) $put->getUri());
         self::assertSame('"lib-v3"', $put->getHeaderLine('If-Match'));
-        self::assertSame(['name' => 'NDA v2'], self::jsonBody($put));
+        self::assertSame('NDA v2', self::jsonBody($put)['name']);
+        self::assertSame('ACCOUNT', self::jsonBody($put)['sharingMode'], 'full object is sent back');
     }
 
     public function test_library_document_create_from_generated_model(): void
@@ -117,7 +119,7 @@ final class ResourcesTest extends TestCase
     public function test_user_events_paginate_on_their_own_path(): void
     {
         $this->queueBaseUris();
-        $this->queue(200, '{"userEvents":[{"type":"USER_CREATED","date":"2026-01-01T00:00:00Z"}],"page":{}}');
+        $this->queue(200, 'user_events');
 
         $events = iterator_to_array($this->client()->users()->events('user 1'));
 

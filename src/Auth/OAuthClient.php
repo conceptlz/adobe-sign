@@ -29,7 +29,12 @@ use Psr\Http\Message\StreamFactoryInterface;
  *     $token = $oauth->handleCallback($_GET, $sessionState);
  *     $store->put($userId, $token);
  *
- * Token, refresh and revoke all go to the token's api_access_point; nothing is pinned to a shard.
+ * Token, refresh and revoke all go to the token's api_access_point (validated against
+ * OAuthConfig::$allowedDomains); without one they fall back to OAuthConfig::$tokenHost.
+ *
+ * Errors: OAuthException when Adobe rejects a request or answers without a usable token,
+ * TransportException when no response arrives, InvalidArgumentException for an untrusted
+ * api_access_point.
  */
 final class OAuthClient
 {
@@ -39,6 +44,11 @@ final class OAuthClient
 
     private readonly StreamFactoryInterface $streams;
 
+    /**
+     * The PSR-18 client and PSR-17 factories are auto-discovered when not passed in.
+     *
+     * @param ClockInterface $clock used to turn expires_in into AccessToken::$expiresAt
+     */
     public function __construct(
         private readonly OAuthConfig $config,
         ?ClientInterface $httpClient = null,
@@ -51,6 +61,10 @@ final class OAuthClient
         $this->streams = $streamFactory ?? Psr17FactoryDiscovery::findStreamFactory();
     }
 
+    /**
+     * A random CSRF state value (64 hex characters). Keep it in the user's session and pass it
+     * to authorizationUrl() and later handleCallback().
+     */
     public static function generateState(): string
     {
         return bin2hex(random_bytes(32));
@@ -60,6 +74,7 @@ final class OAuthClient
      * Where to send the user's browser.
      *
      * @param list<string> $scopes e.g. ['user_login:self', 'agreement_write:account']; ":self" is the default modifier
+     * @throws InvalidArgumentException when $scopes or $state is empty
      */
     public function authorizationUrl(array $scopes, string $state): string
     {
@@ -84,6 +99,11 @@ final class OAuthClient
      *
      * @param array<string, mixed> $query the callback's query parameters (e.g. $_GET)
      * @param string $expectedState the state you generated for this user's authorization request
+     * @throws OAuthException when the user denied access (the error code is Adobe's `error`),
+     *                        the state doesn't match (STATE_MISMATCH), there is no code
+     *                        (MISSING_CODE), or the exchange fails
+     * @throws InvalidArgumentException when the callback's api_access_point is not trusted
+     * @throws TransportException
      */
     public function handleCallback(array $query, string $expectedState): AccessToken
     {
@@ -115,6 +135,9 @@ final class OAuthClient
      * POST /oauth/v2/token. Codes are valid for 5 minutes.
      *
      * @param string|null $apiAccessPoint from the callback, if present; otherwise the shard-agnostic token host
+     * @throws OAuthException when Adobe rejects the code
+     * @throws InvalidArgumentException when $apiAccessPoint is not trusted
+     * @throws TransportException
      */
     public function exchangeCode(#[\SensitiveParameter] string $code, ?string $apiAccessPoint = null): AccessToken
     {
@@ -140,8 +163,13 @@ final class OAuthClient
     }
 
     /**
-     * POST /oauth/v2/refresh. Adobe doesn't rotate refresh tokens, so the old one is kept.
-     * Refresh tokens expire after 60 days without use.
+     * POST /oauth/v2/refresh. Adobe doesn't rotate refresh tokens, so the old one is kept
+     * unless the response carries a new one. Refresh tokens expire after 60 days without use.
+     *
+     * @throws OAuthException when $token has no refresh token (NO_REFRESH_TOKEN) or Adobe
+     *                        rejects it; the user has to authorize again
+     * @throws InvalidArgumentException when the token's api_access_point is not trusted
+     * @throws TransportException
      */
     public function refresh(AccessToken $token): AccessToken
     {
@@ -165,6 +193,10 @@ final class OAuthClient
 
     /**
      * POST /oauth/v2/revoke. Revoking either token revokes the pair.
+     *
+     * @throws OAuthException when Adobe rejects the request
+     * @throws InvalidArgumentException when the token's api_access_point is not trusted
+     * @throws TransportException
      */
     public function revoke(AccessToken $token): void
     {
@@ -173,6 +205,7 @@ final class OAuthClient
         ], expectJson: false);
     }
 
+    /** Base URL ("https://host/") for refresh/revoke calls on this token. */
     private function hostFor(AccessToken $token): string
     {
         return $token->apiAccessPoint !== null
@@ -200,8 +233,10 @@ final class OAuthClient
     }
 
     /**
+     * POST a form to an OAuth endpoint.
+     *
      * @param array<string, string> $form
-     * @return array<mixed>
+     * @return array<mixed> the decoded body; [] when $expectJson is false
      */
     private function post(string $url, array $form, bool $expectJson = true): array
     {
@@ -226,18 +261,16 @@ final class OAuthClient
 
         $data = json_decode((string) $response->getBody(), true);
         if (!is_array($data)) {
-            throw new OAuthException('OAuth response is not JSON.', $response->getStatusCode(), null, $request, $response);
+            throw new OAuthException('OAuth response is not JSON.', $response->getStatusCode(), null, $this->withoutBody($request), $response);
         }
 
         return $data;
     }
 
+    /** An OAuthException for an error response, with the request body (client secret) removed. */
     private function error(RequestInterface $request, ResponseInterface $response): OAuthException
     {
         [$code, $message] = ErrorMapper::parseBody((string) $response->getBody());
-
-        // The request body holds the client secret; never let it reach logs via the exception.
-        $redacted = $request->withBody($this->streams->createStream(''));
 
         return new OAuthException(
             sprintf(
@@ -249,8 +282,17 @@ final class OAuthClient
             ),
             $response->getStatusCode(),
             $code,
-            $redacted,
+            $this->withoutBody($request),
             $response,
         );
+    }
+
+    /**
+     * OAuth request bodies hold the client secret, code or refresh token; exceptions keep the
+     * request for debugging but never its body.
+     */
+    private function withoutBody(RequestInterface $request): RequestInterface
+    {
+        return $request->withBody($this->streams->createStream(''));
     }
 }

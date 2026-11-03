@@ -1,0 +1,10 @@
+{
+    "fields": [
+        {
+            "name": "company",
+            "inputType": "TEXT_FIELD",
+            "contentType": "DATA",
+            "locations": []
+        }
+    ]
+}

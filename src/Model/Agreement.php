@@ -21,18 +21,28 @@ final class Agreement
     public function __construct(
         public readonly string $id,
         public readonly string $name,
+        /** e.g. OUT_FOR_SIGNATURE, SIGNED, CANCELLED; compare as a string. */
         public readonly string $status,
+        /** ESIGN | WRITTEN */
         public readonly ?string $signatureType,
         public readonly ?string $senderEmail,
+        /** ISO 8601 date-time as Adobe sent it. */
         public readonly ?string $createdDate,
+        /** ISO 8601 date-time as Adobe sent it. */
         public readonly ?string $expirationTime,
         /** ETag from the response; the client also replays it as If-Match on updates. */
         public readonly ?string $etag,
+        /** The decoded response body, unmodified. */
         public readonly array $raw,
     ) {
     }
 
-    /** @param array<mixed> $data */
+    /**
+     * Build from a decoded FetchedAgreementInfo body. Missing strings become "".
+     *
+     * @param array<mixed> $data
+     * @param string|null $etag the response's ETag header; "" is treated as none
+     */
     public static function fromArray(array $data, ?string $etag = null): self
     {
         return new self(
@@ -56,11 +66,13 @@ final class Agreement
         return ModelMapper::hydrate(FetchedAgreementInfo::class, $this->raw);
     }
 
+    /** Status is SIGNED. */
     public function isSigned(): bool
     {
         return $this->status === 'SIGNED';
     }
 
+    /** Status is OUT_FOR_SIGNATURE. */
     public function isOutForSignature(): bool
     {
         return $this->status === 'OUT_FOR_SIGNATURE';

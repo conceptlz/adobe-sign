@@ -11,12 +11,17 @@ final class AgreementEvent extends WebhookEvent
 {
     protected const RESOURCE_KEY = 'agreement';
 
-    /** @return array<string, mixed> */
+    /**
+     * The payload's "agreement" object; same as resource().
+     *
+     * @return array<string, mixed>
+     */
     public function agreement(): array
     {
         return $this->resource();
     }
 
+    /** The agreement's id, or null if the payload omits it. */
     public function agreementId(): ?string
     {
         return $this->resourceId();

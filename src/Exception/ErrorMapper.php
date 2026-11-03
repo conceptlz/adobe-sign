@@ -13,6 +13,8 @@ use Psr\Http\Message\ResponseInterface;
  * Adobe returns `{"code": "INVALID_AGREEMENT_ID", "message": "..."}` (ErrorResponse schema).
  * The spec's examples also use `{"reason": "INVALID_AGREEMENT_ID: ...", "status": 404}`, so both are parsed.
  * The error `code` wins; the HTTP status is the fallback when the code is unknown.
+ *
+ * @internal
  */
 final class ErrorMapper
 {
@@ -60,11 +62,13 @@ final class ErrorMapper
         429 => RateLimitException::class,
     ];
 
+    /**
+     * The exception for an error response (ApiException redacts the request's Authorization header).
+     */
     public static function fromResponse(RequestInterface $request, ResponseInterface $response): ApiException
     {
         $status = $response->getStatusCode();
         [$code, $message] = self::parseBody((string) $response->getBody());
-        $request = self::redact($request);
 
         $class = ($code !== null ? (self::CODES[$code] ?? null) : null)
             ?? self::STATUSES[$status]
@@ -94,6 +98,9 @@ final class ErrorMapper
     }
 
     /**
+     * Extract [code, message] from any of Adobe's error body shapes. A non-JSON body becomes
+     * the message, cut to 200 characters.
+     *
      * @return array{0: ?string, 1: ?string}
      */
     public static function parseBody(string $body): array
@@ -118,13 +125,5 @@ final class ErrorMapper
         }
 
         return [null, isset($data['message']) ? (string) $data['message'] : null];
-    }
-
-    /**
-     * Exceptions get logged and dumped; never let them carry the bearer token.
-     */
-    public static function redact(RequestInterface $request): RequestInterface
-    {
-        return $request->hasHeader('Authorization') ? $request->withHeader('Authorization', 'Bearer ***') : $request;
     }
 }

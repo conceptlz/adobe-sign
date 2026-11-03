@@ -11,6 +11,7 @@ use Psr\Clock\ClockInterface;
  */
 final class SystemClock implements ClockInterface
 {
+    /** The current time in PHP's default timezone. */
     public function now(): \DateTimeImmutable
     {
         return new \DateTimeImmutable();

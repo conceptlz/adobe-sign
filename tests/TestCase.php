@@ -8,6 +8,7 @@ use Conceptlz\AdobeSign\AdobeSign;
 use Conceptlz\AdobeSign\Auth\IntegrationKeyTokenProvider;
 use Conceptlz\AdobeSign\Cache\InMemoryCache;
 use Conceptlz\AdobeSign\ClientOptions;
+use Conceptlz\AdobeSign\Tests\Support\ContractCheckingClient;
 use Http\Mock\Client as MockClient;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
@@ -28,6 +29,12 @@ abstract class TestCase extends BaseTestCase
 
     protected Psr17Factory $psr17;
 
+    /** The mock client, wrapped so every request/response is checked against Adobe's v6 spec. */
+    protected ContractCheckingClient $contract;
+
+    /** Set false in tests that deliberately send traffic the spec doesn't allow. */
+    protected bool $checkSpecContract = true;
+
     protected function setUp(): void
     {
         $this->psr17 = new Psr17Factory();
@@ -35,13 +42,21 @@ abstract class TestCase extends BaseTestCase
         $this->http->setDefaultException(new \LogicException('Unexpected request: no queued response left.'));
         $this->sleeper = new FakeSleeper();
         $this->cache = new InMemoryCache();
+        $this->contract = new ContractCheckingClient($this->http);
+    }
+
+    protected function assertPostConditions(): void
+    {
+        if ($this->checkSpecContract) {
+            self::assertSame([], $this->contract->violations, 'HTTP traffic must match the Acrobat Sign v6 spec');
+        }
     }
 
     protected function client(?ClientOptions $options = null, ?CacheInterface $cache = null): AdobeSign
     {
         return new AdobeSign(
             new IntegrationKeyTokenProvider(self::KEY),
-            httpClient: $this->http,
+            httpClient: $this->contract,
             requestFactory: $this->psr17,
             streamFactory: $this->psr17,
             cache: $cache ?? $this->cache,

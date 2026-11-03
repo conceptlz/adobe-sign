@@ -26,6 +26,10 @@ final class ParticipantInfo
         }
     }
 
+    /**
+     * @param string|null $name the recipient's full name
+     * @throws InvalidArgumentException for an invalid email
+     */
     public static function email(string $email, ?string $name = null): self
     {
         return new self($email, $name);
@@ -53,7 +57,11 @@ final class ParticipantInfo
         return $this;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * The ParticipantSetMemberInfo array; with() fields are merged last.
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         $data = ['email' => $this->email];

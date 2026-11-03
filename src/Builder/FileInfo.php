@@ -19,11 +19,21 @@ final class FileInfo
     ) {
     }
 
+    /**
+     * A file uploaded with TransientDocuments::upload() (valid for 7 days).
+     *
+     * @throws InvalidArgumentException when the id is blank
+     */
     public static function transientDocument(string $transientDocumentId): self
     {
         return new self(['transientDocumentId' => self::nonEmpty($transientDocumentId, 'transientDocumentId')]);
     }
 
+    /**
+     * A library template.
+     *
+     * @throws InvalidArgumentException when the id is blank
+     */
     public static function libraryDocument(string $libraryDocumentId): self
     {
         return new self(['libraryDocumentId' => self::nonEmpty($libraryDocumentId, 'libraryDocumentId')]);
@@ -31,6 +41,9 @@ final class FileInfo
 
     /**
      * A document Adobe fetches itself from a public URL.
+     *
+     * @param string $name file name shown for the document
+     * @throws InvalidArgumentException when $url or $name is blank
      */
     public static function url(string $url, string $name, string $mimeType = 'application/pdf'): self
     {
@@ -42,7 +55,8 @@ final class FileInfo
     }
 
     /**
-     * Label used to reference this file from form field templates.
+     * Label used to reference this file from form field templates; required for custom
+     * workflows, where it maps the file to a workflow file element.
      */
     public function label(string $label): self
     {
@@ -51,7 +65,11 @@ final class FileInfo
         return $this;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * The AgreementFileInfo array.
+     *
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return $this->source + array_filter(['label' => $this->label], static fn ($v) => $v !== null);

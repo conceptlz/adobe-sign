@@ -7,6 +7,8 @@ namespace Conceptlz\AdobeSign\Resource;
 use Conceptlz\AdobeSign\Builder\AgreementInfo;
 use Conceptlz\AdobeSign\Exception\ApiException;
 use Conceptlz\AdobeSign\Exception\InvalidArgumentException;
+use Conceptlz\AdobeSign\Exception\NotFoundException;
+use Conceptlz\AdobeSign\Exception\PreconditionFailedException;
 use Conceptlz\AdobeSign\Generated\Model\AgreementCreationInfo;
 use Conceptlz\AdobeSign\Generated\Model\AgreementDocuments;
 use Conceptlz\AdobeSign\Generated\Model\AgreementEventList;
@@ -24,6 +26,12 @@ use Conceptlz\AdobeSign\Model\ReminderCreationResult;
 use Conceptlz\AdobeSign\Pagination\CursorPaginator;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * Agreements: send documents for signature, track them, and download the results.
+ *
+ * Every method that calls the API throws ApiException (or a subclass) on an error response and
+ * TransportException on a network failure; see AbstractResource.
+ */
 final class Agreements extends AbstractResource
 {
     /**
@@ -31,6 +39,7 @@ final class Agreements extends AbstractResource
      *
      * @param AgreementInfo|AgreementCreationInfo|array<string, mixed> $info builder, generated model, or raw payload
      * @return string the new agreement id
+     * @throws InvalidArgumentException when the builder is incomplete (no file or participant set)
      */
     public function create(AgreementInfo|AgreementCreationInfo|array $info): string
     {
@@ -49,18 +58,17 @@ final class Agreements extends AbstractResource
     }
 
     /**
-     * GET /agreements/{agreementId}
+     * GET /agreements/{agreementId}. The ETag is kept on the result and, unless
+     * ClientOptions::$autoEtag is off, replayed as If-Match by a later update() or updateState().
      */
     public function get(string $agreementId): Agreement
     {
         $response = $this->transport->send('GET', 'agreements/' . self::segment($agreementId), headers: ['Accept' => 'application/json']);
-        $data = json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR);
-
-        return Agreement::fromArray(is_array($data) ? $data : [], $response->getHeaderLine('ETag'));
+        return Agreement::fromArray($this->transport->decode($response), $response->getHeaderLine('ETag'));
     }
 
     /**
-     * Current status, e.g. OUT_FOR_SIGNATURE, SIGNED, CANCELLED.
+     * Current status via GET /agreements/{agreementId}, e.g. OUT_FOR_SIGNATURE, SIGNED, CANCELLED.
      */
     public function status(string $agreementId): string
     {
@@ -102,6 +110,7 @@ final class Agreements extends AbstractResource
      *
      * @param array<string>|null $participantIds participant (member) ids; null = everyone whose
      *                                          turn it currently is (costs one extra GET /members)
+     * @throws InvalidArgumentException when no participant is left to remind
      */
     public function sendReminder(string $agreementId, ?array $participantIds = null, ?string $note = null): ReminderCreationResult
     {
@@ -169,6 +178,7 @@ final class Agreements extends AbstractResource
      *     $sign->agreements()->update($id, $info);
      *
      * @param AgreementUpdateInfo|FetchedAgreementInfo|array<string, mixed> $info
+     * @throws PreconditionFailedException when the agreement changed since it was fetched
      */
     public function update(string $agreementId, AgreementUpdateInfo|FetchedAgreementInfo|array $info, ?bool $documentUpdateOnly = null): void
     {
@@ -180,6 +190,7 @@ final class Agreements extends AbstractResource
      *
      * @param string $state AUTHORING | CANCELLED | IN_PROCESS | RESTART | IN_REVISION | PAUSED
      * @param array<string, mixed> $extra e.g. ['agreementRestartInfo' => [...]]
+     * @throws PreconditionFailedException when the agreement changed since it was fetched
      */
     public function updateState(string $agreementId, string $state, array $extra = []): void
     {
@@ -187,7 +198,11 @@ final class Agreements extends AbstractResource
     }
 
     /**
-     * Cancel (recall) an agreement that is out for signature.
+     * Cancel (recall) an agreement that is out for signature: PUT /agreements/{agreementId}/state
+     * with state CANCELLED.
+     *
+     * @param string|null $comment shown to participants
+     * @throws PreconditionFailedException when the agreement changed since it was fetched
      */
     public function cancel(string $agreementId, ?string $comment = null, bool $notifyOthers = true): void
     {
@@ -206,6 +221,9 @@ final class Agreements extends AbstractResource
      *
      * @param int|null $expiry link lifetime in seconds, 30 to 315360000 (default: account setting)
      * @param string|null $frameParent domain that will host the signing page in an iframe
+     * @throws InvalidArgumentException when $expiry is out of range
+     * @throws NotFoundException when nobody can sign yet (AGREEMENT_NOT_SIGNABLE) or the
+     *                           agreement is not visible to this user
      */
     public function signingUrls(string $agreementId, ?int $expiry = null, ?string $frameParent = null): SigningUrlResponse
     {
@@ -220,7 +238,12 @@ final class Agreements extends AbstractResource
     }
 
     /**
-     * The e-sign link for one signer, or null if it isn't their turn.
+     * The e-sign link for one signer (from signingUrls(), email compared case-insensitively),
+     * or null if it isn't their turn.
+     *
+     * @param int|null $expiry link lifetime in seconds, 30 to 315360000
+     * @throws InvalidArgumentException when $expiry is out of range
+     * @throws NotFoundException when nobody can sign yet (AGREEMENT_NOT_SIGNABLE)
      */
     public function signingUrlFor(string $agreementId, string $email, ?int $expiry = null): ?string
     {
@@ -254,8 +277,15 @@ final class Agreements extends AbstractResource
      */
     public function copy(string $agreementId): string
     {
-        $data = $this->transport->json('POST', self::path('agreements', $agreementId) . '/copy', body: []);
-        $id = $data['id'] ?? $data['value'] ?? null; // spec types the body loosely; accept {"id"} or a bare string
+        // CopyAgreementInfo has no fields, but it is an object: send {} (json_encode([]) would give []).
+        $response = $this->transport->send(
+            'POST',
+            self::path('agreements', $agreementId) . '/copy',
+            headers: ['Content-Type' => 'application/json', 'Accept' => 'application/json'],
+            body: $this->transport->streams()->createStream('{}'),
+        );
+        $data = json_decode((string) $response->getBody(), true);
+        $id = is_array($data) ? ($data['id'] ?? null) : $data; // spec types the body loosely; accept {"id"} or a bare string
 
         if (!is_string($id) || $id === '') {
             throw new ApiException('Agreement copy response has no id.', 200, null);

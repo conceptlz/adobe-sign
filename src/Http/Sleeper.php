@@ -9,5 +9,6 @@ namespace Conceptlz\AdobeSign\Http;
  */
 interface Sleeper
 {
+    /** Block for $seconds (fractional allowed) before returning. */
     public function sleep(float $seconds): void;
 }

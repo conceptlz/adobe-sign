@@ -34,7 +34,9 @@ use Psr\Http\Message\StreamFactoryInterface;
  */
 final class WebhookHandler
 {
+    /** Request header carrying the sending app's client id; echoed back in the response. */
     public const CLIENT_ID_HEADER = 'X-AdobeSign-ClientId';
+    /** JSON response key Adobe also accepts for the echo. */
     public const CLIENT_ID_BODY_KEY = 'xAdobeSignClientId';
 
     /** @var array<string, true> */
@@ -42,6 +44,7 @@ final class WebhookHandler
 
     /**
      * @param list<string> $clientIds OAuth client ids (application ids) of the app(s) that created your webhooks
+     * @throws InvalidArgumentException when no non-blank id is given
      */
     public function __construct(array $clientIds)
     {
@@ -53,7 +56,10 @@ final class WebhookHandler
     }
 
     /**
+     * Check the X-AdobeSign-ClientId header value against the allowlist (constant-time compare).
+     *
      * @return string the client id to echo back
+     * @throws WebhookException when the header is missing or not allowlisted
      */
     public function verifyClientId(?string $headerValue): string
     {
@@ -71,6 +77,11 @@ final class WebhookHandler
         throw new WebhookException('Webhook from an unexpected client id.');
     }
 
+    /**
+     * Decode a notification POST body into the matching WebhookEvent subclass.
+     *
+     * @throws WebhookException when the body is not a JSON object with an "event"
+     */
     public function parse(string $body): WebhookEvent
     {
         try {
@@ -86,6 +97,8 @@ final class WebhookHandler
     }
 
     /**
+     * Response headers for the acknowledgement: the client id echo and the JSON content type.
+     *
      * @return array<string, string>
      */
     public function acknowledgementHeaders(string $clientId): array
@@ -93,6 +106,7 @@ final class WebhookHandler
         return [self::CLIENT_ID_HEADER => $clientId, 'Content-Type' => 'application/json'];
     }
 
+    /** JSON response body that echoes the client id. */
     public function acknowledgementBody(string $clientId): string
     {
         return json_encode([self::CLIENT_ID_BODY_KEY => $clientId], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
@@ -100,7 +114,8 @@ final class WebhookHandler
 
     /**
      * Verify, parse and build the acknowledgement in one go. Never throws for a bad request;
-     * the rejection is in $result->error and the response carries a 4xx.
+     * the rejection is in $result->error and the response carries a 4xx: 405 for a method other
+     * than GET/POST, 403 for a missing or unknown client id, 400 for an unreadable body.
      */
     public function handle(ServerRequestInterface $request, ResponseFactoryInterface $responses, StreamFactoryInterface $streams): WebhookResult
     {

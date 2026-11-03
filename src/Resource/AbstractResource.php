@@ -6,19 +6,38 @@ namespace Conceptlz\AdobeSign\Resource;
 
 use Conceptlz\AdobeSign\Exception\ApiException;
 use Conceptlz\AdobeSign\Exception\InvalidArgumentException;
+use Conceptlz\AdobeSign\Exception\TransportException;
 use Conceptlz\AdobeSign\Http\Transport;
 use Conceptlz\AdobeSign\Hydration\ModelMapper;
 use Conceptlz\AdobeSign\Pagination\CursorPaginator;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * Base for the API resource groups returned by AdobeSign (agreements(), users(), ...).
+ *
+ * Errors: every method that calls the API throws ApiException for a non-2xx answer (or a
+ * subclass: AuthenticationException, NotFoundException, ValidationException,
+ * RateLimitException, PreconditionFailedException) and TransportException when no response
+ * arrived at all. Both implement Exception\AdobeSignException. Method docblocks list only the
+ * exceptions specific to that method. Ids are path-encoded; an empty id throws
+ * InvalidArgumentException before any request is made. A 2xx body that isn't valid JSON is
+ * reported as ApiException too, so catching AdobeSignException covers every failure.
+ */
 abstract class AbstractResource
 {
+    /**
+     * Resources are created by AdobeSign; get them from its accessors.
+     *
+     * @internal
+     */
     public function __construct(protected readonly Transport $transport)
     {
     }
 
     /**
      * Encode a caller-supplied id for use as a path segment.
+     *
+     * @throws InvalidArgumentException when $id is empty
      */
     protected static function segment(string $id): string
     {
@@ -72,6 +91,9 @@ abstract class AbstractResource
      * POST a creation payload and return the new resource's id.
      *
      * @param object|array<string, mixed> $payload
+     * @throws ApiException on an error response, or when a 2xx response carries no id
+     * @throws InvalidArgumentException when the payload can't be serialised (see payload())
+     * @throws TransportException
      */
     protected function createResource(string $path, object|array $payload): string
     {
@@ -122,6 +144,7 @@ abstract class AbstractResource
      *
      * @param object|array<string, mixed> $payload
      * @return array<string, mixed>
+     * @throws InvalidArgumentException for an object that is neither
      */
     protected static function payload(object|array $payload): array
     {

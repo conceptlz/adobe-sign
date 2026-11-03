@@ -14,6 +14,11 @@ use Psr\Http\Message\ResponseInterface;
  * If-Match gets the ETag of the same path, or of its nearest parent: Adobe expects the
  * agreement's ETag on e.g. PUT /agreements/{id}/state. A 412 then surfaces as
  * PreconditionFailedException. Callers can always set If-Match themselves.
+ *
+ * The cache lives as long as the AdobeSign instance (shared with its asUser() copies) and keeps
+ * the most recent $capacity paths.
+ *
+ * @internal AdobeSign installs it unless ClientOptions::$autoEtag is false.
  */
 final class EtagMiddleware implements Middleware
 {
@@ -23,10 +28,14 @@ final class EtagMiddleware implements Middleware
     /** @var array<string, string> path => etag, oldest first */
     private array $etags = [];
 
+    /**
+     * @param int $capacity paths remembered before the oldest is evicted
+     */
     public function __construct(private readonly int $capacity = 500)
     {
     }
 
+    /** Add If-Match to writes and record ETags from the response. */
     public function handle(RequestInterface $request, callable $next): ResponseInterface
     {
         $path = rtrim($request->getUri()->getPath(), '/');
@@ -56,6 +65,10 @@ final class EtagMiddleware implements Middleware
         return $response;
     }
 
+    /**
+     * The ETag remembered for exactly this request path (e.g. "/api/rest/v6/agreements/1"),
+     * without the parent lookup that writes use.
+     */
     public function etagFor(string $path): ?string
     {
         return $this->etags[rtrim($path, '/')] ?? null;
@@ -97,6 +110,7 @@ final class EtagMiddleware implements Middleware
         return $path;
     }
 
+    /** Drop $root and everything below it. */
     private function forgetTree(string $root): void
     {
         foreach (array_keys($this->etags) as $p) {

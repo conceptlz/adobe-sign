@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Conceptlz\AdobeSign\Resource;
 
+use Conceptlz\AdobeSign\Exception\PreconditionFailedException;
 use Conceptlz\AdobeSign\Generated\Model\Documents;
 use Conceptlz\AdobeSign\Generated\Model\LibraryDocument;
 use Conceptlz\AdobeSign\Generated\Model\LibraryDocumentCreationInfoV6;
@@ -15,6 +16,9 @@ use Psr\Http\Message\StreamInterface;
 
 /**
  * Library templates (reusable documents and form field layers).
+ *
+ * Every method that calls the API throws ApiException (or a subclass) on an error response and
+ * TransportException on a network failure; see AbstractResource.
  */
 final class LibraryDocuments extends AbstractResource
 {
@@ -53,11 +57,14 @@ final class LibraryDocuments extends AbstractResource
     }
 
     /**
-     * PUT /libraryDocuments/{libraryDocumentId}. Call get() first to send If-Match automatically.
+     * PUT /libraryDocuments/{libraryDocumentId}. Adobe expects the full object (fileInfos, name,
+     * sharingMode, status, templateTypes): fetch with get() (which also makes the client send
+     * If-Match), change what you need, send it back.
      *
-     * @param LibraryDocumentInfoV6|array<string, mixed> $info
+     * @param LibraryDocumentInfoV6|LibraryDocumentCreationInfoV6|array<string, mixed> $info
+     * @throws PreconditionFailedException when the library document changed since it was fetched
      */
-    public function update(string $libraryDocumentId, LibraryDocumentInfoV6|array $info, ?bool $documentUpdateOnly = null): void
+    public function update(string $libraryDocumentId, LibraryDocumentInfoV6|LibraryDocumentCreationInfoV6|array $info, ?bool $documentUpdateOnly = null): void
     {
         $this->put(self::path('libraryDocuments', $libraryDocumentId), $info, ['documentUpdateOnly' => $documentUpdateOnly]);
     }
@@ -66,6 +73,7 @@ final class LibraryDocuments extends AbstractResource
      * PUT /libraryDocuments/{libraryDocumentId}/state
      *
      * @param string $state AUTHORING | ACTIVE | REMOVED
+     * @throws PreconditionFailedException when the library document changed since it was fetched
      */
     public function updateState(string $libraryDocumentId, string $state): void
     {
@@ -81,7 +89,7 @@ final class LibraryDocuments extends AbstractResource
     }
 
     /**
-     * GET /libraryDocuments/{libraryDocumentId}/documents/{documentId}
+     * GET /libraryDocuments/{libraryDocumentId}/documents/{documentId}: one document's file.
      */
     public function document(string $libraryDocumentId, string $documentId): StreamInterface
     {
@@ -89,7 +97,7 @@ final class LibraryDocuments extends AbstractResource
     }
 
     /**
-     * GET /libraryDocuments/{libraryDocumentId}/combinedDocument
+     * GET /libraryDocuments/{libraryDocumentId}/combinedDocument: all documents merged into one PDF.
      */
     public function combinedDocument(string $libraryDocumentId, ?bool $attachAuditReport = null): StreamInterface
     {
@@ -97,7 +105,7 @@ final class LibraryDocuments extends AbstractResource
     }
 
     /**
-     * GET /libraryDocuments/{libraryDocumentId}/auditTrail
+     * GET /libraryDocuments/{libraryDocumentId}/auditTrail: the audit report PDF.
      */
     public function auditTrail(string $libraryDocumentId): StreamInterface
     {

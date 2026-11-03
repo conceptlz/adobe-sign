@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Conceptlz\AdobeSign\Resource;
 
+use Conceptlz\AdobeSign\Exception\PreconditionFailedException;
 use Conceptlz\AdobeSign\Generated\Model\FetchedMegaSignInfo;
 use Conceptlz\AdobeSign\Generated\Model\MegaSign;
 use Conceptlz\AdobeSign\Generated\Model\MegaSignChildAgreement;
@@ -15,6 +16,9 @@ use Psr\Http\Message\StreamInterface;
 
 /**
  * Send in Bulk ("megaSign" in the API): one document sent as a separate agreement to each recipient.
+ *
+ * Every method that calls the API throws ApiException (or a subclass) on an error response and
+ * TransportException on a network failure; see AbstractResource.
  */
 final class MegaSigns extends AbstractResource
 {
@@ -56,6 +60,7 @@ final class MegaSigns extends AbstractResource
      *
      * @param string $state IN_PROCESS | CANCELLED
      * @param array<string, mixed>|null $cancellationInfo e.g. ['comment' => '...', 'notifyOthers' => true]
+     * @throws PreconditionFailedException when the megaSign changed since it was fetched
      */
     public function updateState(string $megaSignId, string $state, ?array $cancellationInfo = null): void
     {
@@ -67,6 +72,13 @@ final class MegaSigns extends AbstractResource
         $this->put(self::path('megaSigns', $megaSignId) . '/state', $body);
     }
 
+    /**
+     * Cancel the megaSign and every child agreement still in flight: PUT /megaSigns/{megaSignId}/state
+     * with state CANCELLED.
+     *
+     * @param string|null $comment shown to participants
+     * @throws PreconditionFailedException when the megaSign changed since it was fetched
+     */
     public function cancel(string $megaSignId, ?string $comment = null, bool $notifyOthers = true): void
     {
         $info = ['notifyOthers' => $notifyOthers];
@@ -90,7 +102,8 @@ final class MegaSigns extends AbstractResource
     /**
      * POST /megaSigns/{megaSignId}/reminders
      *
-     * @param array<string> $participantIds empty + $allUnsigned = remind everyone who hasn't signed
+     * @param array<string> $participantIds sharees or CCs to remind; signers are covered by $allUnsigned
+     * @param bool $allUnsigned remind every participant (other than CCs and sharees) who still has to sign
      */
     public function sendReminder(string $megaSignId, array $participantIds = [], ?string $note = null, bool $allUnsigned = true): ReminderCreationResult
     {
@@ -127,7 +140,7 @@ final class MegaSigns extends AbstractResource
     }
 
     /**
-     * GET /megaSigns/{megaSignId}/combinedDocument
+     * GET /megaSigns/{megaSignId}/combinedDocument: all documents merged into one PDF.
      */
     public function combinedDocument(string $megaSignId, ?bool $attachAuditReport = null): StreamInterface
     {

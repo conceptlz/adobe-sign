@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Conceptlz\AdobeSign\Enum;
 
 /**
- * ParticipantSetInfo.role (v6 spec).
+ * ParticipantSetInfo.role (v6 spec). DELEGATE_TO_* roles may pass their step on to someone else.
  */
 enum ParticipantRole: string
 {

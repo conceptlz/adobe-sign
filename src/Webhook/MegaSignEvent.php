@@ -11,6 +11,7 @@ final class MegaSignEvent extends WebhookEvent
 {
     protected const RESOURCE_KEY = 'megaSign';
 
+    /** The megaSign's id, or null if the payload omits it. */
     public function megaSignId(): ?string
     {
         return $this->resourceId();

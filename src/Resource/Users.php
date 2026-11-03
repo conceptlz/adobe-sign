@@ -13,6 +13,9 @@ use Conceptlz\AdobeSign\Hydration\ModelMapper;
 
 /**
  * Users in the account. Most calls need an account-admin token (user_read / user_write :account).
+ *
+ * Every method that calls the API throws ApiException (or a subclass) on an error response and
+ * TransportException on a network failure; see AbstractResource.
  */
 final class Users extends AbstractResource
 {
@@ -34,6 +37,9 @@ final class Users extends AbstractResource
         return $this->fetch(DetailedUserInfo::class, self::path('users', $userId));
     }
 
+    /**
+     * GET /users/me: the user the token belongs to.
+     */
     public function me(): DetailedUserInfo
     {
         return $this->get('me');
@@ -75,6 +81,7 @@ final class Users extends AbstractResource
      * PUT /users/{userId}/state
      *
      * @param string $state ACTIVE | INACTIVE
+     * @param string|null $comment why the user is being activated or deactivated
      */
     public function updateState(string $userId, string $state, ?string $comment = null): UserStatusUpdateResponse
     {

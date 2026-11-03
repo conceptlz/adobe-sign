@@ -11,6 +11,8 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * A PSR-18 client wrapped in middleware. First middleware in the list is outermost.
+ *
+ * @internal AdobeSign builds it; pass extra middleware through AdobeSign's $middleware argument.
  */
 final class Pipeline implements ClientInterface
 {
@@ -21,6 +23,9 @@ final class Pipeline implements ClientInterface
     ) {
     }
 
+    /**
+     * Run the request through every middleware, then the wrapped client.
+     */
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
         $next = fn (RequestInterface $r): ResponseInterface => $this->client->sendRequest($r);

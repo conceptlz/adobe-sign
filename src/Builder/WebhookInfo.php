@@ -46,23 +46,42 @@ final class WebhookInfo
         }
     }
 
+    /**
+     * ACCOUNT scope: events for the whole account.
+     *
+     * @param string $url HTTPS endpoint that receives the notifications
+     * @throws InvalidArgumentException when $name is blank or $url is not HTTPS
+     */
     public static function forAccount(string $name, string $url): self
     {
         return new self($name, $url, 'ACCOUNT');
     }
 
+    /**
+     * GROUP scope: events for the group.
+     *
+     * @throws InvalidArgumentException when $name is blank or $url is not HTTPS
+     */
     public static function forGroup(string $name, string $url): self
     {
         return new self($name, $url, 'GROUP');
     }
 
+    /**
+     * USER scope: events for the user.
+     *
+     * @throws InvalidArgumentException when $name is blank or $url is not HTTPS
+     */
     public static function forUser(string $name, string $url): self
     {
         return new self($name, $url, 'USER');
     }
 
     /**
+     * RESOURCE scope: events for one agreement, web form, megaSign or library document.
+     *
      * @param string $resourceType AGREEMENT | WIDGET | MEGASIGN | LIBRARY_DOCUMENT
+     * @throws InvalidArgumentException when $resourceId or $name is blank or $url is not HTTPS
      */
     public static function forResource(string $name, string $url, string $resourceType, string $resourceId): self
     {
@@ -73,12 +92,19 @@ final class WebhookInfo
         return new self($name, $url, 'RESOURCE', $resourceType, $resourceId);
     }
 
+    /**
+     * Events for one agreement; the scope Adobe recommends.
+     *
+     * @throws InvalidArgumentException when $agreementId or $name is blank or $url is not HTTPS
+     */
     public static function forAgreement(string $name, string $url, string $agreementId): self
     {
         return self::forResource($name, $url, 'AGREEMENT', $agreementId);
     }
 
     /**
+     * Subscribe to these events (added to any already set; duplicates ignored).
+     *
      * @param string ...$events see Webhook\EventType, e.g. EventType::AGREEMENT_ALL
      */
     public function events(string ...$events): self
@@ -90,6 +116,8 @@ final class WebhookInfo
 
     /**
      * What agreement events carry in the payload (spec: WebhookAgreementEvents).
+     *
+     * @param bool $signedDocuments include the signed PDF, base64-encoded, once signing completes
      */
     public function agreementPayload(bool $detailed = false, bool $participants = false, bool $documents = false, bool $signedDocuments = false): self
     {
@@ -104,7 +132,10 @@ final class WebhookInfo
     }
 
     /**
-     * Account users Adobe emails when deliveries start failing.
+     * Account users Adobe emails when deliveries start failing or the webhook is disabled.
+     * Only admins can set this.
+     *
+     * @throws InvalidArgumentException for an invalid email
      */
     public function notifyOnProblems(string ...$emails): self
     {
@@ -130,7 +161,12 @@ final class WebhookInfo
         return $this;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * The WebhookInfo array, created in state ACTIVE.
+     *
+     * @return array<string, mixed>
+     * @throws InvalidArgumentException when no event was subscribed
+     */
     public function toArray(): array
     {
         if ($this->events === []) {

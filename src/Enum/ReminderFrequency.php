@@ -6,6 +6,7 @@ namespace Conceptlz\AdobeSign\Enum;
 
 /**
  * AgreementCreationInfo.reminderFrequency / AgreementReminderInfo.frequency (v6 spec).
+ * Every value but ONCE repeats until the participant acts.
  */
 enum ReminderFrequency: string
 {

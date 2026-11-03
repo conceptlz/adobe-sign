@@ -156,7 +156,7 @@ final class OAuthTokenProviderTest extends TestCase
     {
         return new AdobeSign(
             new OAuthTokenProvider($this->oauth(), $this->store, 'user-42', $this->clock),
-            httpClient: $this->http,
+            httpClient: $this->contract,
             requestFactory: $this->psr17,
             streamFactory: $this->psr17,
             cache: $this->cache,

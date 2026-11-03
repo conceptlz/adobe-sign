@@ -8,7 +8,8 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * 429 / THROTTLING_TOO_MANY_REQUESTS, thrown once the retry middleware has given up.
+ * 429 / THROTTLING_TOO_MANY_REQUESTS, thrown once the retry middleware has given up: retries
+ * exhausted, or the server asked for a longer wait than ClientOptions::$maxRetryDelay.
  */
 class RateLimitException extends ApiException
 {
@@ -19,7 +20,7 @@ class RateLimitException extends ApiException
         ?RequestInterface $request = null,
         ?ResponseInterface $response = null,
         ?\Throwable $previous = null,
-        /** Seconds the server asked us to wait, when it said. */
+        /** Seconds the server asked us to wait (Retry-After header or error message), when it said. */
         public readonly ?int $retryAfter = null,
     ) {
         parent::__construct($message, $statusCode, $errorCode, $request, $response, $previous);

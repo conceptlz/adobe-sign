@@ -1,1 +1,19 @@
-{"userWebhookList":[{"id":"wh-1","name":"Status sync","scope":"RESOURCE","state":"ACTIVE","status":"ACTIVE","resourceType":"AGREEMENT","resourceId":"agr-1","url":"https://app.example.com/adobe/webhook"}],"page":{}}
+{
+    "userWebhookList": [
+        {
+            "id": "wh-1",
+            "name": "Status sync",
+            "scope": "RESOURCE",
+            "state": "ACTIVE",
+            "status": "ACTIVE",
+            "resourceType": "AGREEMENT",
+            "resourceId": "agr-1",
+            "url": "https://app.example.com/adobe/webhook",
+            "webhookSubscriptionEvents": [],
+            "webhookUrlInfo": {
+                "url": ""
+            }
+        }
+    ],
+    "page": {}
+}

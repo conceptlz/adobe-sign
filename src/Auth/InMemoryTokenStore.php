@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Conceptlz\AdobeSign\Auth;
 
 /**
- * Process-local store. Fine for CLI scripts and tests; use a persistent store in web apps.
+ * Process-local store. Fine for CLI scripts and tests; use a persistent store in web apps,
+ * since tokens are lost when the process ends.
  */
 final class InMemoryTokenStore implements TokenStore
 {

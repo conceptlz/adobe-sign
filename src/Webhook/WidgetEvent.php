@@ -11,6 +11,7 @@ final class WidgetEvent extends WebhookEvent
 {
     protected const RESOURCE_KEY = 'widget';
 
+    /** The web form's id, or null if the payload omits it. */
     public function widgetId(): ?string
     {
         return $this->resourceId();

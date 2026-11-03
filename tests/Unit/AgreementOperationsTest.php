@@ -206,7 +206,7 @@ final class AgreementOperationsTest extends TestCase
     {
         $this->queueBaseUris();
         $this->queue(200, 'agreement_events');
-        $this->queue(200, '{"fields":[{"name":"company","inputType":"TEXT_FIELD","contentType":"DATA"}]}');
+        $this->queue(200, 'agreement_form_fields');
         $this->queue(200, 'agreement_reminders');
 
         $sign = $this->client();
@@ -215,7 +215,7 @@ final class AgreementOperationsTest extends TestCase
         $reminders = $sign->agreements()->reminders('agr-1', 'ACTIVE');
 
         self::assertInstanceOf(AgreementEventList::class, $events);
-        self::assertSame(['CREATED', 'ESIGNED'], array_map(static fn ($e) => $e->getType(), $events->getEvents()));
+        self::assertSame(['CREATED', 'ACTION_COMPLETED'], array_map(static fn ($e) => $e->getType(), $events->getEvents()));
         self::assertSame('company', $fields->getFields()[0]->getName());
         self::assertInstanceOf(RemindersResponse::class, $reminders);
         self::assertSame('DAILY_UNTIL_SIGNED', $reminders->getReminderInfoList()[0]->getFrequency());
