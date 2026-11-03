@@ -424,7 +424,8 @@ final class Agreements extends AbstractResource
                     digitalSignatureRequired: (bool) ($set['isDigitalSignatureRequired'] ?? false),
                     digitallySigned: $digital || ($event['type'] ?? '') === 'DIGSIGNED',
                     certificateIssuer: $digital ? ($event['digitalSignatureInfo']['certificateIssuer'] ?? null) : null,
-                    signingProvider: $digital ? ($event['digitalSignatureInfo']['cloudProviderName'] ?? null) : null,
+                    // The spec names it cloudProviderName; the live API sends providerName.
+                    signingProvider: $digital ? (($event['digitalSignatureInfo']['cloudProviderName'] ?? '') ?: ($event['digitalSignatureInfo']['providerName'] ?? null)) : null,
                     verification: (string) ($member['securityOption']['authenticationMethod'] ?? 'NONE'),
                 );
             }

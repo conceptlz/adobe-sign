@@ -257,12 +257,23 @@ final class SignatureLevelTest extends TestCase
         self::assertSame($expected, $e::class);
     }
 
-    private function evidence(): \Conceptlz\AdobeSign\Model\SignatureEvidence
+    public function test_signature_evidence_reads_the_live_digsigned_event_shape(): void
+    {
+        $cfo = $this->evidence('evidence_events_live_digsigned')->signers[1];
+
+        self::assertTrue($cfo->signed);
+        self::assertTrue($cfo->digitallySigned);
+        self::assertSame('Intesi Group Cloud Signature', $cfo->signingProvider, 'providerName, not the spec\'s cloudProviderName');
+        self::assertSame('Intesi Group Advanced Cloud Signature CA Test', $cfo->certificateIssuer);
+        self::assertSame(SignatureLevel::AES, $cfo->achievedLevel(['TrustPro']));
+    }
+
+    private function evidence(string $events = 'evidence_events'): \Conceptlz\AdobeSign\Model\SignatureEvidence
     {
         $this->queueBaseUris();
         $this->queue(200, '{"id":"agr-1","name":"x","status":"OUT_FOR_SIGNATURE","signatureType":"ESIGN","participantSetsInfo":[]}');
         $this->queue(200, 'evidence_members');
-        $this->queue(200, 'evidence_events');
+        $this->queue(200, $events);
 
         return $this->client()->agreements()->signatureEvidence('agr-1');
     }
