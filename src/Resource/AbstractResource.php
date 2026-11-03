@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Conceptlz\AdobeSign\Resource;
 
+use Conceptlz\AdobeSign\ClientOptions;
 use Conceptlz\AdobeSign\Exception\ApiException;
 use Conceptlz\AdobeSign\Exception\InvalidArgumentException;
 use Conceptlz\AdobeSign\Exception\TransportException;
@@ -30,8 +31,10 @@ abstract class AbstractResource
      *
      * @internal
      */
-    public function __construct(protected readonly Transport $transport)
-    {
+    public function __construct(
+        protected readonly Transport $transport,
+        protected readonly ClientOptions $options = new ClientOptions(),
+    ) {
     }
 
     /**

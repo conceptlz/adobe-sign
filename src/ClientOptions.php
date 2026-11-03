@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Conceptlz\AdobeSign;
 
+use Conceptlz\AdobeSign\Enum\SignatureLevel;
+
 /**
  * Tunables for AdobeSign: data-center discovery, throttling retries, ETag handling, User-Agent.
  */
@@ -30,6 +32,11 @@ final class ClientOptions
         public readonly bool $autoEtag = true,
         /** Sent unless a request already has a User-Agent header. */
         public readonly string $userAgent = 'conceptlz-adobe-sign-php/' . AdobeSign::VERSION,
+        /**
+         * Signature level for agreements built with AgreementInfo that don't set one. SES keeps Acrobat
+         * Sign's default; set AES or QES to require digital signatures project-wide.
+         */
+        public readonly SignatureLevel $defaultSignatureLevel = SignatureLevel::SES,
     ) {
     }
 }

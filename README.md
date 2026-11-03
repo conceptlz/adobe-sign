@@ -19,6 +19,7 @@ and download the signed PDF. It works in any PHP 8.2+ project.
 - [Authentication](#authentication)
 - [Uploading documents](#uploading-documents)
 - [Creating agreements and signing order](#creating-agreements-and-signing-order)
+- [Signature levels (SES, AES, QES)](#signature-levels-ses-aes-qes)
 - [Managing agreements](#managing-agreements)
 - [Downloading signed documents](#downloading-signed-documents)
 - [Webhooks](#webhooks)
@@ -227,6 +228,108 @@ $model->setFirstReminderDelay(24);
 $sign->agreements()->create($model);     // create() accepts the builder, the model, or a raw array
 ```
 
+## Signature levels (SES, AES, QES)
+
+The EU's eIDAS regulation, and laws modelled on it such as the UAE's Federal Decree-Law No. 46 of 2021,
+recognise three levels of electronic signature. A project chooses the level a document needs. The
+package defaults to **SES**, Acrobat Sign's normal e-signature, and lets you require more per project,
+per agreement or per signer.
+
+| Level | What the signer does | How Acrobat Sign does it | Legal weight (EU) |
+| --- | --- | --- | --- |
+| **SES** (simple) | types, draws or clicks | e-signature (the default) | admissible; the party relying on it must prove who signed |
+| **AES** (advanced) | signs with a personal digital certificate | `isDigitalSignatureRequired`: a cloud-based digital signature | linked to the signer; later changes are detectable |
+| **QES** (qualified) | signs with a **qualified** certificate from a QTSP | same request as AES; the account's signature provider must be a QTSP | equivalent to a handwritten signature in every EU member state |
+
+### Requiring a level
+
+```php
+use Conceptlz\AdobeSign\ClientOptions;
+use Conceptlz\AdobeSign\Enum\SignatureLevel;
+
+// Project-wide default (SES unless set)
+$sign = AdobeSign::withIntegrationKey($key, options: new ClientOptions(defaultSignatureLevel: SignatureLevel::AES));
+
+// Per agreement: every signer
+AgreementInfo::create('Employment contract')->file($doc)->signers('employee@example.com')
+    ->signatureLevel(SignatureLevel::QES);
+
+// Per signer, overriding the agreement in either direction
+AgreementInfo::create('Loan agreement')->file($doc)
+    ->participantSet(ParticipantSetInfo::signer('borrower@example.com')->signatureLevel(SignatureLevel::QES))
+    ->participantSet(ParticipantSetInfo::signer('witness@example.com')->signatureLevel(SignatureLevel::SES));
+```
+
+- AES and QES apply to **signers only**. Approvers, acceptors and form fillers don't sign, so asking for
+  them throws `InvalidArgumentException`.
+- AES/QES with `signatureType(WRITTEN)` is rejected locally, before anything is sent.
+- The default applies to agreements built with `AgreementInfo`. Raw arrays and generated models are sent
+  as you wrote them.
+
+### Identity checks
+
+Independently of the level, you can require each signer to prove who they are before they can open the
+document:
+
+```php
+use Conceptlz\AdobeSign\Builder\{ParticipantInfo, Verification};
+
+ParticipantInfo::email('jane@example.com')->verifyWith(Verification::emailOtp());
+ParticipantInfo::email('ali@example.ae')->verifyWith(Verification::phone('501234567', '971', 'AE'));
+ParticipantInfo::email('max@example.de')->verifyWith(Verification::digitalIdentity(providerId: '…'));   // eID / bank ID gateway
+ParticipantInfo::email('kim@example.com')->verifyWith(Verification::governmentId());              // ID document scan
+```
+
+Also available: `password()`, `whatsApp()`, `knowledgeBased()` (US only), `adobeAccount()` and `none()`.
+
+An Acrobat Sign admin decides which methods are enabled, and government ID uses a paid quota. A method
+the account doesn't allow, or a feature it doesn't have (such as mixed signing orders), throws
+`AccountCapabilityException`. That error is fixed in Acrobat Sign admin, not in code.
+
+### What makes a signature qualified
+
+The API call for QES is the same as for AES. **Whether the certificate is qualified depends on the trust
+provider configured in your Acrobat Sign account.** To get real QES:
+
+1. Use an Acrobat Sign plan that includes digital signatures.
+2. In Acrobat Sign admin, enable digital signatures and add a **qualified trust service provider (QTSP)**
+   as a cloud signature provider. Make it the default for the regions that need QES.
+3. Each signer needs an identity with that provider. Verifying it is part of the provider's onboarding
+   (video ident, eID, in person, ...).
+
+Where to look by jurisdiction (confirm the specifics with Adobe, the provider and your legal team):
+
+| Jurisdiction | Framework | Qualified providers |
+| --- | --- | --- |
+| EU / EEA | eIDAS (EU No 910/2014) | QTSPs on the [EU Trusted List](https://eidas.ec.europa.eu/efda/trust-services/browse/eidas/tls); several integrate with Acrobat Sign (e.g. [DigiCert](https://docs.digicert.com/zf/document-trust-manager/third-party-signing-tools/adobe/adobe-acrobat-sign/configure-adobe-acrobat-sign-for-digicert-as-qualified-trust-service-provider--qtsp-.html), [TrustPro](https://www.trustpro.eu/), [A-Trust](https://a-trust.at/en/products/signature_platforms/adobe_acrobat_sign/), [Bundesdruckerei sign-me](https://www.bundesdruckerei.de/en/solutions/sign-me/cooperation-adobe-acrobat-sign)) |
+| UAE | Federal Decree-Law No. 46 of 2021 (TDRA supervises trust services) | TDRA-licensed providers; [UAE PASS](https://docs.uaepass.ae/guides) is the national digital identity and signature. Adobe was certified as a [signature service provider in the UAE](https://blog.adobe.com/en/publish/2019/08/14/adobe-becomes-broadest-certified-signature-service-provider-in-the-uae) |
+| Switzerland | ZertES | e.g. DigiCert (ZertES) |
+
+This package requests the level and reports what was used. It can't decide whether a signature meets
+a legal requirement in your jurisdiction; that is for your legal or compliance team.
+
+### Proving the level after signing
+
+```php
+$evidence = $sign->agreements()->signatureEvidence($agreementId);
+
+foreach ($evidence->signers as $signer) {
+    // email, order, signed, signedAt, signatureInputType (TYPED, SCRIBBLE, ...), digitallySigned,
+    // certificateIssuer, signingProvider, verification (EMAIL_OTP, GOV_ID, ...)
+}
+
+$qualified = ['DigiCert', 'TrustPro QTSP'];   // certificate issuers you accept as qualified
+if (!$evidence->meets(SignatureLevel::QES, $qualified)) {
+    $problems = $evidence->shortfalls(SignatureLevel::QES, $qualified);
+    // ["jane@example.com signed with an electronic signature (TYPED), not a digital one: SES, QES required."]
+}
+```
+
+- **How levels are inferred.** A signature counts as AES when Adobe recorded a digital signature for
+  it, and as QES when that signature's certificate issuer matches your list.
+- **Formal verification.** For an authoritative check, validate the signed PDF's signatures against the
+  relevant trusted list, e.g. with the EU's [DSS validation service](https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/validation).
+
 ## Managing agreements
 
 ```php
@@ -270,7 +373,7 @@ finishes, `status` is `DOCUMENTS_NOT_YET_PROCESSED` and `signingUrls()` throws `
 (`AGREEMENT_NOT_EXPOSED` or `AGREEMENT_NOT_SIGNABLE`). Even once the status reads `OUT_FOR_SIGNATURE`,
 the participant data can lag for a moment. Retry after a few seconds.
 
-All agreement methods: `create`, `get`, `status`, `all`, `update`, `updateState`, `cancel`, `copy`, `members`,
+All agreement methods: `create`, `get`, `status`, `all`, `update`, `updateState`, `cancel`, `copy`, `members`, `signatureEvidence`,
 `sendReminder`, `reminders`, `signingUrls`, `signingUrlFor`, `views`, `documents`, `document`, `combinedDocument`,
 `combinedDocumentUrl`, `auditTrail`, `formData`, `formFields`, `events`.
 
@@ -393,6 +496,7 @@ Every exception implements `Conceptlz\AdobeSign\Exception\AdobeSignException`. A
 | `ValidationException` | 400/415: invalid payload or parameters |
 | `RateLimitException` | 429 after retries; `$retryAfter` says how long to wait |
 | `PreconditionFailedException` | 412: stale ETag; fetch the resource again and retry |
+| `AccountCapabilityException` | the account doesn't allow it: hybrid routing off, identity method not enabled, no government-ID quota |
 | `ApiException` | any other API error (403 `PERMISSION_DENIED`, 5xx, ...), or a reply the SDK can't read (invalid JSON) |
 | `TransportException` | no response at all: network, DNS, TLS |
 | `InvalidArgumentException` | rejected locally before sending: bad email, signing-order gap, missing file |
@@ -441,6 +545,7 @@ $sign = new AdobeSign(
 | `retryBaseDelay` | `1.0` | base seconds for exponential backoff when Adobe gives no `Retry-After` |
 | `maxRetryDelay` | `60.0` | never wait longer than this per retry; a longer `Retry-After` fails fast |
 | `autoEtag` | `true` | send `If-Match` on updates using the ETag from the last `get()` |
+| `defaultSignatureLevel` | `SignatureLevel::SES` | level for `AgreementInfo` agreements that don't set one |
 | `userAgent` | `conceptlz-adobe-sign-php/<version>` | |
 
 **How the SDK behaves:**

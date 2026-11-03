@@ -50,9 +50,11 @@ use Psr\SimpleCache\CacheInterface;
 final class AdobeSign
 {
     /** SDK version, sent in the default User-Agent. */
-    public const VERSION = '0.2.1';
+    public const VERSION = '0.3.0';
 
     private Transport $transport;
+
+    private readonly ClientOptions $options;
 
     /** @var array<class-string, object> */
     private array $resources = [];
@@ -98,6 +100,7 @@ final class AdobeSign
         }
         $pipeline = new Pipeline($httpClient, $stack);
 
+        $this->options = $options;
         $this->transport = new Transport(
             $pipeline,
             $requestFactory,
@@ -206,7 +209,7 @@ final class AdobeSign
      */
     private function resource(string $class): object
     {
-        $resource = $this->resources[$class] ??= new $class($this->transport);
+        $resource = $this->resources[$class] ??= new $class($this->transport, $this->options);
         if (!$resource instanceof $class) {
             throw new \LogicException(sprintf('Resource cache holds %s for %s.', $resource::class, $class));
         }

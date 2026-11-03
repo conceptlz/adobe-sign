@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Conceptlz\AdobeSign\Builder;
 
 use Conceptlz\AdobeSign\Enum\ParticipantRole;
+use Conceptlz\AdobeSign\Enum\SignatureLevel;
 use Conceptlz\AdobeSign\Exception\InvalidArgumentException;
 
 /**
@@ -24,8 +25,13 @@ final class ParticipantSetInfo
 
     private ?string $privateMessage = null;
 
+    private ?SignatureLevel $signatureLevel = null;
+
     /** @var array<string, mixed> */
     private array $extra = [];
+
+    /** Roles whose members sign, and so can be held to a signature level. */
+    private const SIGNING_ROLES = ['SIGNER'];
 
     private function __construct(private readonly string $role)
     {
@@ -143,13 +149,44 @@ final class ParticipantSetInfo
     }
 
     /**
+     * Require this set's signature at a given level. AES and QES make Adobe require a
+     * certificate-based digital signature (isDigitalSignatureRequired); SES is a plain e-signature.
+     * Overrides the agreement's level for this set, in either direction.
+     *
+     * @throws InvalidArgumentException when the role doesn't sign (e.g. an approver) and the level needs a digital signature
+     */
+    public function signatureLevel(SignatureLevel $level): self
+    {
+        if ($level->requiresDigitalSignature() && !$this->signs()) {
+            throw new InvalidArgumentException(sprintf('A %s set does not sign, so it cannot be held to %s.', $this->role, $level->value));
+        }
+        $this->signatureLevel = $level;
+
+        return $this;
+    }
+
+    public function getSignatureLevel(): ?SignatureLevel
+    {
+        return $this->signatureLevel;
+    }
+
+    /**
+     * Whether members of this set sign (as opposed to approve, accept, fill forms, ...).
+     */
+    public function signs(): bool
+    {
+        return in_array($this->role, self::SIGNING_ROLES, true);
+    }
+
+    /**
      * The ParticipantSetInfo array; with() fields are merged last.
      *
      * @param int|null $defaultOrder used when no order() was set
+     * @param SignatureLevel|null $defaultLevel the agreement's level; applies to signing sets without their own
      * @return array<string, mixed>
      * @throws InvalidArgumentException when the set has no members or no order at all
      */
-    public function toArray(?int $defaultOrder = null): array
+    public function toArray(?int $defaultOrder = null, ?SignatureLevel $defaultLevel = null): array
     {
         if ($this->members === []) {
             throw new InvalidArgumentException(sprintf('Participant set "%s" has no members.', $this->role));
@@ -169,6 +206,18 @@ final class ParticipantSetInfo
             'privateMessage' => $this->privateMessage,
         ], static fn ($v) => $v !== null);
 
+        if ($this->effectiveSignatureLevel($defaultLevel)?->requiresDigitalSignature()) {
+            $data['isDigitalSignatureRequired'] = true;
+        }
+
         return array_replace($data, $this->extra);
+    }
+
+    /**
+     * The level this set signs at: its own, else the agreement's (signing roles only).
+     */
+    public function effectiveSignatureLevel(?SignatureLevel $agreementLevel): ?SignatureLevel
+    {
+        return $this->signatureLevel ?? ($this->signs() ? $agreementLevel : null);
     }
 }

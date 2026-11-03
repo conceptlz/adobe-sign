@@ -23,6 +23,8 @@ use Conceptlz\AdobeSign\Hydration\ModelMapper;
 use Conceptlz\AdobeSign\Model\Agreement;
 use Conceptlz\AdobeSign\Model\AgreementSummary;
 use Conceptlz\AdobeSign\Model\ReminderCreationResult;
+use Conceptlz\AdobeSign\Model\SignatureEvidence;
+use Conceptlz\AdobeSign\Model\SignerEvidence;
 use Conceptlz\AdobeSign\Pagination\CursorPaginator;
 use Psr\Http\Message\StreamInterface;
 
@@ -34,6 +36,14 @@ use Psr\Http\Message\StreamInterface;
  */
 final class Agreements extends AbstractResource
 {
+    /** Event types Adobe records when a participant signs. */
+    private const SIGNING_EVENTS = [
+        'ACTION_COMPLETED',
+        'ACTION_COMPLETED_HOSTED',
+        'ACTION_COMPLETED_OFFLINE',
+        'DIGSIGNED',
+    ];
+
     /**
      * POST /agreements
      *
@@ -44,7 +54,7 @@ final class Agreements extends AbstractResource
     public function create(AgreementInfo|AgreementCreationInfo|array $info): string
     {
         $payload = match (true) {
-            $info instanceof AgreementInfo => $info->toArray(),
+            $info instanceof AgreementInfo => $info->toArray($this->options->defaultSignatureLevel),
             $info instanceof AgreementCreationInfo => ModelMapper::toArray($info),
             default => $info,
         };
@@ -366,6 +376,62 @@ final class Agreements extends AbstractResource
     public function reminders(string $agreementId, ?string $status = null): RemindersResponse
     {
         return $this->fetch(RemindersResponse::class, self::path('agreements', $agreementId) . '/reminders', ['status' => $status]);
+    }
+
+    /**
+     * What signature level each signer actually reached, from GET /members and GET /events.
+     * Use it after signing to confirm a required SES/AES/QES level; see SignatureEvidence.
+     *
+     * A signer counts as signed when Adobe recorded their signing action (ACTION_COMPLETED and
+     * variants, DIGSIGNED), and as digitally signed when that event carries
+     * digitalSignatureInfo. If a signer delegated, the delegate's signature is matched by the
+     * original signer's email only when Adobe reports it that way.
+     */
+    public function signatureEvidence(string $agreementId): SignatureEvidence
+    {
+        $status = $this->status($agreementId);
+        $members = $this->members($agreementId);
+        $events = $this->transport->json('GET', self::path('agreements', $agreementId) . '/events')['events'] ?? [];
+
+        // Latest signing event per participant email.
+        $signedBy = [];
+        foreach ($events as $event) {
+            if (!is_array($event)
+                || !in_array($event['type'] ?? '', self::SIGNING_EVENTS, true)
+                || !in_array($event['participantRole'] ?? 'SIGNER', ['SIGNER', 'DELEGATE_TO_SIGNER'], true)) {
+                continue;
+            }
+            $signedBy[strtolower((string) ($event['participantEmail'] ?? ''))] = $event;
+        }
+
+        $signers = [];
+        foreach ($members['participantSets'] ?? [] as $set) {
+            if (($set['role'] ?? '') !== 'SIGNER') {
+                continue;
+            }
+            foreach ($set['memberInfos'] ?? [] as $member) {
+                $email = (string) ($member['email'] ?? '');
+                $event = $signedBy[strtolower($email)] ?? null;
+                $digital = is_array($event['digitalSignatureInfo'] ?? null) && array_filter($event['digitalSignatureInfo']) !== [];
+
+                $signers[] = new SignerEvidence(
+                    email: $email,
+                    name: ($event['actingUserName'] ?? '') !== '' ? (string) $event['actingUserName'] : ($member['name'] ?? null),
+                    order: (int) ($set['order'] ?? 0),
+                    signed: $event !== null,
+                    signedAt: $event['date'] ?? null,
+                    signatureInputType: $event['signatureInputType'] ?? null,
+                    digitalSignatureRequired: (bool) ($set['isDigitalSignatureRequired'] ?? false),
+                    digitallySigned: $digital || ($event['type'] ?? '') === 'DIGSIGNED',
+                    certificateIssuer: $digital ? ($event['digitalSignatureInfo']['certificateIssuer'] ?? null) : null,
+                    signingProvider: $digital ? ($event['digitalSignatureInfo']['cloudProviderName'] ?? null) : null,
+                    verification: (string) ($member['securityOption']['authenticationMethod'] ?? 'NONE'),
+                );
+            }
+        }
+        usort($signers, static fn (SignerEvidence $a, SignerEvidence $b) => $a->order <=> $b->order);
+
+        return new SignatureEvidence($agreementId, $status, $signers);
     }
 
     /** @return list<string> */

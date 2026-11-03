@@ -50,7 +50,17 @@ final class ErrorMapper
         'MODIFYING_IMMUTABLE_FIELDS' => ValidationException::class,
         'INVALID_PAGE_SIZE' => ValidationException::class,
         'INVALID_CURSOR' => ValidationException::class,
+
+        // The account, not the request, is the limit (codes seen live).
+        'HYBRID_ROUTING_NOT_ALLOWED' => AccountCapabilityException::class,
+        'GOV_ID_LIMIT_EXCEEDED' => AccountCapabilityException::class,
     ];
+
+    /**
+     * Adobe reports some account restrictions only as a generic BAD_REQUEST; the message tells them
+     * apart from invalid input (wording seen live).
+     */
+    private const ACCOUNT_RESTRICTION_MESSAGES = '/not allowed by account settings|enabled for your account|not enabled for (this|your) account/i';
 
     /** @var array<int, class-string<ApiException>> */
     private const STATUSES = [
@@ -73,6 +83,10 @@ final class ErrorMapper
         $class = ($code !== null ? (self::CODES[$code] ?? null) : null)
             ?? self::STATUSES[$status]
             ?? ApiException::class;
+
+        if ($class === ValidationException::class && $message !== null && preg_match(self::ACCOUNT_RESTRICTION_MESSAGES, $message)) {
+            $class = AccountCapabilityException::class;
+        }
 
         $text = sprintf(
             '%s %s failed with HTTP %d%s%s',

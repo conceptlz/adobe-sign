@@ -14,8 +14,7 @@ final class ParticipantInfo
     /** @var array<string, mixed> */
     private array $extra = [];
 
-    /** @var array<string, mixed>|null */
-    private ?array $securityOption = null;
+    private ?Verification $verification = null;
 
     private function __construct(
         private readonly string $email,
@@ -36,13 +35,25 @@ final class ParticipantInfo
     }
 
     /**
+     * How the participant must prove their identity before viewing and signing, e.g.
+     * Verification::emailOtp(), ::phone(...), ::governmentId(), ::digitalIdentity(...).
+     */
+    public function verifyWith(Verification $verification): self
+    {
+        $this->verification = $verification;
+
+        return $this;
+    }
+
+    /**
      * Require a password before the participant can open the agreement.
+     * Shorthand for verifyWith(Verification::password($password)).
+     *
+     * @throws InvalidArgumentException for an empty password
      */
     public function password(#[\SensitiveParameter] string $password): self
     {
-        $this->securityOption = ['authenticationMethod' => 'PASSWORD', 'password' => $password];
-
-        return $this;
+        return $this->verifyWith(Verification::password($password));
     }
 
     /**
@@ -68,8 +79,8 @@ final class ParticipantInfo
         if ($this->name !== null) {
             $data['name'] = $this->name;
         }
-        if ($this->securityOption !== null) {
-            $data['securityOption'] = $this->securityOption;
+        if ($this->verification !== null) {
+            $data['securityOption'] = $this->verification->toArray();
         }
 
         return array_replace($data, $this->extra);

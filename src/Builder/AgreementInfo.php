@@ -6,6 +6,7 @@ namespace Conceptlz\AdobeSign\Builder;
 
 use Conceptlz\AdobeSign\Enum\AgreementState;
 use Conceptlz\AdobeSign\Enum\ReminderFrequency;
+use Conceptlz\AdobeSign\Enum\SignatureLevel;
 use Conceptlz\AdobeSign\Enum\SignatureType;
 use Conceptlz\AdobeSign\Exception\InvalidArgumentException;
 use Conceptlz\AdobeSign\Generated\Model\AgreementCreationInfo;
@@ -35,6 +36,8 @@ final class AgreementInfo
     private array $ccs = [];
 
     private string $signatureType = 'ESIGN';
+
+    private ?SignatureLevel $signatureLevel = null;
 
     private string $state = 'IN_PROCESS';
 
@@ -205,13 +208,57 @@ final class AgreementInfo
     }
 
     /**
+     * Signature level for every signer that doesn't set its own (ParticipantSetInfo::signatureLevel()).
+     * Without this, the client's default applies (ClientOptions::$defaultSignatureLevel, SES unless configured).
+     *
+     *     AgreementInfo::create('Employment contract')->signers('a@x.com')->signatureLevel(SignatureLevel::QES);
+     *
+     * AES and QES ask Adobe for a certificate-based digital signature. Whether that is qualified depends
+     * on the trust provider configured on the Acrobat Sign account; confirm with signatureEvidence().
+     */
+    public function signatureLevel(SignatureLevel $level): self
+    {
+        $this->signatureLevel = $level;
+
+        return $this;
+    }
+
+    public function getSignatureLevel(): ?SignatureLevel
+    {
+        return $this->signatureLevel;
+    }
+
+    /**
      * The same payload as the generated model, e.g. to tweak fields the builder doesn't cover.
      *
+     * @param SignatureLevel|null $defaultLevel as toArray()
      * @throws InvalidArgumentException as toArray()
      */
-    public function toModel(): AgreementCreationInfo
+    public function toModel(?SignatureLevel $defaultLevel = null): AgreementCreationInfo
     {
-        return ModelMapper::hydrate(AgreementCreationInfo::class, $this->toArray());
+        return ModelMapper::hydrate(AgreementCreationInfo::class, $this->toArray($defaultLevel));
+    }
+
+    /**
+     * Fail before sending when the requested level can't be met: a digital signature needs an
+     * e-signature agreement (not WRITTEN) and at least one signer. An explicitly requested level is
+     * never silently dropped.
+     */
+    private function assertSignatureLevelAchievable(?SignatureLevel $agreementLevel): void
+    {
+        $digital = array_filter(
+            $this->participantSets,
+            static fn (ParticipantSetInfo $set) => $set->effectiveSignatureLevel($agreementLevel)?->requiresDigitalSignature() === true,
+        );
+
+        if ($digital !== [] && $this->signatureType === 'WRITTEN') {
+            throw new InvalidArgumentException('AES and QES need electronic signatures; this agreement uses signatureType WRITTEN.');
+        }
+
+        $hasSigner = array_filter($this->participantSets, static fn (ParticipantSetInfo $set) => $set->signs()) !== [];
+        if ($this->signatureLevel?->requiresDigitalSignature() && !$hasSigner) {
+            throw new InvalidArgumentException(sprintf('%s was requested but the agreement has no signer to apply it to.', $this->signatureLevel->value));
+        }
     }
 
     /**
@@ -236,11 +283,15 @@ final class AgreementInfo
     /**
      * The request body for POST /agreements.
      *
+     * @param SignatureLevel|null $defaultLevel used when signatureLevel() wasn't called; Agreements::create()
+     *                                         passes the client's default
      * @return array<string, mixed>
      * @throws InvalidArgumentException when there is no file or participant set, a set has no
-     *                                  members, or the signing orders are not 1..n without gaps
+     *                                  members, the signing orders are not 1..n without gaps, or the
+     *                                  signature level can't be met (AES/QES with written signatures
+     *                                  or without any signer)
      */
-    public function toArray(): array
+    public function toArray(?SignatureLevel $defaultLevel = null): array
     {
         if ($this->files === []) {
             throw new InvalidArgumentException('An agreement needs at least one file.');
@@ -249,10 +300,13 @@ final class AgreementInfo
             throw new InvalidArgumentException('An agreement needs at least one participant set.');
         }
 
+        $level = $this->signatureLevel ?? $defaultLevel;
+        $this->assertSignatureLevelAchievable($level);
+
         $sets = [];
         $next = 1;
         foreach ($this->participantSets as $set) {
-            $sets[] = $set->toArray($next);
+            $sets[] = $set->toArray($next, $level);
             $next = ($set->getOrder() ?? $next) + 1;
         }
         self::assertConsecutiveOrders(array_column($sets, 'order'));
