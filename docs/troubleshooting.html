@@ -272,6 +272,16 @@ composer require guzzlehttp/guzzle</code></pre>
   <p><strong>Cause.</strong> Government-ID verification uses a paid quota, and the account has none left or never had any. Developer accounts usually have none.</p>
   <p><strong>Fix.</strong> Buy or top up the quota through Adobe, or use another identity check, such as <code>Verification::emailOtp()</code>, for this agreement.</p>
 
+  <h3 id="quota-exceeded">KBA_LIMIT_EXCEEDED, PHONE_LIMIT_EXCEEDED, SEND_LIMIT_EXCEEDED</h3>
+  <p><strong>Symptom.</strong> <code>AccountCapabilityException</code> with <code>KBA_LIMIT_EXCEEDED</code>, <code>PHONE_LIMIT_EXCEEDED</code>, <code>PHONE_AUTH_LIMIT_EXCEEDED</code>, <code>AGREEMENT_PHONE_AUTH_LIMIT_EXCEEDED</code> or <code>SEND_LIMIT_EXCEEDED</code>, usually when creating or sending an agreement. Versions up to 0.3.1 reported these as a plain <code>ApiException</code>.</p>
+  <p><strong>Cause.</strong> KBA, phone (SMS) checks and agreement sending are metered, and the account or user has used up its quota.</p>
+  <p><strong>Fix.</strong> Buy or top up the quota through Adobe. For the identity checks, another method such as <code>Verification::emailOtp()</code> works around it for this agreement.</p>
+
+  <h3 id="digital-signature-not-allowed">DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_NOT_ALLOWED</h3>
+  <p><strong>Symptom.</strong> Creating an AES or QES agreement fails with <code>AccountCapabilityException</code> and <code>DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_NOT_ALLOWED</code> or <code>…_DISABLED</code>. Versions up to 0.3.1 reported these as a plain <code>ApiException</code>.</p>
+  <p><strong>Cause.</strong> AES and QES send <code>isDigitalSignatureRequired</code> for the signer, and the sender's account or group settings don't let senders require a digital signature per signer.</p>
+  <p><strong>Fix.</strong> Ask an Acrobat Sign administrator to allow digital signatures and per-recipient enforcement, with a cloud signature provider configured, or send at SES. See <a href="signature-levels.html">Signature levels</a>.</p>
+
   <h3 id="demo-use-only">[DEMO USE ONLY] in agreement names</h3>
   <p><strong>Symptom.</strong> Agreement names come back as <code>[DEMO USE ONLY] Master Services Agreement</code>.</p>
   <p><strong>Cause.</strong> The agreement was created on a free developer account, and Adobe prefixes every agreement name there.</p>

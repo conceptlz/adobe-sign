@@ -51,9 +51,38 @@ final class ErrorMapper
         'INVALID_PAGE_SIZE' => ValidationException::class,
         'INVALID_CURSOR' => ValidationException::class,
 
-        // The account, not the request, is the limit (codes seen live).
+        // The account, not the request, is the limit. Seen live:
         'HYBRID_ROUTING_NOT_ALLOWED' => AccountCapabilityException::class,
         'GOV_ID_LIMIT_EXCEEDED' => AccountCapabilityException::class,
+        // From the v6 spec: quotas and seats the plan has run out of
+        'KBA_LIMIT_EXCEEDED' => AccountCapabilityException::class,
+        'PHONE_LIMIT_EXCEEDED' => AccountCapabilityException::class,
+        'PHONE_AUTH_LIMIT_EXCEEDED' => AccountCapabilityException::class,
+        'AGREEMENT_PHONE_AUTH_LIMIT_EXCEEDED' => AccountCapabilityException::class,
+        'SEND_LIMIT_EXCEEDED' => AccountCapabilityException::class,
+        'ACCOUNT_LIMIT_EXCEEDED' => AccountCapabilityException::class,
+        'GROUP_LIMIT_EXCEEDED' => AccountCapabilityException::class,
+        // From the v6 spec: features the account or user settings switch off. The spec says the
+        // digital-signature ones are off "for this agreement", but they come back on create, before
+        // there is an agreement, so they reflect the sender's settings.
+        'DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_NOT_ALLOWED' => AccountCapabilityException::class,
+        'DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_DISABLED' => AccountCapabilityException::class,
+        'SIGNER_AUTH_NOT_ALLOWED' => AccountCapabilityException::class,
+        'INTERNAL_SIGNER_AUTH_NOT_ALLOWED' => AccountCapabilityException::class,
+        'AUTH_METHOD_PROVIDED_IS_NOT_ALLOWED' => AccountCapabilityException::class,
+        'EXTERNAL_AUTH_METHOD_PROVIDED_IS_NOT_ALLOWED' => AccountCapabilityException::class,
+        'INTERNAL_AUTH_METHOD_PROVIDED_IS_NOT_ALLOWED' => AccountCapabilityException::class,
+        'WEBHOOK_CREATION_NOT_ALLOWED' => AccountCapabilityException::class,
+        'WEBHOOK_PROBLEM_NOTIFICATION_EMAILS_NOT_ENABLED' => AccountCapabilityException::class,
+        'PRIVATE_MESSAGES_NOT_ENABLED' => AccountCapabilityException::class,
+        'PAYMENT_INTEGRATION_DISABLED' => AccountCapabilityException::class,
+        'AGREEMENT_SHARING_DISABLED' => AccountCapabilityException::class,
+        'WIDGET_SHARING_DISABLED' => AccountCapabilityException::class,
+        'COPY_AGREEMENT_FEATURE_DISABLED' => AccountCapabilityException::class,
+        'DYNAMIC_DOCUMENT_EXPIRATION_NOT_ENABLED' => AccountCapabilityException::class,
+        'DOCUMENT_ORIGINAL_FORMAT_NOT_ALLOWED' => AccountCapabilityException::class,
+        'MESSAGE_TEMPLATES_NOT_ENABLED' => AccountCapabilityException::class,
+        'PHONE_TRANSACTION_REPORTING_DISABLED' => AccountCapabilityException::class,
     ];
 
     /**

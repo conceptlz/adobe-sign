@@ -188,7 +188,7 @@
         <tr><td><code>ValidationException</code></td><td><code>ApiException</code></td><td>400 or 415, or a request-validation code: missing parameter, invalid email, bad JSON</td><td>Fix the request; retrying won't help</td></tr>
         <tr><td><code>RateLimitException</code></td><td><code>ApiException</code></td><td>429 after the retry middleware gave up, or when Adobe asked for a longer wait than <code>maxRetryDelay</code></td><td>Try again after <code>$retryAfter</code> seconds</td></tr>
         <tr><td><code>PreconditionFailedException</code></td><td><code>ApiException</code></td><td>412: the <code>If-Match</code> ETag is stale</td><td><code>get()</code> again and repeat the write</td></tr>
-        <tr><td><code>AccountCapabilityException</code></td><td><code>ApiException</code></td><td>The account's settings, plan or quota don't allow the request: mixed signing order, an identity method that's off, no government-ID quota</td><td>Change the Acrobat Sign account settings, or the request</td></tr>
+        <tr><td><code>AccountCapabilityException</code></td><td><code>ApiException</code></td><td>The account's settings, plan or quota don't allow the request: mixed signing order, an identity method or feature that's off, a used-up quota (government ID, KBA, SMS, sending, user seats)</td><td>Change the Acrobat Sign account settings, or the request</td></tr>
         <tr><td><code>InvalidArgumentException</code></td><td><code>\InvalidArgumentException</code></td><td>Rejected locally before any request: empty id, invalid email, signing-order gap, AES for an approver, unreadable file, untrusted <code>api_access_point</code></td><td>Fix the calling code</td></tr>
         <tr><td><code>TransportException</code></td><td><code>\RuntimeException</code></td><td>No HTTP response at all: DNS, TLS, timeout, connection refused</td><td>Retry later; a POST may have been processed</td></tr>
         <tr><td><code>WebhookException</code></td><td><code>\RuntimeException</code></td><td>An inbound webhook had a missing or unknown <code>X-AdobeSign-ClientId</code>, or a body that isn't a notification</td><td>Answer 4xx (the handler does this for you)</td></tr>
@@ -204,7 +204,7 @@
   </p>
   <ol class="steps">
     <li><span class="step-title">Read the error body</span><p>Adobe normally sends <code>{"code": "INVALID_AGREEMENT_ID", "message": "…"}</code>. The spec's examples also use <code>{"reason": "INVALID_AGREEMENT_ID: …"}</code>, and the OAuth endpoints use <code>{"error": "…", "error_description": "…"}</code>; all three are understood. A body that isn't JSON becomes the message, cut to 200 characters.</p></li>
-    <li><span class="step-title">Look up the Adobe error code</span><p>If the code is in the SDK's table, that decides the class, whatever the HTTP status. <code>INVALID_X_API_USER_HEADER</code> arrives as a 400 but is an <code>AuthenticationException</code>, because it is an authentication problem.</p></li>
+    <li><span class="step-title">Look up the Adobe error code</span><p>If the code is in the SDK's table, that decides the class, whatever the HTTP status. <code>INVALID_X_API_USER_HEADER</code> arrives as a 400 but is an <code>AuthenticationException</code>, because it is an authentication problem. Likewise <code>DYNAMIC_DOCUMENT_EXPIRATION_NOT_ENABLED</code> arrives as a 412 but is an <code>AccountCapabilityException</code>: no fresh ETag would make it succeed.</p></li>
     <li><span class="step-title">Fall back to the HTTP status</span><p>An unknown or missing code is mapped by status: 400 and 415 to <code>ValidationException</code>, 401 to <code>AuthenticationException</code>, 404 to <code>NotFoundException</code>, 412 to <code>PreconditionFailedException</code>, 429 to <code>RateLimitException</code>. Every other status gives a plain <code>ApiException</code>.</p></li>
     <li><span class="step-title">Check for an account restriction</span><p>If the result so far is <code>ValidationException</code> and the message says something like "not allowed by account settings", "enabled for your account" or "not enabled for this account", the class becomes <code>AccountCapabilityException</code>. Adobe reports some account limits only as a generic <code>BAD_REQUEST</code>, and the wording is the only way to tell them from bad input.</p></li>
   </ol>
@@ -312,8 +312,16 @@ try {
         <tr><td><code>MODIFYING_IMMUTABLE_FIELDS</code></td><td>400</td><td><code>ValidationException</code></td><td>by code</td><td>An update tried to change a field Adobe doesn't allow to change in this state.</td></tr>
         <tr><td><code>INVALID_PAGE_SIZE</code>, <code>INVALID_CURSOR</code></td><td>400</td><td><code>ValidationException</code></td><td>by code</td><td>A list call had a bad <code>pageSize</code>, or a cursor that expired.</td></tr>
         <tr><td><code>HYBRID_ROUTING_NOT_ALLOWED</code></td><td>403</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>A mixed sequential and parallel signing order on an account where hybrid routing is off. An admin can turn it on.</td></tr>
-        <tr><td><code>GOV_ID_LIMIT_EXCEEDED</code></td><td>4xx</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>No government-ID verification quota left (or none bought).</td></tr>
+        <tr><td><code>GOV_ID_LIMIT_EXCEEDED</code></td><td>403</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>No government-ID verification quota left (or none bought).</td></tr>
+        <tr><td><code>KBA_LIMIT_EXCEEDED</code>, <code>PHONE_LIMIT_EXCEEDED</code>, <code>PHONE_AUTH_LIMIT_EXCEEDED</code>, <code>AGREEMENT_PHONE_AUTH_LIMIT_EXCEEDED</code></td><td>403</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>The KBA or phone (SMS) quota is used up. Top it up, or choose another identity check.</td></tr>
+        <tr><td><code>SEND_LIMIT_EXCEEDED</code></td><td>403</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>The user's agreement-creation quota is used up.</td></tr>
+        <tr><td><code>ACCOUNT_LIMIT_EXCEEDED</code>, <code>GROUP_LIMIT_EXCEEDED</code></td><td>400 / 403</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>No free user seat on the account, or the user is already in as many groups as allowed.</td></tr>
+        <tr><td><code>DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_NOT_ALLOWED</code>, <code>…_DISABLED</code></td><td>403</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>AES or QES was requested, but the sender's settings don't let senders require a digital signature per signer. An admin can allow it.</td></tr>
+        <tr><td><code>SIGNER_AUTH_NOT_ALLOWED</code>, <code>INTERNAL_SIGNER_AUTH_NOT_ALLOWED</code>, <code>AUTH_METHOD_PROVIDED_IS_NOT_ALLOWED</code>, <code>EXTERNAL_…</code> / <code>INTERNAL_AUTH_METHOD_PROVIDED_IS_NOT_ALLOWED</code></td><td>403</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>The sender's settings don't allow this identity check (for recipients outside or inside the account). Listed for MegaSign.</td></tr>
+        <tr><td><code>WEBHOOK_CREATION_NOT_ALLOWED</code>, <code>WEBHOOK_PROBLEM_NOTIFICATION_EMAILS_NOT_ENABLED</code></td><td>403 / 400</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>Webhooks, or problem-notification emails for them, aren't enabled for the account.</td></tr>
+        <tr><td><code>PRIVATE_MESSAGES_NOT_ENABLED</code>, <code>PAYMENT_INTEGRATION_DISABLED</code>, <code>AGREEMENT_SHARING_DISABLED</code>, <code>WIDGET_SHARING_DISABLED</code>, <code>COPY_AGREEMENT_FEATURE_DISABLED</code>, <code>DOCUMENT_ORIGINAL_FORMAT_NOT_ALLOWED</code>, <code>MESSAGE_TEMPLATES_NOT_ENABLED</code>, <code>PHONE_TRANSACTION_REPORTING_DISABLED</code>, <code>DYNAMIC_DOCUMENT_EXPIRATION_NOT_ENABLED</code></td><td>403 (412)</td><td><code>AccountCapabilityException</code></td><td>by code</td><td>The feature the request uses is switched off for the account or user.</td></tr>
         <tr><td><code>BAD_REQUEST</code> with "not allowed by account settings"</td><td>400</td><td><code>AccountCapabilityException</code></td><td>by message</td><td>An identity method or feature the account doesn't enable.</td></tr>
+        <tr><td><code>WEBHOOK_LIMIT_EXCEEDED</code></td><td>400</td><td><code>ValidationException</code></td><td>by status</td><td>The resource already has as many webhooks for that event as Adobe allows. Delete or reuse one; it isn't a plan limit.</td></tr>
         <tr><td><code>INVALID_API_ACCESS_POINT</code></td><td>403</td><td><code>ApiException</code></td><td>by status</td><td>Wrong data centre. Rediscovered and retried once automatically; you see it only if that fails too.</td></tr>
         <tr><td><code>PERMISSION_DENIED</code></td><td>403</td><td><code>ApiException</code></td><td>by status</td><td>The user may not see or change this resource. Check whose token you use, or use <code>asUser()</code>.</td></tr>
         <tr><td><code>INVALID_AGREEMENT_ID</code>, <code>AGREEMENT_DELETED</code></td><td>404</td><td><code>NotFoundException</code></td><td>by status</td><td>No such agreement for this user.</td></tr>
@@ -456,6 +464,21 @@ function isWorthRetrying(\Throwable $e): bool
         <p>
           Since 0.3.0 it is an <code>AccountCapabilityException</code>. That class extends
           <code>ApiException</code>, so code that catches <code>ApiException</code> keeps working.
+        </p>
+      </div>
+    </details>
+    <details id="errors-faq-quota-codes-moved">
+      <summary>KBA_LIMIT_EXCEEDED used to be a plain ApiException. Did my handler break?</summary>
+      <div class="faq-answer">
+        <p>
+          Not if it catches <code>ApiException</code> or checks <code>$e-&gt;errorCode</code>: both still work.
+          Versions up to 0.3.1 mapped only <code>HYBRID_ROUTING_NOT_ALLOWED</code> and
+          <code>GOV_ID_LIMIT_EXCEEDED</code> by code, so the other quota and feature codes in the table above
+          came through as a plain <code>ApiException</code>. Three of them came through as a sibling class
+          instead, and a <code>catch</code> for that class no longer sees them:
+          <code>ACCOUNT_LIMIT_EXCEEDED</code> and <code>WEBHOOK_PROBLEM_NOTIFICATION_EMAILS_NOT_ENABLED</code>
+          were a <code>ValidationException</code>, and <code>DYNAMIC_DOCUMENT_EXPIRATION_NOT_ENABLED</code> was
+          a <code>PreconditionFailedException</code>.
         </p>
       </div>
     </details>

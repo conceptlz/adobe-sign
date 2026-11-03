@@ -2745,6 +2745,13 @@ window.DOCS_INDEX = [
         "text": "Since 0.3.0 it is an AccountCapabilityException. That class extends ApiException, so code that catches ApiException keeps working."
     },
     {
+        "title": "KBA_LIMIT_EXCEEDED used to be a plain ApiException. Did my handler break?",
+        "page": "Errors & exceptions · FAQ",
+        "url": "errors.html#errors-faq-quota-codes-moved",
+        "level": 3,
+        "text": "Not if it catches ApiException or checks $e->errorCode: both still work. Versions up to 0.3.1 mapped only HYBRID_ROUTING_NOT_ALLOWED and GOV_ID_LIMIT_EXCEEDED by code, so the other quota and feature codes in the table above came through as a plain ApiException. Three of them came through as a sibling class instead, and…"
+    },
+    {
         "title": "Why do I get NotFoundException for an agreement I just created?",
         "page": "Errors & exceptions · FAQ",
         "url": "errors.html#errors-faq-not-found-after-create",
@@ -3401,6 +3408,20 @@ window.DOCS_INDEX = [
         "url": "troubleshooting.html#gov-id-limit",
         "level": 3,
         "text": "Symptom. AccountCapabilityException with GOV_ID_LIMIT_EXCEEDED when a signer must verify with a government ID. Cause. Government-ID verification uses a paid quota, and the account has none left or never had any. Developer accounts usually have none. Fix. Buy or top up the quota through Adobe, or use another identity ch…"
+    },
+    {
+        "title": "KBA_LIMIT_EXCEEDED, PHONE_LIMIT_EXCEEDED, SEND_LIMIT_EXCEEDED",
+        "page": "Troubleshooting",
+        "url": "troubleshooting.html#quota-exceeded",
+        "level": 3,
+        "text": "Symptom. AccountCapabilityException with KBA_LIMIT_EXCEEDED, PHONE_LIMIT_EXCEEDED, PHONE_AUTH_LIMIT_EXCEEDED, AGREEMENT_PHONE_AUTH_LIMIT_EXCEEDED or SEND_LIMIT_EXCEEDED, usually when creating or sending an agreement. Versions up to 0.3.1 reported these as a plain ApiException. Cause. KBA, phone (SMS) checks and agreeme…"
+    },
+    {
+        "title": "DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_NOT_ALLOWED",
+        "page": "Troubleshooting",
+        "url": "troubleshooting.html#digital-signature-not-allowed",
+        "level": 3,
+        "text": "Symptom. Creating an AES or QES agreement fails with AccountCapabilityException and DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_NOT_ALLOWED or …_DISABLED. Versions up to 0.3.1 reported these as a plain ApiException. Cause. AES and QES send isDigitalSignatureRequired for the signer, and the sender's account or group s…"
     },
     {
         "title": "[DEMO USE ONLY] in agreement names",

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Conceptlz\AdobeSign\Tests\Unit;
 
+use Conceptlz\AdobeSign\Exception\AccountCapabilityException;
 use Conceptlz\AdobeSign\Exception\ApiException;
 use Conceptlz\AdobeSign\Exception\AuthenticationException;
 use Conceptlz\AdobeSign\Exception\ErrorMapper;
@@ -33,6 +34,41 @@ final class ErrorMapperTest extends TestCase
         yield 'server error' => [500, '{"code":"MISC_SERVER_ERROR","message":"x"}', ApiException::class, 'MISC_SERVER_ERROR'];
         yield 'spec example "reason" format' => [404, '{"reason":"INVALID_AGREEMENT_ID: The Agreement ID specified is invalid.","status":404}', NotFoundException::class, 'INVALID_AGREEMENT_ID'];
         yield 'non-json body' => [502, '<html>Bad gateway</html>', ApiException::class, null];
+        yield 'account restriction by message' => [400, '{"code":"BAD_REQUEST","message":"DIG_ID is not allowed by account settings"}', AccountCapabilityException::class, 'BAD_REQUEST'];
+        yield 'quota code is not a validation error' => [400, '{"code":"WEBHOOK_LIMIT_EXCEEDED","message":"x"}', ValidationException::class, 'WEBHOOK_LIMIT_EXCEEDED'];
+
+        // Account capability codes, with the status the spec gives them.
+        foreach ([
+            'HYBRID_ROUTING_NOT_ALLOWED' => 403,
+            'GOV_ID_LIMIT_EXCEEDED' => 403,
+            'KBA_LIMIT_EXCEEDED' => 403,
+            'PHONE_LIMIT_EXCEEDED' => 403,
+            'PHONE_AUTH_LIMIT_EXCEEDED' => 403,
+            'AGREEMENT_PHONE_AUTH_LIMIT_EXCEEDED' => 403,
+            'SEND_LIMIT_EXCEEDED' => 403,
+            'ACCOUNT_LIMIT_EXCEEDED' => 400,
+            'GROUP_LIMIT_EXCEEDED' => 403,
+            'DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_NOT_ALLOWED' => 403,
+            'DIGITAL_SIGNATURE_ENFORCEMENT_PER_PARTICIPANT_DISABLED' => 403,
+            'SIGNER_AUTH_NOT_ALLOWED' => 403,
+            'INTERNAL_SIGNER_AUTH_NOT_ALLOWED' => 403,
+            'AUTH_METHOD_PROVIDED_IS_NOT_ALLOWED' => 403,
+            'EXTERNAL_AUTH_METHOD_PROVIDED_IS_NOT_ALLOWED' => 403,
+            'INTERNAL_AUTH_METHOD_PROVIDED_IS_NOT_ALLOWED' => 403,
+            'WEBHOOK_CREATION_NOT_ALLOWED' => 403,
+            'WEBHOOK_PROBLEM_NOTIFICATION_EMAILS_NOT_ENABLED' => 400,
+            'PRIVATE_MESSAGES_NOT_ENABLED' => 403,
+            'PAYMENT_INTEGRATION_DISABLED' => 403,
+            'AGREEMENT_SHARING_DISABLED' => 403,
+            'WIDGET_SHARING_DISABLED' => 403,
+            'COPY_AGREEMENT_FEATURE_DISABLED' => 403,
+            'DYNAMIC_DOCUMENT_EXPIRATION_NOT_ENABLED' => 412,
+            'DOCUMENT_ORIGINAL_FORMAT_NOT_ALLOWED' => 403,
+            'MESSAGE_TEMPLATES_NOT_ENABLED' => 403,
+            'PHONE_TRANSACTION_REPORTING_DISABLED' => 403,
+        ] as $code => $status) {
+            yield "account capability $code" => [$status, sprintf('{"code":"%s","message":"x"}', $code), AccountCapabilityException::class, $code];
+        }
     }
 
     /** @param class-string $expected */

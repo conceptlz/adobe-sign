@@ -233,7 +233,9 @@ $agreementId = $sign-&gt;agreements()-&gt;create(
   <p>
     It proves possession of the phone, an independent factor from email, so it is stronger than Email OTP
     against a compromised inbox. You need the signer's number, and phone checks can count against a
-    usage limit on some plans (the spec lists <code>PHONE_LIMIT_EXCEEDED</code>).
+    usage limit on some plans. When it runs out, Adobe answers <code>PHONE_LIMIT_EXCEEDED</code> (or a
+    related <code>PHONE_AUTH_LIMIT_EXCEEDED</code> code), which the SDK turns into an
+    <code>AccountCapabilityException</code>.
   </p>
 
   <h3 id="method-whatsapp">WhatsApp code</h3>
@@ -249,7 +251,8 @@ $agreementId = $sign-&gt;agreements()-&gt;create(
     The signer answers multiple-choice questions generated from <strong>US public records</strong>
     (previous addresses, loans and similar). That limits it to people with a US record history: signers
     outside the US usually can't pass it, and there is nothing they can do about it. Use it only for US
-    consumers. It is metered on many plans (the spec lists <code>KBA_LIMIT_EXCEEDED</code>).
+    consumers. It is metered on many plans; when the quota runs out, Adobe answers <code>KBA_LIMIT_EXCEEDED</code>, which
+    the SDK turns into an <code>AccountCapabilityException</code>.
   </p>
 
   <h3 id="method-government-id">Government ID</h3>
@@ -369,7 +372,8 @@ foreach ($sign-&gt;agreements()-&gt;members($agreementId)['participantSets'] as 
       <tbody>
         <tr><td><code>GOV_ID_LIMIT_EXCEEDED</code></td><td><code>AccountCapabilityException</code></td><td>buy or top up the government-ID quota</td></tr>
         <tr><td>400 with "not allowed by account settings" (e.g. <code>DIG_ID</code> without a configured provider)</td><td><code>AccountCapabilityException</code></td><td>enable the method or configure the provider in Acrobat Sign admin</td></tr>
-        <tr><td><code>KBA_LIMIT_EXCEEDED</code>, <code>PHONE_LIMIT_EXCEEDED</code>, <code>AGREEMENT_PHONE_AUTH_LIMIT_EXCEEDED</code></td><td><code>ApiException</code> with that <code>$errorCode</code></td><td>check the plan's limits</td></tr>
+        <tr><td><code>KBA_LIMIT_EXCEEDED</code>, <code>PHONE_LIMIT_EXCEEDED</code>, <code>PHONE_AUTH_LIMIT_EXCEEDED</code>, <code>AGREEMENT_PHONE_AUTH_LIMIT_EXCEEDED</code></td><td><code>AccountCapabilityException</code></td><td>buy or top up the KBA or phone quota, or choose another method</td></tr>
+        <tr><td><code>SIGNER_AUTH_NOT_ALLOWED</code>, <code>AUTH_METHOD_PROVIDED_IS_NOT_ALLOWED</code> and their <code>INTERNAL_</code> / <code>EXTERNAL_</code> variants</td><td><code>AccountCapabilityException</code></td><td>the sender's settings don't allow this check for that kind of recipient; enable it in Acrobat Sign admin</td></tr>
         <tr><td><code>INVALID_RECIPIENT_AUTH_METHOD</code>, <code>INVALID_PHONE_NUMBER</code></td><td><code>ValidationException</code></td><td>fix the request</td></tr>
       </tbody>
     </table>
