@@ -50,7 +50,7 @@ use Psr\SimpleCache\CacheInterface;
 final class AdobeSign
 {
     /** SDK version, sent in the default User-Agent. */
-    public const VERSION = '0.4.0';
+    public const VERSION = '0.5.0';
 
     private Transport $transport;
 
