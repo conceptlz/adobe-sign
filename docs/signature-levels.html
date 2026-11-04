@@ -4,7 +4,7 @@
 <!-- docs:head -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Google tag (gtag.js): one GA4 property for both sites on conceptlz.github.io; see privacy.html -->
+<!-- Google tag (gtag.js): one GA4 property for all sites on conceptlz.github.io; see privacy.html -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEPPZRMKDP"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -117,6 +117,7 @@
     </ul>
   </div>
   <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+  <p class="sidebar-other">Building on Symfony?<br><a href="https://conceptlz.github.io/adobe-sign-symfony/">Symfony bundle docs →</a></p>
 </nav>
 <div class="nav-backdrop" hidden></div>
 <!-- /docs:sidebar -->
@@ -698,7 +699,7 @@ $qualifiedIssuers = array_values(array_filter(array_map(
 )));</code></pre>
   <p>
     The bundled <code>examples/live-lifecycle.php</code> reads the same <code>QUALIFIED_ISSUERS</code>
-    variable, and the Laravel bridge reads it from its <code>qualified_issuers</code> config key. Keep the
+    variable, and the Laravel bridge and the Symfony bundle read it from their <code>qualified_issuers</code> config key. Keep the
     names specific: a bare company name can match that company's advanced (non-qualified) CA too.
   </p>
 

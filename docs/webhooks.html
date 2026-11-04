@@ -4,7 +4,7 @@
 <!-- docs:head -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Google tag (gtag.js): one GA4 property for both sites on conceptlz.github.io; see privacy.html -->
+<!-- Google tag (gtag.js): one GA4 property for all sites on conceptlz.github.io; see privacy.html -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEPPZRMKDP"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -117,6 +117,7 @@
     </ul>
   </div>
   <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+  <p class="sidebar-other">Building on Symfony?<br><a href="https://conceptlz.github.io/adobe-sign-symfony/">Symfony bundle docs →</a></p>
 </nav>
 <div class="nav-backdrop" hidden></div>
 <!-- /docs:sidebar -->
@@ -403,7 +404,7 @@ if ($event !== null) {
     missing or unknown id; <code>parse()</code> throws it for a body that isn't a JSON object with an
     <code>event</code>. The constants <code>WebhookHandler::CLIENT_ID_HEADER</code> and
     <code>WebhookHandler::CLIENT_ID_BODY_KEY</code> hold the header and body key names. A complete version
-    is in <code>examples/webhook-receiver.php</code>; the Laravel bridge ships a ready-made route.
+    is in <code>examples/webhook-receiver.php</code>; the Laravel bridge and the Symfony bundle ship a ready-made route.
   </p>
 
   <h3 id="client-ids">Which client id to allow</h3>

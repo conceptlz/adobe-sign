@@ -4,7 +4,7 @@
 <!-- docs:head -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Google tag (gtag.js): one GA4 property for both sites on conceptlz.github.io; see privacy.html -->
+<!-- Google tag (gtag.js): one GA4 property for all sites on conceptlz.github.io; see privacy.html -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEPPZRMKDP"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -117,6 +117,7 @@
     </ul>
   </div>
   <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+  <p class="sidebar-other">Building on Symfony?<br><a href="https://conceptlz.github.io/adobe-sign-symfony/">Symfony bundle docs →</a></p>
 </nav>
 <div class="nav-backdrop" hidden></div>
 <!-- /docs:sidebar -->
@@ -250,17 +251,18 @@ if ($sign-&gt;agreements()-&gt;get($agreementId)-&gt;isSigned()) {
     <figcaption>Each request picks up a token, retries on rate limits, sends <code>If-Match</code> when needed, and goes to the data centre your account lives in, which the SDK discovers once and caches.</figcaption>
   </figure>
 
-  <h2 id="two-packages">Two packages, one release</h2>
+  <h2 id="two-packages">Three packages, one release</h2>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Package</th><th>Use it when</th><th>Depends on</th></tr></thead>
       <tbody>
-        <tr><td><code>conceptlz/adobe-sign</code></td><td>Any PHP project: Symfony, Slim, WordPress plugins, CLI tools, queues.</td><td>PSR-18/17/7, PSR-16, PSR-3, PSR-20, php-http/discovery</td></tr>
+        <tr><td><code>conceptlz/adobe-sign</code></td><td>Any PHP project: Slim, WordPress plugins, CLI tools, queues, or a framework without an integration.</td><td>PSR-18/17/7, PSR-16, PSR-3, PSR-20, php-http/discovery</td></tr>
         <tr><td><a href="https://conceptlz.github.io/adobe-sign-laravel/"><code>conceptlz/adobe-sign-laravel</code></a></td><td>Laravel 12 or 13: adds config, a facade, OAuth routes, a token table and a webhook route.</td><td>this package + <code>illuminate/*</code></td></tr>
+        <tr><td><a href="https://conceptlz.github.io/adobe-sign-symfony/"><code>conceptlz/adobe-sign-symfony</code></a></td><td>Symfony 7.4 or 8: adds a config tree, autowired services, OAuth routes, encrypted token storage (cache or Doctrine), a webhook route and Messenger support.</td><td>this package + <code>symfony/*</code></td></tr>
       </tbody>
     </table>
   </div>
-  <p>Both packages share one version number and are always released together.</p>
+  <p>All three packages share one version number and are always released together.</p>
 
   <div class="callout callout-legal">
     <p class="callout-title">Independent project</p>

@@ -4,7 +4,7 @@
 <!-- docs:head -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Google tag (gtag.js): one GA4 property for both sites on conceptlz.github.io; see privacy.html -->
+<!-- Google tag (gtag.js): one GA4 property for all sites on conceptlz.github.io; see privacy.html -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEPPZRMKDP"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -117,6 +117,7 @@
     </ul>
   </div>
   <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+  <p class="sidebar-other">Building on Symfony?<br><a href="https://conceptlz.github.io/adobe-sign-symfony/">Symfony bundle docs →</a></p>
 </nav>
 <div class="nav-backdrop" hidden></div>
 <!-- /docs:sidebar -->
@@ -182,8 +183,8 @@
         <p>
           No. The core package depends only on PSR interfaces (HTTP client and factories, cache, logger, clock) and
           <code>php-http/discovery</code>, and a test fails the build if a framework import ever creeps in. It
-          works in Symfony, Slim, WordPress plugins, CLI tools or plain PHP. Laravel users can add the bridge
-          package (<a href="#laravel">Laravel &amp; frameworks</a>).
+          works in Slim, WordPress plugins, CLI tools or plain PHP. Laravel and Symfony users can add an
+          integration package on top (<a href="#laravel">Laravel &amp; frameworks</a>).
         </p>
       </div>
     </details>
@@ -648,10 +649,12 @@
       <summary>How do I use it with Symfony?</summary>
       <div class="faq-answer">
         <p>
-          Register <code>AdobeSign</code> as a service built with a factory such as
-          <code>AdobeSign::withIntegrationKey()</code>, and inject Symfony's <code>Psr18Client</code>, a
-          <code>Psr16Cache</code> and the logger. There is no bundle; the PSR interfaces make one unnecessary
-          (<a href="configuration.html">Configuration</a>).
+          Install the bundle, <code>conceptlz/adobe-sign-symfony</code>, for Symfony 7.4 and 8. It adds an
+          <code>adobe_sign</code> configuration tree, autowirable <code>AdobeSign</code> and
+          <code>AdobeSignManager</code> services, OAuth routes with encrypted token storage (a cache pool or a
+          Doctrine DBAL table), a webhook route that dispatches a Symfony event and, optionally, a Messenger
+          message for asynchronous handling. It has its own <a href="https://conceptlz.github.io/adobe-sign-symfony/">documentation</a>. You can still wire
+          the core by hand if you prefer (<a href="configuration.html">Configuration</a>).
         </p>
       </div>
     </details>
@@ -674,8 +677,8 @@
       <div class="faq-answer">
         <p>
           With semantic versioning, currently in the 0.x series, where a minor version (0.4 to 0.5) may contain
-          breaking changes. Require <code>^0.4</code> to get fixes without surprises. The core and Laravel packages
-          always share one version number and are released together; the changes are listed in the changelog on
+          breaking changes. Require <code>^0.4</code> to get fixes without surprises. The core, Laravel and Symfony
+          packages always share one version number and are released together; the changes are listed in the changelog on
           GitHub.
         </p>
       </div>

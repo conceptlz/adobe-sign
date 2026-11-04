@@ -7,7 +7,8 @@ Upload documents, send them for e-signature in any signing order, follow progres
 and download the signed PDF. It works in any PHP 8.2+ project.
 
 - **Framework-agnostic.** Depends only on PSR interfaces (HTTP client, factories, cache, logger, clock).
-  Using Laravel? Install [`conceptlz/adobe-sign-laravel`](https://github.com/conceptlz/adobe-sign-laravel) on top.
+  Using Laravel or Symfony? Install [`conceptlz/adobe-sign-laravel`](https://github.com/conceptlz/adobe-sign-laravel)
+  or [`conceptlz/adobe-sign-symfony`](https://github.com/conceptlz/adobe-sign-symfony) on top.
 - **Both auth methods.** Integration Key, or OAuth 2.0 (authorization code with automatic refresh).
 - **Production details handled.** Data-center routing, retries on rate limits, ETags, streaming
   uploads/downloads, typed exceptions, and webhook verification.

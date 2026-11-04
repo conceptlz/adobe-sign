@@ -4,7 +4,7 @@
 <!-- docs:head -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Google tag (gtag.js): one GA4 property for both sites on conceptlz.github.io; see privacy.html -->
+<!-- Google tag (gtag.js): one GA4 property for all sites on conceptlz.github.io; see privacy.html -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEPPZRMKDP"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -117,6 +117,7 @@
     </ul>
   </div>
   <p class="sidebar-other">Building on Laravel?<br><a href="https://conceptlz.github.io/adobe-sign-laravel/">Laravel bridge docs →</a></p>
+  <p class="sidebar-other">Building on Symfony?<br><a href="https://conceptlz.github.io/adobe-sign-symfony/">Symfony bundle docs →</a></p>
 </nav>
 <div class="nav-backdrop" hidden></div>
 <!-- /docs:sidebar -->
@@ -607,6 +608,14 @@ ADOBE_SIGN_SIGNED_AGREEMENT_ID=CBJCHBCAABAA...  # an agreement your test signers
     The Laravel bridge binds the client in the container, so you can swap in a client built as above. Its own
     testing guide covers facades, fake webhooks and queued listeners:
     <a href="https://conceptlz.github.io/adobe-sign-laravel/testing.html">Testing your application</a>.
+  </p>
+
+  <h2 id="testing-symfony">Testing in Symfony</h2>
+  <p>
+    The Symfony bundle takes the PSR-18 client from configuration (<code>adobe_sign.http_client</code>), so the
+    test environment can point it at a mock client and queue responses as above. Its testing guide covers
+    <code>WebTestCase</code>, fake webhooks and the in-memory Messenger transport:
+    <a href="https://conceptlz.github.io/adobe-sign-symfony/testing.html">Testing your application</a>.
   </p>
 
   <h2 id="testing-questions">Common questions</h2>
