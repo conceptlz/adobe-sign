@@ -232,8 +232,9 @@ $sign->agreements()->create($model);     // create() accepts the builder, the mo
 
 ## Signature levels (SES, AES, QES)
 
-The EU's eIDAS regulation, and laws modelled on it such as the UAE's Federal Decree-Law No. 46 of 2021,
-recognise three levels of electronic signature. A project chooses the level a document needs. The
+The EU's eIDAS regulation defines three levels of electronic signature. Other countries organise
+electronic signatures in their own ways (some in similar tiers, some by licensed certificates, some with no
+levels at all); see the jurisdiction table below. A project chooses the level a document needs. The
 package defaults to **SES**, Acrobat Sign's normal e-signature, and lets you require more per project,
 per agreement or per signer.
 
@@ -299,13 +300,23 @@ provider configured in your Acrobat Sign account.** To get real QES:
 3. Each signer needs an identity with that provider. Verifying it is part of the provider's onboarding
    (video ident, eID, in person, ...).
 
-Where to look by jurisdiction (confirm the specifics with Adobe, the provider and your legal team):
+Where to look by jurisdiction. These are brief pointers to the general position, not legal advice; confirm the
+specifics with Adobe, the provider and your legal team. The [signature levels guide](https://conceptlz.github.io/adobe-sign/signature-levels.html#beyond-the-eu)
+explains each one.
 
-| Jurisdiction | Framework | Qualified providers |
-| --- | --- | --- |
-| EU / EEA | eIDAS (EU No 910/2014) | QTSPs on the [EU Trusted List](https://eidas.ec.europa.eu/efda/trust-services/browse/eidas/tls); several integrate with Acrobat Sign (e.g. [DigiCert](https://docs.digicert.com/zf/document-trust-manager/third-party-signing-tools/adobe/adobe-acrobat-sign/configure-adobe-acrobat-sign-for-digicert-as-qualified-trust-service-provider--qtsp-.html), [TrustPro](https://www.trustpro.eu/), [A-Trust](https://a-trust.at/en/products/signature_platforms/adobe_acrobat_sign/), [Bundesdruckerei sign-me](https://www.bundesdruckerei.de/en/solutions/sign-me/cooperation-adobe-acrobat-sign)) |
-| UAE | Federal Decree-Law No. 46 of 2021 (TDRA supervises trust services) | TDRA-licensed providers; [UAE PASS](https://docs.uaepass.ae/guides) is the national digital identity and signature. Adobe was certified as a [signature service provider in the UAE](https://blog.adobe.com/en/publish/2019/08/14/adobe-becomes-broadest-certified-signature-service-provider-in-the-uae) |
-| Switzerland | ZertES | e.g. DigiCert (ZertES) |
+| Jurisdiction | Model | Framework | Where stronger signatures come from |
+| --- | --- | --- | --- |
+| EU / EEA | Tiered | eIDAS (EU No 910/2014) | QTSPs on the [EU Trusted List](https://eidas.ec.europa.eu/efda/trust-services/browse/eidas/tls); several integrate with Acrobat Sign (e.g. [DigiCert](https://docs.digicert.com/zf/document-trust-manager/third-party-signing-tools/adobe/adobe-acrobat-sign/configure-adobe-acrobat-sign-for-digicert-as-qualified-trust-service-provider--qtsp-.html), [TrustPro](https://www.trustpro.eu/), [A-Trust](https://a-trust.at/en/products/signature_platforms/adobe_acrobat_sign/), [Bundesdruckerei sign-me](https://www.bundesdruckerei.de/en/solutions/sign-me/cooperation-adobe-acrobat-sign)) |
+| United Kingdom | Tiered | UK eIDAS and the Electronic Communications Act 2000 | Providers qualified under the UK regime |
+| Switzerland | Tiered | ZertES | Providers recognised under Swiss rules (e.g. DigiCert for ZertES) |
+| Brazil | Tiered, certificate-based | MP 2.200-2/2001 (ICP-Brasil), Law 14.063/2020 | ICP-Brasil certificates |
+| UAE | Tiered | Federal Decree-Law No. 46 of 2021 | TDRA-licensed providers; [UAE PASS](https://docs.uaepass.ae/guides) |
+| India | Certificate-based | Information Technology Act 2000 | Certifying Authorities licensed by the CCA; Aadhaar eSign |
+| Saudi Arabia | Certificate-based | Electronic Transactions Law | Licensed certification service providers |
+| United States | Technology-neutral | ESIGN Act, UETA | No tiers; evidence and identity checks carry the weight |
+| Canada | Technology-neutral (federal "secure" tier) | Provincial e-commerce acts; PIPEDA | Certificates only for specific federal purposes |
+| Singapore | Technology-neutral (with a "secure" tier) | Electronic Transactions Act | Secure electronic signatures that meet the Act's conditions |
+| Australia | Technology-neutral | Electronic Transactions Act 1999 and state laws | No tiers; deeds and witnessing follow state rules |
 
 This package requests the level and reports what was used. It can't decide whether a signature meets
 a legal requirement in your jurisdiction; that is for your legal or compliance team.

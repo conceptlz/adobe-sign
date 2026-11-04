@@ -1478,11 +1478,88 @@ window.DOCS_INDEX = [
         "text": "The 2024 amendment keeps the three signature levels as they were. Its headline change is the European Digital Identity Wallet: member states must offer citizens a wallet that holds identity data and attestations, and the wallets are expected to let people create qualified electronic signatures. It also adds new trust s…"
     },
     {
-        "title": "How the UAE recognises electronic signatures",
+        "title": "Beyond the EU",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#beyond-the-eu",
+        "level": 2,
+        "text": "SES, AES and QES are eIDAS terms. Almost every country now gives electronic signatures legal effect, but they organise them differently, and only some use three tiers. Broadly, national laws follow one of three models: Tiered, like eIDAS: simple, advanced and qualified (or similarly named) signatures, with stronger leg…"
+    },
+    {
+        "title": "United Kingdom",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#united-kingdom",
+        "level": 3,
+        "text": "Tiered. After leaving the EU, the UK kept the eIDAS framework in domestic law (\"UK eIDAS\"), alongside the Electronic Communications Act 2000, so the same three levels exist. English law has long accepted simple electronic signatures for most commercial documents. Qualified status depends on the UK's own trust-service r…"
+    },
+    {
+        "title": "Switzerland",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#switzerland",
+        "level": 3,
+        "text": "Tiered. The Federal Act on Electronic Signatures (ZertES) defines advanced, regulated and qualified electronic signatures, and a Swiss qualified signature generally satisfies the legal requirement of written form. It must come from a provider recognised under Swiss rules, which is a different list from the EU's, so cro…"
+    },
+    {
+        "title": "Brazil",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#brazil",
+        "level": 3,
+        "text": "Tiered and certificate-based. The ICP-Brasil public-key infrastructure, created by Provisional Measure 2.200-2 of 2001, gives signatures made with ICP-Brasil certificates a presumption of authenticity. Law 14.063 of 2020 adds simple, advanced and qualified tiers for dealings with public bodies, where qualified means an…"
+    },
+    {
+        "title": "United Arab Emirates",
         "page": "Signature levels: SES, AES and QES",
         "url": "signature-levels.html#uae",
-        "level": 2,
-        "text": "The UAE's main federal law is Federal Decree-Law No. 46 of 2021 on electronic transactions and trust services, which replaced the earlier federal e-commerce law. In broad terms: Electronic signatures and electronic records are recognised, and a signature is not refused legal effect only because it is electronic. The la…"
+        "level": 3,
+        "text": "Tiered. Federal Decree-Law No. 46 of 2021 recognises electronic signatures in tiers that broadly mirror eIDAS, up to qualified signatures from providers licensed under the supervision of the TDRA, and UAE PASS offers a national digital identity with signing. Financial free zones such as the DIFC and ADGM have their own…"
+    },
+    {
+        "title": "India",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#india",
+        "level": 3,
+        "text": "Certificate-based. The Information Technology Act 2000 recognises electronic signatures and gives particular standing to digital signatures backed by certificates from Certifying Authorities licensed by the Controller of Certifying Authorities, including Aadhaar-based eSign. Some instruments, such as wills and certain…"
+    },
+    {
+        "title": "Saudi Arabia",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#saudi-arabia",
+        "level": 3,
+        "text": "Certificate-based. The Electronic Transactions Law recognises electronic signatures and records, and signatures backed by certificates from licensed certification service providers carry stronger evidential weight. Government bodies and regulated sectors often prescribe their own signing platforms, so check what a coun…"
+    },
+    {
+        "title": "United States",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#united-states",
+        "level": 3,
+        "text": "Technology-neutral. The federal ESIGN Act (2000) and the Uniform Electronic Transactions Act, adopted by almost every state, give an electronic signature legal effect when the signer intended to sign and the parties agreed to deal electronically; there are no levels to choose from. Strength comes from the evidence arou…"
+    },
+    {
+        "title": "Canada",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#canada",
+        "level": 3,
+        "text": "Technology-neutral, with a federal secure tier. Provincial electronic-commerce laws, largely based on a uniform model act, are technology-neutral. Federally, PIPEDA and its regulations define a certificate-based \"secure electronic signature\" for particular federal purposes; most commercial agreements use ordinary elect…"
+    },
+    {
+        "title": "Singapore",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#singapore",
+        "level": 3,
+        "text": "Technology-neutral, with a secure tier. The Electronic Transactions Act recognises electronic signatures generally and gives stronger presumptions to \"secure\" electronic signatures that meet its conditions. Some documents have been excluded from electronic execution; the list has been narrowed over time, so check the c…"
+    },
+    {
+        "title": "Australia",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#australia",
+        "level": 3,
+        "text": "Technology-neutral. The Commonwealth Electronic Transactions Act 1999 and matching state laws accept any method that identifies the signer, shows their intention and is appropriately reliable. Deeds, witnessed documents and some land dealings follow separate rules that differ between states."
+    },
+    {
+        "title": "What this means for your integration",
+        "page": "Signature levels: SES, AES and QES",
+        "url": "signature-levels.html#beyond-the-eu-in-practice",
+        "level": 3,
+        "text": "Technology-neutral regimes: SES is normally enough. Strengthen the evidence with an identity check (identity verification) and keep the audit report. Tiered or certificate-based regimes, where a document needs the stronger presumption: request AES or QES, with a trust service provider that is licensed or qualified in t…"
     },
     {
         "title": "Which level do I need?",
@@ -1671,7 +1748,7 @@ window.DOCS_INDEX = [
         "page": "Signature levels: SES, AES and QES · FAQ",
         "url": "signature-levels.html#signature-levels-faq-ses-valid",
         "level": 3,
-        "text": "In the EU and the UAE, an electronic signature cannot be rejected just because it is electronic, so an SES can bind the parties to most commercial contracts. Its weakness is evidential: if the signer denies signing, you have to prove it, which is where the audit report and identity checks help. Some documents need a hi…"
+        "text": "In the EU, and in most countries with an electronic-signature law, a signature cannot be refused legal effect just because it is electronic, so an SES can bind the parties to most commercial contracts. Its weakness is evidential: if the signer denies signing, you have to prove it, which is where the audit report and id…"
     },
     {
         "title": "Why does the evidence say TYPED for a digital signature?",
@@ -3795,11 +3872,11 @@ window.DOCS_INDEX = [
         "text": "Generally yes. Under eIDAS, an electronic signature can't be refused legal effect or as evidence just because it is electronic. What the levels change is the burden of proof: with SES, the party relying on the signature may have to prove who signed; a QES is treated like a handwritten signature in every member state. S…"
     },
     {
-        "title": "What about the UAE?",
+        "title": "What about countries outside the EU?",
         "page": "Frequently asked questions · FAQ",
-        "url": "faq.html#faq-uae",
+        "url": "faq.html#faq-outside-eu",
         "level": 3,
-        "text": "The UAE's Federal Decree-Law No. 46 of 2021 on electronic transactions and trust services follows the same model of simple, advanced and qualified signatures, with trust services supervised by the TDRA. UAE PASS is the national digital identity and signature. Use AES or QES where your documents need them, and confirm t…"
+        "text": "Most countries give electronic signatures legal effect, but not all use eIDAS's three tiers. Some are tiered in a similar way (the UK, Switzerland, Brazil, the UAE), some favour certificates from licensed providers (India, Saudi Arabia), and some are technology-neutral with no levels at all (the United States, Australi…"
     },
     {
         "title": "Can different signers on one agreement sign at different levels?",
@@ -4079,7 +4156,7 @@ window.DOCS_INDEX = [
         "page": "Disclaimer",
         "url": "disclaimer.html#not-legal-advice",
         "level": 2,
-        "text": "Signature law is jurisdiction-specific The pages on signature levels, identity checks, eIDAS and UAE law explain how these frameworks are generally understood, so that developers and technical leads can talk to their lawyers in the same terms. They are not legal advice and do not create any professional relationship. W…"
+        "text": "Signature law is jurisdiction-specific The pages on signature levels, identity checks, eIDAS and national signature laws explain how these frameworks are generally understood, so that developers and technical leads can talk to their lawyers in the same terms. They are not legal advice and do not create any professional…"
     },
     {
         "title": "Your responsibilities",

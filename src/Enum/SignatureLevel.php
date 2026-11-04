@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Conceptlz\AdobeSign\Enum;
 
 /**
- * Electronic signature level, after eIDAS (EU No 910/2014) and laws modelled on it, such as the
- * UAE's Federal Decree-Law No. 46 of 2021.
+ * Electronic signature level, as defined by eIDAS (EU No 910/2014). Other jurisdictions use similar
+ * tiers (e.g. the UK, Switzerland, Brazil, the UAE), favour licensed certificates, or are
+ * technology-neutral with no tiers (e.g. the US); the levels map onto those only approximately.
  *
  * - SES (simple): any electronic signature (typed, drawn, click). Acrobat Sign's default.
  * - AES (advanced): a certificate-based digital signature, uniquely linked to and identifying the
